@@ -128,7 +128,7 @@ python src/models/working_autoencoder.py
 
 - **ResearchGate**: [DOI](http://dx.doi.org/10.13140/RG.2.2.12215.18088)
 - **Zenodo**: [Archive](https://zenodo.org/records/16943794)
-- **ArXiv**: [Preprint](https://arxiv.org/abs/XXXX.XXXXX)
+- **ArXiv**: [Preprint](on Hold)
 
 ## Code Repository
 
