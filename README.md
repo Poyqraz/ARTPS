@@ -121,14 +121,6 @@ python src/models/working_autoencoder.py
 │   ├── demo_artps.py               # Demo script
 │   ├── train_*.py                   # Training scripts (1 file)
 │   └── README.md                    # Code documentation
-├── docs/                            # Paper and documentation
-│   ├── paper.pdf                    # Turkish paper
-│   ├── paper.tex                    # Turkish LaTeX source
-│   └── arxiv_submission/            # ArXiv submission package
-│       ├── paper_en.pdf             # English paper
-│       ├── paper_en.tex             # English LaTeX source
-│       └── refs.bib                 # References
-├── figures/                         # Research figures and images
 └── README.md                        # Main project documentation
 ```
 
