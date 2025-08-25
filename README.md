@@ -43,7 +43,7 @@ pip install -r requirements.txt
   title={ARTPS: Depth-Enhanced Hybrid Anomaly Detection and Learnable Curiosity Score for Autonomous Rover Target Prioritization},
   author={Baydemir, Poyraz},
   year={2025},
-  doi={10.13140/RG.2.2.12215.10000}
+  doi={10.13140/RG.2.2.12215.18088}
 }
 ```
 
