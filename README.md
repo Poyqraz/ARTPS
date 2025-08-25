@@ -9,7 +9,7 @@ ARTPS (Autonomous Rover Target Prioritization System) is a novel hybrid AI syste
 
 **Author:** Poyraz BAYDEMİR  
 **Affiliation:** Selçuk University  
-**Published:** July 25, 2025
+**Published:** July 24, 2025
 
 ### 🎯 Key Features
 - ✅ **Convolutional Autoencoder Model**: Compresses and reconstructs Mars rock images
