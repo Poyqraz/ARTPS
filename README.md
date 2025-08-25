@@ -9,7 +9,7 @@ ARTPS (Autonomous Rover Target Prioritization System) is a novel hybrid AI syste
 
 **Author:** Poyraz BAYDEMİR  
 **Affiliation:** Selçuk University  
-**Published:** July 24, 2025
+**Published:** July 25, 2025
 
 ### 🎯 Key Features
 - ✅ **Convolutional Autoencoder Model**: Compresses and reconstructs Mars rock images
@@ -39,6 +39,7 @@ The heart of the system is the "Curiosity Score" calculated for each potential t
 - [ ] Advanced segmentation algorithms
 - [ ] More sophisticated exploitation scoring
 - [ ] Real-time rover integration
+- [ ] Web interface development
 
 ## Installation
 
@@ -50,50 +51,85 @@ The heart of the system is the "Curiosity Score" calculated for each potential t
 ```bash
 # 1. Clone the project
 git clone <repository-url>
+cd project_mars
+
+# 2. Navigate to ARTPS folder
 cd ARTPS
 
-# 2. Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. Test
+# 4. Test
 python test_working_autoencoder.py
 ```
 
 ## Usage
 
+**Note:** All commands should be run from the `ARTPS/` folder.
+
 ### 1. Model Training and Testing
 ```bash
+cd ARTPS
 python test_working_autoencoder.py
 ```
 
 ### 2. Running Demo
 ```bash
+cd ARTPS
 python demo_artps.py
 ```
 
-### 3. Manual Model Training
+### 3. 🎯 **Run Main Application (Streamlit Web UI)**
 ```bash
+cd ARTPS
+streamlit run app.py
+```
+
+### 4. Manual Model Training
+```bash
+cd ARTPS
 python src/models/working_autoencoder.py
 ```
 
+### 5. Available Scripts
+- **🎯 Main Application:** `app.py` - Complete Streamlit web interface
+- **Test Scripts:** `test_*.py` (6 files)
+- **Training Scripts:** `train_*.py` (1 file)
+- **Demo Scripts:** `demo_artps.py`
+
 ## Project Structure
 ```
-project_mars/
-├── src/
-│   ├── models/
-│   │   ├── working_autoencoder.py    # Working autoencoder model
+
+├── ARTPS/                           # Main source code repository
+│   ├── src/                         # Source code package
+│   │   ├── models/                  # AI models (7 models)
+│   │   │   ├── working_autoencoder.py
+│   │   │   ├── depth_estimation.py
+│   │   │   ├── optimized_autoencoder.py
+│   │   │   ├── anomaly/             # Anomaly detection models
+│   │   │   └── __init__.py
+│   │   ├── utils/                   # Utility functions
+│   │   │   ├── data_utils.py
+│   │   │   └── __init__.py
+│   │   ├── core/                    # Core system components
 │   │   └── __init__.py
-│   ├── utils/
-│   │   ├── data_utils.py             # Data processing and feature extraction
-│   │   └── __init__.py
-│   └── __init__.py
-├── data/
-│   └── mars_rocks/                   # Mars rock images
-├── results/                          # Trained models and results
-├── test_working_autoencoder.py       # Model test script
-├── demo_artps.py                     # Demo script
-├── requirements.txt                  # Project dependencies
-└── README.md
+│   ├── data/                        # Data storage
+│   ├── results/                     # Model outputs and results
+│   ├── requirements.txt             # Python dependencies
+│   ├── app.py                       # 🎯 MAIN APPLICATION (Streamlit Web UI)
+│   ├── test_*.py                    # Test scripts (6 files)
+│   ├── demo_artps.py               # Demo script
+│   ├── train_*.py                   # Training scripts (1 file)
+│   └── README.md                    # Code documentation
+├── docs/                            # Paper and documentation
+│   ├── paper.pdf                    # Turkish paper
+│   ├── paper.tex                    # Turkish LaTeX source
+│   └── arxiv_submission/            # ArXiv submission package
+│       ├── paper_en.pdf             # English paper
+│       ├── paper_en.tex             # English LaTeX source
+│       └── refs.bib                 # References
+├── figures/                         # Research figures and images
+└── README.md                        # Main project documentation
 ```
 
 ## Publications
@@ -101,6 +137,21 @@ project_mars/
 - **ResearchGate**: [DOI](http://dx.doi.org/10.13140/RG.2.2.12215.18088)
 - **Zenodo**: [Archive](https://zenodo.org/records/16943794)
 - **ArXiv**: [Preprint](https://arxiv.org/abs/XXXX.XXXXX)
+
+## Code Repository
+
+The complete source code is available in the [`ARTPS/`](ARTPS/) folder, which includes:
+
+- **🎯 Main Application:** `app.py` - Complete Streamlit web interface with hybrid AI models
+- **AI Models:** 7 different autoencoder and depth estimation models
+- **Utility Functions:** Data processing and feature extraction
+- **Core Components:** Curiosity scoring and anomaly detection systems
+- **Test Scripts:** Comprehensive testing suite (6 files)
+- **Training Scripts:** Model training and optimization (1 file)
+- **Demo Application:** Interactive demonstration system
+- **Documentation:** Detailed code documentation
+
+See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usage instructions.
 
 ## Keywords
 
