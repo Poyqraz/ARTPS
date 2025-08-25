@@ -7,6 +7,10 @@
 
 ARTPS (Autonomous Rover Target Prioritization System) is a novel hybrid AI system that combines depth estimation, anomaly detection, and learnable curiosity scoring for autonomous exploration of planetary surfaces.
 
+**Author:** Poyraz BAYDEMİR  
+**Affiliation:** Selçuk University  
+**Published:** July 25, 2025
+
 ### 🎯 Key Features
 - ✅ **Convolutional Autoencoder Model**: Compresses and reconstructs Mars rock images
 - ✅ **Anomaly Detection**: Detects abnormal targets using reconstruction error
@@ -96,8 +100,12 @@ project_mars/
 ## Publications
 
 - **ResearchGate**: [DOI](http://dx.doi.org/10.13140/RG.2.2.12215.18088)
-- **Zenodo**: [Archive](https://zenodo.org/record/XXXXXXX)
+- **Zenodo**: [Archive](https://zenodo.org/records/16943794)
 - **ArXiv**: [Preprint](https://arxiv.org/abs/XXXX.XXXXX)
+
+## Keywords
+
+*Mars rover*, *Autonomous Exploration*, *depth estimation*, *Vision Transformers*, *planetary surfaces*, *machine learning*, *Anomaly Detection*, *Computer Vision*
 
 ## Citation
 
