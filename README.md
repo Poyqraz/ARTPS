@@ -39,7 +39,6 @@ The heart of the system is the "Curiosity Score" calculated for each potential t
 - [ ] Advanced segmentation algorithms
 - [ ] More sophisticated exploitation scoring
 - [ ] Real-time rover integration
-- [ ] Web interface development
 
 ## Installation
 
@@ -51,7 +50,7 @@ The heart of the system is the "Curiosity Score" calculated for each potential t
 ```bash
 # 1. Clone the project
 git clone <repository-url>
-cd project_mars
+cd ARTPS
 
 # 2. Install dependencies
 pip install -r requirements.txt
