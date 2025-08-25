@@ -51,7 +51,6 @@ The heart of the system is the "Curiosity Score" calculated for each potential t
 ```bash
 # 1. Clone the project
 git clone <repository-url>
-cd project_mars
 
 # 2. Navigate to ARTPS folder
 cd ARTPS
