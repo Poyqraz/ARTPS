@@ -1,6 +1,6 @@
 # ARTPS: Autonomous Rover Target Prioritization System
 
-[![DOI](https://zenodo.org/badge/DOI/10.13140/RG.2.2.12215.10000.svg)](https://doi.org/10.13140/RG.2.2.12215.10000)
+[![DOI](https://zenodo.org/badge/DOI/10.13140/RG.2.2.12215.18088.svg)](http://dx.doi.org/10.13140/RG.2.2.12215.18088)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
@@ -25,7 +25,7 @@ ARTPS (Autonomous Rover Target Prioritization System) is a novel hybrid AI syste
 ## Publications
 
 - **Paper**: [PDF](docs/paper.pdf) | [LaTeX](docs/paper.tex)
-- **ResearchGate**: [DOI](https://doi.org/10.13140/RG.2.2.12215.10000)
+- **ResearchGate**: [DOI](http://dx.doi.org/10.13140/RG.2.2.12215.18088)
 - **Zenodo**: [Archive](https://zenodo.org/record/XXXXXXX)
 
 ## Installation
