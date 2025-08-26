@@ -145,7 +145,7 @@ The complete source code is available in the [`ARTPS/`](ARTPS/) folder, which in
 See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usage instructions.
 
 ### Sample Figure
-<p align="center" style="display: flex; flex-direction: row; justify-content: center;">
+<p align="center">
   <span style="display: inline-block; text-align: center; margin: 0 10px;">
     <img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" width="400"/>
     <br>
