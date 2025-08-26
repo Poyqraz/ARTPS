@@ -144,7 +144,7 @@ The complete source code is available in the [`ARTPS/`](ARTPS/) folder, which in
 
 See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usage instructions.
 
-# Sample Figure
+### Sample Figure
 ![combined_anomaly_detection](https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f)
 
 
