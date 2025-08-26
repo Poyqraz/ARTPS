@@ -146,8 +146,14 @@ See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usa
 
 ### Sample Figure
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" alt="combined_anomaly_detection" width="400"/>
-  <img src="https://github.com/user-attachments/assets/5312923e-0356-4840-a335-76da61569478" alt="curiosity_ripples_and_outcrops_depth_anomaly" width="400"/>
+  <figure style="display:inline-block; margin:0 10px;">
+    <img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" alt="combined_anomaly_detection" width="400"/>
+    <figcaption>Otomatik Anomali Tespit Sonucu</figcaption>
+  </figure>
+  <figure style="display:inline-block; margin:0 10px;">
+    <img src="https://github.com/user-attachments/assets/5312923e-0356-4840-a335-76da61569478" alt="curiosity_ripples_and_outcrops_depth_anomaly" width="400"/>
+    <figcaption>Curiosity: Ripple ve Outcrop Derinlik Haritası</figcaption>
+  </figure>
 </p>
 
 ## Keywords
