@@ -149,11 +149,11 @@ See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usa
   <tr>
     <td align="center">
       <img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" width="300"/><br>
-      <sub>Otomatik Anomali Tespit Sonucu</sub>
+      <sub>Anomaly Detection Result</sub>
     </td>
     <td align="center">
       <img src="https://github.com/user-attachments/assets/5312923e-0356-4840-a335-76da61569478" width="300"/><br>
-      <sub>Curiosity: Ripple ve Outcrop Derinlik Haritası</sub>
+      <sub>Curiosity: Ripple and Outcrop Depth Map</sub>
     </td>
   </tr>
 </table>
