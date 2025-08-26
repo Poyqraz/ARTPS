@@ -146,7 +146,7 @@ See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usa
 
 ### Sample Figure
 ![combined_anomaly_detection](https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f)
-
+<img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" alt="combined_anomaly_detection" width="400"/>
 
 ## Keywords
 
