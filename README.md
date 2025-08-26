@@ -145,18 +145,18 @@ The complete source code is available in the [`ARTPS/`](ARTPS/) folder, which in
 See [`ARTPS/README.md`](ARTPS/README.md) for detailed code documentation and usage instructions.
 
 ### Sample Figures
-<p align="center">
-  <span style="display: inline-block; text-align: center; margin: 0 10px;">
-    <img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" width="300"/>
-    <br>
-    <span>Otomatik Anomali Tespit Sonucu</span>
-  </span>
-  <span style="display: inline-block; text-align: center; margin: 0 10px;">
-    <img src="https://github.com/user-attachments/assets/5312923e-0356-4840-a335-76da61569478" width="300"/>
-    <br>
-    <span>Curiosity: Ripple ve Outcrop Derinlik Haritası</span>
-  </span>
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/bf05e884-7187-4969-857c-967cd154867f" width="300"/><br>
+      <sub>Otomatik Anomali Tespit Sonucu</sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/5312923e-0356-4840-a335-76da61569478" width="300"/><br>
+      <sub>Curiosity: Ripple ve Outcrop Derinlik Haritası</sub>
+    </td>
+  </tr>
+</table>
 
 ## Keywords
 
