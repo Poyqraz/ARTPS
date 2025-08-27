@@ -1,8 +1,9 @@
 # ARTPS: Autonomous Rover Target Prioritization System
-<a href="https://doi.org/10.5281/zenodo.16947598"><img src="https://zenodo.org/badge/1044467612.svg" alt="DOI"></a>
 
 [![DOI](https://zenodo.org/badge/DOI/10.13140/RG.2.2.12215.18088.svg)](http://dx.doi.org/10.13140/RG.2.2.12215.18088)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<a href="https://doi.org/10.5281/zenodo.16947598"><img src="https://zenodo.org/badge/1044467612.svg" alt="DOI"></a>
+
 
 ## Overview
 
