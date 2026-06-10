@@ -1,0 +1,46 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
+\contentsline {section}{\numberline {2}Related Work}{3}{section.2}%
+\contentsline {section}{\numberline {3}Method}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}System Architecture and Software Design}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Input Enhancement}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Single-Image Depth Estimation}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Multi-Component Anomaly Fusion}{7}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Localization and Box Merging}{9}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Learnable Curiosity Score}{9}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Explainability and Uncertainty}{10}{subsection.3.7}%
+\contentsline {section}{\numberline {4}Experimental Setup and Implementation}{10}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Dataset and Preprocessing}{10}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Benchmark Protocol and Comparison}{10}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Optimization and Hyperparameters}{11}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Software and System Architecture}{11}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Metrics and Evaluation}{11}{subsection.4.5}%
+\contentsline {subsubsection}{\numberline {4.5.1}Anomaly Detection Metrics}{11}{subsubsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.2}Depth Estimation Metrics}{11}{subsubsection.4.5.2}%
+\contentsline {subsubsection}{\numberline {4.5.3}Curiosity Ranking Metrics}{12}{subsubsection.4.5.3}%
+\contentsline {subsubsection}{\numberline {4.5.4}Mathematical Formula Details}{12}{subsubsection.4.5.4}%
+\contentsline {section}{\numberline {5}Ablation and Sensitivity}{12}{section.5}%
+\contentsline {section}{\numberline {6}Results and Analysis}{12}{section.6}%
+\contentsline {subsection}{\numberline {6.1}General Performance Results}{12}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Component Contribution Analysis}{13}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Performance Under Field Conditions}{13}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Hardware Performance Profile}{13}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Detailed Performance Summaries}{14}{subsection.6.5}%
+\contentsline {section}{\numberline {7}Limitations and Future Work}{14}{section.7}%
+\contentsline {section}{\numberline {8}Safety, Reliability, and Operations}{14}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Security and Fault Tolerance}{14}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Reliability and Test Strategy}{14}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Operational Suitability and Field Readiness}{15}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Implementation Details}{15}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Software Architecture and Technical Details}{15}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Performance Optimization}{15}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}User Interface and Experience}{15}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Deployment and Installation}{15}{subsection.9.4}%
+\contentsline {subsection}{\numberline {9.5}Reproducibility and Open Science}{15}{subsection.9.5}%
+\contentsline {section}{\numberline {10}Conclusions}{15}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Key Contributions and Achievements}{15}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Scientific and Technological Impact}{16}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Industrial Application Potential}{16}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}Future Directions}{16}{subsection.10.4}%
+\contentsline {subsection}{\numberline {10.5}Final Assessment}{16}{subsection.10.5}%
+\contentsline {section}{\numberline {11}References}{17}{section.11}%

@@ -1,0 +1,50 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
+\contentsline {section}{\numberline {2}Related Work}{3}{section.2}%
+\contentsline {section}{\numberline {3}Method}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}System Architecture and Software Design}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Input Enhancement}{4}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Depth-guided adaptive enhancement (Depth-Guided Enhancement)}{5}{subsubsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.3}Monocular depth estimation}{9}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Multi-component anomaly fusion}{12}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}Entropy-weighted dynamic fusion (Entropy-Weighted Fusion)}{13}{subsubsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.5}Localization and box merging}{15}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Curiosity score}{16}{subsection.3.6}%
+\contentsline {subsubsection}{\numberline {3.6.1}Diversity penalty and redundancy minimization (Diversity Penalty)}{17}{subsubsection.3.6.1}%
+\contentsline {subsubsection}{\numberline {3.6.2}Feature-space clustering for multi-shape management (Feature-Space Clustering)}{17}{subsubsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.7}Explainability and uncertainty}{18}{subsection.3.7}%
+\contentsline {section}{\numberline {4}Experimental setup and implementation}{18}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Dataset and preprocessing}{18}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Software implementation and system architecture}{19}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Metrics and evaluation}{19}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Anomaly detection metrics}{19}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Depth estimation metrics}{19}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}Curiosity ranking metrics}{19}{subsubsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.4}Formula details}{20}{subsubsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.4}Comparison methods (baselines)}{20}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Optimization and hyperparameter tuning}{21}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Ablation and sensitivity analysis}{21}{section.5}%
+\contentsline {section}{\numberline {6}Results and performance analysis}{22}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Overall results}{22}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Component contribution analysis}{23}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Performance across field conditions}{24}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Hardware performance profile}{24}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Limitations and future work}{25}{section.7}%
+\contentsline {section}{\numberline {8}Safety, reliability, and operational suitability}{25}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Security and fault tolerance}{25}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Reliability and test strategy}{26}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}False-negative management and priority buffer (Priority Buffer)}{26}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Operational suitability and field readiness}{27}{subsection.8.4}%
+\contentsline {section}{\numberline {9}Implementation details}{27}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Software architecture and technical details}{27}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Performance considerations}{27}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}User interface}{27}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Installation}{28}{subsection.9.4}%
+\contentsline {subsection}{\numberline {9.5}Reproducibility}{28}{subsection.9.5}%
+\contentsline {section}{\numberline {10}Conclusions and outlook}{28}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Key contributions}{28}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Scientific and technological impact}{28}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Industrial application potential}{29}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}Future directions}{29}{subsection.10.4}%
+\contentsline {subsection}{\numberline {10.5}Final assessment}{29}{subsection.10.5}%
+\contentsline {section}{\numberline {11}References}{30}{section.11}%

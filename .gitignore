@@ -1,0 +1,79 @@
+# ============================================================
+# ARTPS .gitignore
+# Büyük model ağırlıkları, veri setleri ve ikili dosyalar
+# yerelde tutulur; sürüm kontrolüne girmez.
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# --- Sanal ortamlar ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Model ağırlıkları (yerel, ~5 GB) ---
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.safetensors
+raw_models/
+
+# --- Veri setleri / görüntüler (yerel) ---
+mars_images/
+data/real_mars_data/
+data/pds_mastcam/
+
+# --- Büyük ikili dokümanlar / arşivler ---
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+
+# --- Çalışma zamanı / log ---
+*.log
+streamlit_run*.log
+
+# --- Geçici / araç çıktıları ---
+agent-tools/
+
+# --- İşletim sistemi / IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+
+# --- Büyük ikili figürler ve üretilen artefaktlar (yerelde kalır, git'e girmez) ---
+# Not: assets/ kasıtlı olarak hariç tutulmadı (arayüz görselleri sürümlenir).
+# docs/ altındaki tekrarlanan makale figürleri / görseller
+docs/**/*.png
+docs/**/*.jpg
+docs/**/*.jpeg
+docs/**/*.gif
+docs/**/*.svg
+# results/ üretilen görseller ve figürler
+results/**/*.png
+results/**/*.jpg
+results/**/*.jpeg
+results/**/*.gif
+results/**/*.npy
+# data/ örnek görsel klasörleri
+data/nasa_photos/
+data/curiosity_api_images/
+data/mars_rocks/
+# kök dizindeki üretilen artefaktlar
+/output.png
+/*.gif
+/*.npy
+/test_*.png
+/ae_diff_result.png
+# specstory sohbet geçmişi
+.specstory/
+# video karesi çıkarımları (yerelde kalır, ~226 MB)
+video_frames/
+/generated_frame*.jpg

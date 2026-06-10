@@ -1,0 +1,104 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.65in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[expansion=false,protrusion=true]{microtype}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{docs_second/figures/}}
+
+\pagenumbering{gobble}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\definecolor{iacBlue}{RGB}{31,78,121}
+\definecolor{iacGray}{RGB}{245,245,245}
+
+\newcommand{\blocktitle}[1]{\textbf{\textcolor{iacBlue}{#1}}}
+\setlength{\fboxsep}{6pt}
+\setlength{\fboxrule}{0.6pt}
+
+\begin{document}
+
+{\LARGE \textbf{ARTPS: Operationally Safe Target Prioritization via Depth-Enhanced Hybrid Anomaly Detection}}\par
+\vspace{2pt}
+{\normalsize \textbf{Poyraz BAYDEMİR} \;\;|\;\; \textit{Selçuk University (Konya, Türkiye)}}\par
+{\small \textbf{Category:} Science \& Exploration / Space Exploration Symposium}\par
+\vspace{6pt}
+\hrule
+\vspace{8pt}
+
+\begin{minipage}[t]{0.60\linewidth}
+\blocktitle{Problem (Why).}\;
+Planetary rovers operate under strict bandwidth and energy budgets with delayed ground feedback, forcing more autonomy onboard. In field imagery, visual-only target selection is brittle: illumination changes, cast shadows, and low-texture regions can create false positives, while visually similar rock targets can suppress high-value candidates (false negatives) under naive diversity policies.
+
+\blocktitle{Solution (What --- ARTPS).}\;
+We introduce ARTPS, an edge-oriented framework that couples monocular depth estimation with multi-cue anomaly detection and robust localization. ARTPS fuses image cues (texture/edges and photometric indicators), depth cues (discontinuities and proximity weighting), and optional learned anomaly maps via an entropy-weighted dynamic fusion mechanism that adapts to field conditions.
+
+\blocktitle{Novelty (How it becomes operationally safe).}\;
+Beyond accuracy, ARTPS targets reliability in decision-making. We combine feature-space clustering (latent embeddings) for multi-shape management with a soft similarity penalty, and introduce a \emph{Priority Buffer} that stores high-raw-score targets that were down-weighted by diversity policy for second-chance re-evaluation when resources allow.
+
+\blocktitle{Results (Proof).}\;
+On NASA Mars rover imagery, ARTPS reaches \textbf{0.894 AUROC}, \textbf{0.847 AUPRC}, and \textbf{0.823 F1}, outperforming a PaDiM/PatchCore baseline (AUROC 0.856). In an edge-oriented configuration (OpenCV preprocessing + fusion + localization, excluding learned depth/AE inference), the core pipeline sustains \textbf{28.1 FPS} at 256\(\times\)256 (12.8 FPS at 384\(\times\)384; 4.0 FPS at 768\(\times\)768) on a development workstation, enabling real-time onboard screening with profile-aware degradation.
+
+\blocktitle{Keywords.}\;
+Mars rover; Autonomous Exploration; Anomaly Detection; Computer Vision; Planetary Surfaces.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{-2pt}
+\fcolorbox{iacBlue}{white}{%
+  \begin{minipage}{0.94\linewidth}
+  \vspace{2pt}
+  {\footnotesize \textbf{Algorithm 1: ARTPS workflow (graphical pseudocode).}}\par
+  \vspace{4pt}
+  {\scriptsize\ttfamily
+  Input: RGB frame I\par
+  Output: ranked targets T and buffer B\par
+  \vspace{2pt}
+  1) D  <- DepthNet(I)\par
+  2) I' <- DepthGuidedEnhance(I, D)\par
+  3) A\_img, A\_depth, A\_model <- ExtractCues(I', D)\par
+  4) A <- EntropyWeightedFusion(A\_img, A\_depth, A\_model)\par
+  5) R <- Localize(A)\par
+  6) T <- ClusterSelect(R)\par
+  7) B <- PriorityBuffer(R)\par
+  }
+  \vspace{2pt}
+  \end{minipage}%
+}
+
+\vspace{6pt}
+\blocktitle{Key Figures (summary).}\par
+\vspace{3pt}
+\rowcolors{2}{iacGray}{white}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X r}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+AUROC (ARTPS) & 0.894 \\
+AUPRC (ARTPS) & 0.847 \\
+F1-Score (ARTPS) & 0.823 \\
+AUROC (PaDiM/PatchCore) & 0.856 \\
+Speed @256\(\times\)256 (core) & 28.1 FPS \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+
+\vspace{10pt}
+\hrule
+\vspace{8pt}
+\textbf{Impact Statement.}\;
+\textbf{This study demonstrates that hybrid AI architectures can enable the next generation of autonomous rovers to perform ``science-on-the-edge'', maximizing scientific return per downlink bit while preserving operational safety.}
+
+\end{document}
+

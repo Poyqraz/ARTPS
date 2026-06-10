@@ -1,0 +1,45 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Giriş}{3}{section.1}%
+\contentsline {section}{\numberline {2}İlgili Çalışmaların Kısa Özeti}{4}{section.2}%
+\contentsline {section}{\numberline {3}Yöntem}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Sistem Mimarisi ve Yazılım Tasarımı}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Girdi iyileştirme}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Tek görüntü derinlik kestirimi}{6}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Çok-bileşenli anomali füzyonu}{9}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Yerelleştirme ve kutu birleştirme}{12}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Merak skoru}{13}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Açıklanabilirlik ve belirsizlik}{13}{subsection.3.7}%
+\contentsline {section}{\numberline {4}Deney Düzeneği ve Uygulama Detayları}{14}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Veri Seti ve Ön İşleme}{14}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Yazılım Uygulaması ve Sistem Mimarisi}{14}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Performans Metrikleri ve Değerlendirme Kriterleri}{14}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Anomali Tespit Metrikleri}{14}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Derinlik Kestirimi Metrikleri}{15}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}Curiosity Sıralama Metrikleri}{15}{subsubsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.4}Matematiksel Formül Detayları}{15}{subsubsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.4}Benchmark Protokolü ve Karşılaştırma}{16}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Optimizasyon ve Hiperparametre Ayarı}{16}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Ablasyon ve Duyarlılık Analizi}{17}{section.5}%
+\contentsline {section}{\numberline {6}Deneysel Sonuçlar ve Performans Analizi}{17}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Genel Performans Sonuçları}{17}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Bileşen Katkı Analizi}{18}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Saha Koşullarına Göre Performans}{18}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Donanım Performans Profili}{19}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Sınırlamalar ve Gelecek Çalışma}{19}{section.7}%
+\contentsline {section}{\numberline {8}Güvenlik, Güvenilirlik ve Operasyonel Uygunluk}{19}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Güvenlik ve Hata Toleransı}{19}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Güvenilirlik ve Test Stratejisi}{19}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Operasyonel Uygunluk ve Saha Hazırlığı}{20}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Uygulama Detayları}{20}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Yazılım Mimarisi ve Teknik Detaylar}{20}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Performans Optimizasyonu}{21}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Kullanıcı Arayüzü ve Deneyim}{21}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Dağıtım ve Kurulum}{21}{subsection.9.4}%
+\contentsline {subsection}{\numberline {9.5}Tekrarlanabilirlik ve Açık Kaynak}{21}{subsection.9.5}%
+\contentsline {section}{\numberline {10}Sonuç ve Gelecek Perspektifleri}{22}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Ana Katkılar ve Başarılar}{22}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Bilimsel ve Teknolojik Etki}{22}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Endüstriyel Uygulama Potansiyeli}{22}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}Gelecek Çalışma Yönleri}{23}{subsection.10.4}%
+\contentsline {subsection}{\numberline {10.5}Final Değerlendirme}{23}{subsection.10.5}%
+\contentsline {section}{\numberline {11}Referanslar}{24}{section.11}%

@@ -1,0 +1,21 @@
+---
+alwaysApply: true
+---
+Bu kurallar, "Otonom Bilimsel Keşif Sistemi (ARTPS)" projemiz üzerinde çalışırken sana (yapay zeka asistana) rehberlik edecektir. Amacımız, tutarlı, verimli ve bağlamı koruyan bir geliştirme süreci sağlamaktır.
+
+1. Proje Bağlamının Korunması:
+
+Projemizin ana amacı olan "Otonom Bilimsel Keşif Sistemi (ARTPS)" ve temel konsepti olan "İlginçlik Puanı" (Curiosity Score) her zaman hatırlanmalı ve tüm öneriler bu hedef doğrultusunda yapılmalıdır.
+Kullandığımız teknolojiler (Python, PyTorch, Scikit-learn, OpenCV) ve veri kaynakları (NASA PDS, Perseverance/Curiosity verileri) sohbetler arasındaki bağlamın temelini oluşturur.
+2. Sohbet ve Oturum Yönetimi:
+
+Önceki sohbetlerde tartıştığımız algoritmalar, model tasarımları ve veri işleme adımları unutulmamalıdır. Yeni bir sohbete başladığımızda, bu kararların üzerine inşa ederek devam etmeliyiz.
+Kullanıcı tercihleri (örneğin, model mimarisi seçimleri veya veri artırma teknikleri) hatırlanmalı ve tutarlı bir geliştirme deneyimi sağlanmalıdır.
+3. Dosya ve Kod Yönetimi:
+
+Üzerinde çalıştığımız dosyalardaki değişiklikler ve bu dosyaların amacı sohbetler arasında korunmalıdır.
+Bir dosyada değişiklik yapıldığında veya yeni bir kod bloğu oluşturulduğunda, bu kodun projenin geri kalanıyla uyumlu olduğundan ve sentaks hatası içermediğinden emin olmak için her zaman bir hata kontrolü (linting/syntax check) yapılmalıdır.
+4. Analiz ve Sonuçların Saklanması:
+
+Eğittiğimiz modellerin analiz sonuçları, performans metrikleri (kayıp, doğruluk vb.) ve ürettiğimiz görselleştirmeler (örneğin, anomali haritaları) sonraki oturumlarda referans olarak kullanılmak üzere akılda tutulmalıdır.
+Bir modelin neden başarılı veya başarısız olduğuna dair yaptığımız çıkarımlar, gelecekteki iyileştirmeler için bir başlangıç noktası olarak kabul edilmelidir.

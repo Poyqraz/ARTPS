@@ -1,0 +1,130 @@
+\relax 
+\providecommand \babel@aux [2]{\global \let \babel@toc \@gobbletwo }
+\@nameuse{bbl@beforestart}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\providecommand \oddpage@label [2]{}
+\babel@aux{english}{}
+\citation{dosovitskiy2021image}
+\citation{liu2021swin}
+\citation{ranftl2020towards}
+\citation{defard2021padim}
+\citation{roth2021towards}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{4}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}System Architecture and Software Design}{4}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Input Enhancement}{4}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Depth-guided adaptive enhancement (Depth-Guided Enhancement)}{5}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Input enhancement: dehazing and photometric adjustment clarify rover/surface boundaries.}}{6}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:dehaze-enhancement}{{1}{6}{Input enhancement: dehazing and photometric adjustment clarify rover/surface boundaries}{figure.caption.4}{}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces ARTPS workflow: depth-assisted hybrid anomaly fusion and operational target prioritization (pseudocode).}}{7}{algocf.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{alg:artps}{{1}{7}{Method}{algocf.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces ARTPS system architecture.}}{8}{table.caption.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Monocular depth estimation}{9}{subsection.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Figure 2: (a) a raw scene with far-field detail and small near-field objects. (b) hybrid anomaly fusion visualization combining normalized autoencoder difference, image-based anomaly cues, and depth-based discontinuity cues.}}{11}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:far-small-detail}{{2}{11}{Figure 2: (a) a raw scene with far-field detail and small near-field objects. (b) hybrid anomaly fusion visualization combining normalized autoencoder difference, image-based anomaly cues, and depth-based discontinuity cues}{figure.caption.5}{}}
+\citation{defard2021padim}
+\citation{roth2021towards}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Figure 3: (a) a raw scene used for depth analysis. (b) depth analysis and discontinuity detection highlighting depth gradients and surface breaks (including rover body/near-field geometry separation).}}{12}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:depth-rover}{{3}{12}{Figure 3: (a) a raw scene used for depth analysis. (b) depth analysis and discontinuity detection highlighting depth gradients and surface breaks (including rover body/near-field geometry separation)}{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Multi-component anomaly fusion}{12}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Entropy-weighted dynamic fusion (Entropy-Weighted Fusion)}{13}{subsubsection.3.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Different anomaly components emphasize different target types: two example scenes.}}{14}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:anomaly-boulders-rocks}{{4}{14}{Different anomaly components emphasize different target types: two example scenes}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Figure 5a: a challenging surface morphology with sand ripples and rock outcrops. Figure 5b: depth--anomaly overlay obtained by normalizing and fusing depth gradient/discontinuity cues with reconstruction- and texture-based anomaly maps; box hypotheses are consolidated via NMS/IoU and geometric merging.}}{15}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:ripples-outcrops-hard}{{5}{15}{Figure 5a: a challenging surface morphology with sand ripples and rock outcrops. Figure 5b: depth--anomaly overlay obtained by normalizing and fusing depth gradient/discontinuity cues with reconstruction- and texture-based anomaly maps; box hypotheses are consolidated via NMS/IoU and geometric merging}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Localization and box merging}{15}{subsection.3.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Figure 6a: raw input for localization and box merging. Figure 6b: detected anomaly regions and box hypotheses after hybrid fusion.}}{16}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:localization-sand-rock}{{6}{16}{Figure 6a: raw input for localization and box merging. Figure 6b: detected anomaly regions and box hypotheses after hybrid fusion}{figure.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Curiosity score}{16}{subsection.3.6}\protected@file@percent }
+\citation{macqueen1967kmeans}
+\citation{ester1996dbscan}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.1}Diversity penalty and redundancy minimization (Diversity Penalty)}{17}{subsubsection.3.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.6.2}Feature-space clustering for multi-shape management (Feature-Space Clustering)}{17}{subsubsection.3.6.2}\protected@file@percent }
+\citation{nasapds2023}
+\citation{curiosity2023}
+\citation{perseverance2023}
+\citation{pytorch2023}
+\citation{opencv2023}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Explainability and uncertainty}{18}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental setup and implementation}{18}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Dataset and preprocessing}{18}{subsection.4.1}\protected@file@percent }
+\citation{streamlit2023}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Software implementation and system architecture}{19}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Metrics and evaluation}{19}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Anomaly detection metrics}{19}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Depth estimation metrics}{19}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Curiosity ranking metrics}{19}{subsubsection.4.3.3}\protected@file@percent }
+\citation{opencv2023}
+\citation{defard2021padim}
+\citation{roth2021towards}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.4}Formula details}{20}{subsubsection.4.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Comparison methods (baselines)}{20}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Optimization and hyperparameter tuning}{21}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Ablation and sensitivity analysis}{21}{section.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Grouped bar chart visualization of Table~\ref {tab:anomaly-performance} (AUROC/AUPRC/F1). ARTPS is highlighted; baselines are shown in desaturated tones. The y-axis is constrained to \([0.50,1.00]\) to improve visual comparability of close scores.}}{22}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:benchmark-grouped-bar}{{7}{22}{Grouped bar chart visualization of Table~\ref {tab:anomaly-performance} (AUROC/AUPRC/F1). ARTPS is highlighted; baselines are shown in desaturated tones. The y-axis is constrained to \([0.50,1.00]\) to improve visual comparability of close scores}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results and performance analysis}{22}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Overall results}{22}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Anomaly detection performance comparison.}}{22}{table.caption.10}\protected@file@percent }
+\newlabel{tab:anomaly-performance}{{2}{22}{Anomaly detection performance comparison}{table.caption.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Depth estimation performance comparison.}}{23}{table.caption.12}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Curiosity-score ranking performance comparison.}}{23}{table.caption.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Component contribution analysis}{23}{subsection.6.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Ablation impact visualization. Bars show performance drops when disabling individual modules (AUROC drops for detection-related modules; nDCG drop for curiosity scoring). Larger drops indicate higher operational importance.}}{24}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:ablation-drop}{{8}{24}{Ablation impact visualization. Bars show performance drops when disabling individual modules (AUROC drops for detection-related modules; nDCG drop for curiosity scoring). Larger drops indicate higher operational importance}{figure.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Performance across field conditions}{24}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Hardware performance profile}{24}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Limitations and future work}{25}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Safety, reliability, and operational suitability}{25}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Security and fault tolerance}{25}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Reliability and test strategy}{26}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}False-negative management and priority buffer (Priority Buffer)}{26}{subsection.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Operational suitability and field readiness}{27}{subsection.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Implementation details}{27}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Software architecture and technical details}{27}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Performance considerations}{27}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}User interface}{27}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Installation}{28}{subsection.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.5}Reproducibility}{28}{subsection.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusions and outlook}{28}{section.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Key contributions}{28}{subsection.10.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Scientific and technological impact}{28}{subsection.10.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Industrial application potential}{29}{subsection.10.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.4}Future directions}{29}{subsection.10.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.5}Final assessment}{29}{subsection.10.5}\protected@file@percent }
+\bibcite{defard2021padim}{1}
+\bibcite{roth2021towards}{2}
+\bibcite{dosovitskiy2021image}{3}
+\bibcite{ranftl2020towards}{4}
+\bibcite{liu2021swin}{5}
+\bibcite{zhang2019beyond}{6}
+\bibcite{wang2018non}{7}
+\bibcite{he2016deep}{8}
+\bibcite{ronneberger2015u}{9}
+\bibcite{kingma2014adam}{10}
+\bibcite{liu2016ssd}{11}
+\bibcite{redmon2016you}{12}
+\@writefile{toc}{\contentsline {section}{\numberline {11}References}{30}{section.11}\protected@file@percent }
+\bibcite{chen2017deeplab}{13}
+\bibcite{zhang2018mixup}{14}
+\bibcite{devlin2018bert}{15}
+\bibcite{vaswani2017attention}{16}
+\bibcite{lecun2015deep}{17}
+\bibcite{goodfellow2014generative}{18}
+\bibcite{kingma2014vae}{19}
+\bibcite{liu2008isolation}{20}
+\bibcite{hochreiter1997long}{21}
+\bibcite{rumelhart1986learning}{22}
+\bibcite{nasapds2023}{23}
+\bibcite{curiosity2023}{24}
+\bibcite{perseverance2023}{25}
+\bibcite{opencv2023}{26}
+\bibcite{pytorch2023}{27}
+\bibcite{streamlit2023}{28}
+\bibcite{macqueen1967kmeans}{29}
+\bibcite{ester1996dbscan}{30}
+\gdef \@abspage@last{32}
