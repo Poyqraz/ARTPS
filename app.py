@@ -34,7 +34,7 @@ os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 from src.models.depth_estimation import MiDaSDepthEstimator
 from src.core import CuriosityScorer, CuriosityWeights
 from src.utils.image_enhancement import enhance_image_auto
-from src.ui import inject_theme, render_hero, empty_state
+from src.ui import inject_theme, render_hero, empty_state, section_header, apply_chart_theme
 import plotly.express as px
 import plotly.graph_objects as go
 import cv2
@@ -52,6 +52,9 @@ plt.rcParams['font.family'] = ['DejaVu Sans', 'sans-serif']
 plt.rcParams['axes.unicode_minus'] = False
 plt.rcParams['font.size'] = 10
 plt.rcParams['figure.max_open_warning'] = 0
+
+# Mars/uzay koyu grafik teması (Matplotlib + Plotly) — veri/colormap mantığı değişmez
+apply_chart_theme()
 
 # Sayfa konfigürasyonu
 st.set_page_config(
@@ -1284,7 +1287,7 @@ def main():
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["📸 Görüntü Analizi", "🔍 Derinlik Analizi", "📊 Sistem Durumu", "🎯 Demo Veriler", "ℹ️ Hakkında"])
     
     with tab1:
-        st.header("📸 Mars Görüntüsü Hibrit Analizi")
+        section_header("📸 Mars Görüntüsü Hibrit Analizi")
         
         # Dosya yükleme
         uploaded_file = st.file_uploader(
@@ -1843,7 +1846,7 @@ def main():
                             st.info("📋 **DÜŞÜK ÖNCELİK**: Bu hedef normal Mars yüzeyi görünüyor.")
     
     with tab2:
-        st.header("🔍 Derinlik Analizi")
+        section_header("🔍 Derinlik Analizi")
         
         if uploaded_file is not None and 'depth_estimator' in models:
             depth_model_info = models['depth_model_info']
@@ -2098,7 +2101,7 @@ def main():
             st.info("📸 Derinlik analizi için önce bir görüntü yükleyin.")
     
     with tab3:
-        st.header("📊 Sistem Durumu")
+        section_header("📊 Sistem Durumu")
         
         # Model bilgileri
         st.subheader("🤖 Hibrit Model Bilgileri")
@@ -2168,7 +2171,7 @@ def main():
                 st.plotly_chart(fig, use_container_width=True)
     
     with tab4:
-        st.header("🎯 Demo Veriler")
+        section_header("🎯 Demo Veriler")
         
         # Demo görüntüleri
         st.subheader("📸 Test Görüntüleri")
@@ -2208,7 +2211,7 @@ def main():
                                 st.metric("İlginçlik Puanı", f"{curiosity_score:.6f}")
     
     with tab5:
-        st.header("ℹ️ ARTPS Hibrit Sistem Hakkında")
+        section_header("ℹ️ ARTPS Hibrit Sistem Hakkında")
         
         st.markdown("""
         ## 🚀 ARTPS - Otonom Bilimsel Keşif Sistemi (Hibrit)
