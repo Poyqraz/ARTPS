@@ -34,7 +34,17 @@ os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 from src.models.depth_estimation import MiDaSDepthEstimator
 from src.core import CuriosityScorer, CuriosityWeights
 from src.utils.image_enhancement import enhance_image_auto
-from src.ui import inject_theme, render_hero, empty_state, section_header, apply_chart_theme
+from src.ui import (
+    inject_theme,
+    render_hero,
+    empty_state,
+    section_header,
+    apply_chart_theme,
+    t,
+    lang_selector,
+    category_label,
+    class_label,
+)
 import plotly.express as px
 import plotly.graph_objects as go
 import cv2
@@ -67,47 +77,46 @@ st.set_page_config(
 # Mars/uzay temalı global tasarım sistemini enjekte et
 inject_theme()
 
-# Sahiplik/katkı rozeti (sidebar üstü)
-st.sidebar.caption("🛰️ Yapım: [Poyraz BAYDEMİR](https://github.com/Poyqraz) · [ResearchGate DOI](http://dx.doi.org/10.13140/RG.2.2.12215.18088)")
-st.sidebar.caption("📄 Lisans: [MIT License](https://github.com/Poyqraz/ARTPS/blob/main/LICENSE)")
+def _show_load_messages(messages: list[tuple[str, str, dict]]) -> None:
+    """Model yukleme mesajlarini secili dilde gosterir."""
+    for level, key, kwargs in messages:
+        msg = t(key, **kwargs)
+        getattr(st, level)(msg)
+
 
 @st.cache_resource
 def load_models():
-    """Eğitilen modelleri yükle (cache'li) - GPU Optimizasyonu"""
-    
-    # GPU kontrolü
+    """Egitilen modelleri yukle (cache'li). UI mesajlari dondurulur; main()'de t() ile gosterilir."""
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    st.info(f"🖥️ Kullanılan cihaz: {device}")
-    
-    models = {}
-    
-    # 1. Autoencoder modeli
+    messages: list[tuple[str, str, dict]] = [
+        ("info", "models.device", {"device": device}),
+    ]
+    models: dict = {}
+
     autoencoder_path = "results/optimized_autoencoder_curiosity_extended.pth"
     if os.path.exists(autoencoder_path):
         autoencoder = OptimizedAutoencoder(input_channels=3, latent_dim=1024)
         checkpoint = torch.load(autoencoder_path, map_location=device, weights_only=True)
         autoencoder.load_state_dict(checkpoint['model_state_dict'])
-        autoencoder.to(device)  # GPU'ya taşı
+        autoencoder.to(device)
         autoencoder.eval()
         models['autoencoder'] = autoencoder
         models['device'] = device
     else:
-        st.error(f"❌ Autoencoder model bulunamadı: {autoencoder_path}")
-        return None
-    
-    # 2. Derinlik geliştirilmiş sınıflandırıcı
+        messages.append(("error", "models.autoencoder_missing", {"path": autoencoder_path}))
+        return {"models": None, "messages": messages}
+
     classifier_path = "results/depth_enhanced_classifier.pth"
     if os.path.exists(classifier_path):
         classifier = DepthEnhancedClassifier(num_classes=5, rgb_features=1024, depth_features=14)
         checkpoint = torch.load(classifier_path, map_location=device, weights_only=True)
         classifier.load_state_dict(checkpoint['model_state_dict'])
-        classifier.to(device)  # GPU'ya taşı
+        classifier.to(device)
         classifier.eval()
         models['classifier'] = classifier
     else:
-        st.warning("⚠️ Sınıflandırıcı model bulunamadı, sadece anomali tespiti kullanılacak")
-    
-    # 2. PaDiM anomali modeli (opsiyonel)
+        messages.append(("warning", "models.classifier_missing", {}))
+
     try:
         padim_stats = "results/padim_stats.pth"
         padim = PaDiM(PaDiMConfig(image_size=256))
@@ -115,11 +124,10 @@ def load_models():
             padim.load(padim_stats)
             models['padim'] = padim
         else:
-            st.warning("⚠️ PaDiM istatistikleri bulunamadı: results/padim_stats.pth. Sadece AE tabanlı anomali kullanılacak")
+            messages.append(("warning", "models.padim_stats_missing", {}))
     except Exception as e:
-        st.warning(f"⚠️ PaDiM yüklenemedi: {e}")
+        messages.append(("warning", "models.padim_load_failed", {"error": e}))
 
-    # 2b. PatchCore (opsiyonel)
     try:
         patchcore_bank = "results/patchcore_bank.pth"
         if Path(patchcore_bank).exists():
@@ -127,47 +135,42 @@ def load_models():
             pcore.load(patchcore_bank)
             models['patchcore'] = pcore
         else:
-            st.info("ℹ️ PatchCore bellek bankası bulunamadı (tools/prepare_patchcore_bank.py ile üretebilirsiniz)")
+            messages.append(("info", "models.patchcore_missing", {}))
     except Exception as e:
-        st.warning(f"⚠️ PatchCore yüklenemedi: {e}")
+        messages.append(("warning", "models.patchcore_load_failed", {"error": e}))
 
-    # 3. Derinlik tahmin modülü (gerçek durumu kontrol et)
     try:
         depth_estimator = MiDaSDepthEstimator(model_type="DPT_Large", device=device)
-        
-        # Gerçek model durumunu kontrol et
         model_params = sum(p.numel() for p in depth_estimator.model.parameters())
-        is_real_dpt = model_params > 100_000_000  # DPT_Large ~345M parametre
-        
+        is_real_dpt = model_params > 100_000_000
+
         if is_real_dpt:
-            st.success(f"✅ DPT_Large modeli başarıyla yüklendi (yüksek doğruluk) - {model_params:,} parametre")
+            messages.append(("success", "models.dpt_success", {"params": model_params}))
         else:
-            st.warning(f"⚠️ DPT_Large modeli yüklenemedi, basit model kullanılıyor - {model_params:,} parametre")
-            st.info("ℹ️ PyTorch Hub bağlantı sorunu nedeniyle fallback model aktif")
-        
+            messages.append(("warning", "models.dpt_fallback", {"params": model_params}))
+            messages.append(("info", "models.dpt_hub_fallback", {}))
+
         models['depth_estimator'] = depth_estimator
         models['depth_model_info'] = {
             'is_real_dpt': is_real_dpt,
             'param_count': model_params,
-            'model_type': depth_estimator.model_type
+            'model_type': depth_estimator.model_type,
         }
-        
     except Exception as e:
-        st.error(f"❌ Derinlik tahmin modülü yüklenemedi: {e}")
-    
-    # 4. Curiosity skorlayıcı (UI ağırlıklarını daha sonra güncelleyeceğiz)
+        messages.append(("error", "models.depth_load_failed", {"error": e}))
+
     models['curiosity_scorer'] = CuriosityScorer(CuriosityWeights())
-    # Otomatik: varsa öğrenilmiş ağırlıkları yükle (bozmadan, sessiz fallback)
     try:
         wpath = Path("results/curiosity_weights.json")
         if wpath.exists():
             with open(wpath, 'r', encoding='utf-8') as f:
                 wdata = json.load(f)
             models['curiosity_scorer'] = CuriosityScorer(CuriosityWeights(**wdata))
-            st.info("🧭 Curiosity ağırlıkları otomatik yüklendi (results/curiosity_weights.json)")
+            messages.append(("info", "models.curiosity_loaded", {}))
     except Exception as e:
-        st.warning(f"Curiosity ağırlıkları yüklenemedi: {e}")
-    return models
+        messages.append(("warning", "models.curiosity_load_failed", {"error": e}))
+
+    return {"models": models, "messages": messages}
 
 def calculate_anomaly_score(autoencoder, image, device):
     """Görüntü için anomali skoru hesapla - GPU Optimizasyonu"""
@@ -199,7 +202,7 @@ def calculate_anomaly_score(autoencoder, image, device):
         return mse, image_array, reconstructed, latent
         
     except Exception as e:
-        st.error(f"❌ Anomali hesaplama hatası: {e}")
+        st.error(t("analysis.anomaly_calc_error", error=e))
         return None, None, None, None
 
 def _normalize_map(values: np.ndarray) -> np.ndarray:
@@ -859,7 +862,7 @@ def calculate_known_value_score(classifier, depth_estimator, image_array, latent
         return value_score, confidence, predicted_class, depth_map, depth_features
         
     except Exception as e:
-        st.warning(f"⚠️ Bilinen değer hesaplama hatası: {e}")
+        st.warning(t("analysis.known_value_error", error=e))
         return 0.5, 0.0, 2, None, {}  # Fallback değerler
 
 def analyze_mars_image(models, image):
@@ -1066,35 +1069,36 @@ def main():
     # Hero/landing bandı için üst slot (telemetri modeller yüklendikten sonra doldurulur)
     hero_slot = st.container()
 
+    st.sidebar.caption(t("sidebar.credits"))
+    st.sidebar.caption(t("sidebar.license"))
+    lang_selector()
+
     # Sidebar
-    st.sidebar.header("🎛️ Kontrol Paneli")
+    st.sidebar.header(t("sidebar.control_panel"))
 
     # Modelleri yükleme
-    with st.spinner("🤖 Hibrit modeller yükleniyor..."):
-        models = load_models()
+    with st.spinner(t("sidebar.models_loading")):
+        load_result = load_models()
+    _show_load_messages(load_result["messages"])
+    models = load_result["models"]
 
     # Graceful degradation: modeller yoksa uygulama durmaz, tanıtım/demo modunda açılır
     if models is None:
         with hero_slot:
             render_hero()
-            empty_state(
-                "Tanıtım Modu — Modeller yüklenemedi",
-                "Eğitilmiş model dosyaları (<code>results/*.pth</code>) bulunamadı. "
-                "Arayüz ve tasarım gezilebilir; analiz için model dosyalarını "
-                "<code>results/</code> klasörüne ekleyin.",
-            )
+            empty_state(t("demo.title"), t("demo.message"))
         return
 
     # Telemetri şeridi (canlı sistem durumu)
     _device = str(models.get('device', 'cpu')).upper()
     _depth_info = models.get('depth_model_info', {})
     _telemetry = [
-        {"label": "CIHAZ", "value": _device,
+        {"label": t("telemetry.device"), "value": _device,
          "state": "ok" if "CUDA" in _device else "warn"},
-        {"label": "AKTIF MODEL",
+        {"label": t("telemetry.active_models"),
          "value": f"{sum(k in models for k in ('autoencoder','classifier','depth_estimator','padim','patchcore'))}/5",
          "state": "ok"},
-        {"label": "DERINLIK",
+        {"label": t("telemetry.depth"),
          "value": str(_depth_info.get('model_type', '—')),
          "state": "ok" if _depth_info.get('is_real_dpt') else "warn"},
     ]
@@ -1104,65 +1108,69 @@ def main():
     # Model durumu
     model_status = []
     if 'autoencoder' in models:
-        model_status.append("✅ Autoencoder")
+        model_status.append(t("sidebar.model.autoencoder"))
     if 'classifier' in models:
-        model_status.append("✅ Hibrit Sınıflandırıcı")
+        model_status.append(t("sidebar.model.classifier"))
     if 'depth_estimator' in models:
         depth_model_info = models['depth_model_info']
-        model_status.append(f"✅ Derinlik Tahmini ({depth_model_info['model_type']}) - {'Yüksek Doğruluk' if depth_model_info['is_real_dpt'] else 'Basit Model'}")
+        _dq = t("models.quality.high") if depth_model_info['is_real_dpt'] else t("models.quality.simple")
+        model_status.append(t("sidebar.model.depth", model_type=depth_model_info['model_type'], quality=_dq))
     if 'padim' in models:
-        model_status.append("✅ PaDiM (Anomali Füzyon)")
+        model_status.append(t("sidebar.model.padim"))
     if 'patchcore' in models:
-        model_status.append("✅ PatchCore (Anomali Füzyon)")
+        model_status.append(t("sidebar.model.patchcore"))
     # Derinlik modeli durumunu detaylı göster
     if 'depth_model_info' in models:
         info = models['depth_model_info']
-        st.sidebar.info(
-            f"Aktif Derinlik Modeli: {info.get('model_type','?')} — Parametre: {info.get('param_count',0):,} — "
-            + ("Yüksek Doğruluk" if info.get('is_real_dpt') else "Basit/Fallback")
-        )
+        _dq = t("models.quality.high") if info.get('is_real_dpt') else t("models.quality.simple")
+        st.sidebar.info(t(
+            "sidebar.depth_active",
+            model_type=info.get('model_type', '?'),
+            param_count=info.get('param_count', 0),
+            quality=_dq,
+        ))
     
-    st.sidebar.success(f"Modeller yüklendi:\n" + "\n".join(model_status))
+    st.sidebar.success(t("sidebar.models_loaded_prefix") + "\n".join(model_status))
     
     # Parametre ayarları
-    st.sidebar.subheader("📊 Parametre Ayarları")
+    st.sidebar.subheader(t("sidebar.params_settings"))
     
     alpha = st.sidebar.slider(
-        "α (Alfa) - Bilinen Değer Ağırlığı", 0.0, 1.0, 0.4, 0.1,
-        help="Curiosity skorunda sınıflandırıcının tahmin ettiği 'bilinen değer' katkısı. Yüksek olduğunda bilinen bilimsel açıdan değerli sınıflara benzer görüntüler daha çok öne çıkar."
+        t("params.alpha.label"), 0.0, 1.0, 0.4, 0.1,
+        help=t("params.alpha.help"),
     )
     beta = st.sidebar.slider(
-        "β (Beta) - Anomali Ağırlığı", 0.0, 1.0, 0.6, 0.1,
-        help="Curiosity skorunda AE tabanlı anomali MSE katkısı. Yüksek olduğunda beklenmedik/düzensiz yapılar daha çok öne çıkar."
+        t("params.beta.label"), 0.0, 1.0, 0.6, 0.1,
+        help=t("params.beta.help"),
     )
     w_combined = st.sidebar.slider(
-        "w_combined (Birleşik Anomali)", 0.0, 1.0, 0.0, 0.05,
-        help="Birleşik anomali haritasının ortalama yoğunluğunun curiosity skoruna katkısı. AE farkı, derinlik kenarı ve doku bileşenlerinden oluşur."
+        t("params.w_combined.label"), 0.0, 1.0, 0.0, 0.05,
+        help=t("params.w_combined.help"),
     )
     w_dvar = st.sidebar.slider(
-        "w_depth_variance", 0.0, 1.0, 0.0, 0.05,
-        help="Derinlik varyansının (3B yapı çeşitliliği) curiosity skoruna katkısı. Yüksek varyans, daha karmaşık jeomorfoloji anlamına gelebilir."
+        t("params.w_dvar.label"), 0.0, 1.0, 0.0, 0.05,
+        help=t("params.w_dvar.help"),
     )
     w_rough = st.sidebar.slider(
-        "w_roughness", 0.0, 1.0, 0.0, 0.05,
-        help="Pürüzlülük (gradyan ve laplace değişkenliği) katkısı. Küçük taş/kum çizgileri gibi ince detayları öne çıkarabilir."
+        t("params.w_rough.label"), 0.0, 1.0, 0.0, 0.05,
+        help=t("params.w_rough.help"),
     )
     
     anomaly_threshold = st.sidebar.slider(
-        "Anomali Eşiği",
+        t("params.anomaly_threshold.label"),
         min_value=0.0,
         max_value=0.01,
         value=0.003,
         step=0.0001,
-        help="AE MSE için karar eşiği. Bu eşik üstü değerler tek başına 'anormal' kabul edilebilir."
+        help=t("params.anomaly_threshold.help"),
     )
     ref_mse = st.sidebar.slider(
-        "Curiosity Referans MSE",
+        t("params.ref_mse.label"),
         min_value=0.0005,
         max_value=0.02,
         value=0.003,
         step=0.0001,
-        help="Curiosity normalizasyonu için AE MSE referansı. Yaklaşık olarak 2×ref MSE → 1.0 skora sıkıştırılır."
+        help=t("params.ref_mse.help"),
     )
 
     # Ağırlıkları global değişkenlere atayarak analiz fonksiyonuna geçiriyoruz
@@ -1175,28 +1183,28 @@ def main():
     globals()['ref_mse'] = ref_mse
 
     # Operasyonel seçim politikası (Clustering + Priority Buffer)
-    with st.sidebar.expander("🛡️ Operasyonel Seçim Politikası (Clustering + Buffer)", expanded=False):
+    with st.sidebar.expander(t("params.policy.expander"), expanded=False):
         policy_enable = st.checkbox(
-            "Aktif et (önerilen hedef seti üret)",
+            t("params.policy.enable"),
             value=True,
-            help="Latent-space clustering ile farklı şekil tiplerinden hedef seçer ve similarity nedeniyle bastırılan yüksek değerli hedefleri Priority Buffer'a alır."
+            help=t("params.policy.enable_help"),
         )
-        policy_budget = st.slider("Hedef bütçesi (B)", 1, 10, 5, 1)
-        policy_method = st.selectbox("Kümeleme yöntemi", ["kmeans", "dbscan"], index=0)
+        policy_budget = st.slider(t("params.policy.budget"), 1, 10, 5, 1)
+        policy_method = st.selectbox(t("params.policy.method"), ["kmeans", "dbscan"], index=0)
         col_pol1, col_pol2 = st.columns(2)
         with col_pol1:
-            policy_k = st.slider("K (KMeans)", 1, 12, 5, 1)
-            policy_eps = st.slider("eps (DBSCAN)", 0.05, 2.0, 0.35, 0.05)
+            policy_k = st.slider(t("params.policy.k"), 1, 12, 5, 1)
+            policy_eps = st.slider(t("params.policy.eps"), 0.05, 2.0, 0.35, 0.05)
         with col_pol2:
-            policy_min_samples = st.slider("min_samples (DBSCAN)", 1, 10, 2, 1)
-            policy_sim_lambda = st.slider("λ (Soft Penalty)", 0.0, 1.0, 0.35, 0.05)
+            policy_min_samples = st.slider(t("params.policy.min_samples"), 1, 10, 2, 1)
+            policy_sim_lambda = st.slider(t("params.policy.lambda_penalty"), 0.0, 1.0, 0.35, 0.05)
         col_buf1, col_buf2 = st.columns(2)
         with col_buf1:
-            policy_tau_high = st.slider("Buffer τ_high (ham skor)", 0.0, 1.0, 0.35, 0.05)
+            policy_tau_high = st.slider(t("params.policy.tau_high"), 0.0, 1.0, 0.35, 0.05)
         with col_buf2:
-            policy_tau_delta = st.slider("Buffer τ_Δ (düşüş)", 0.0, 1.0, 0.10, 0.05)
-        policy_history_m = st.slider("History uzunluğu (m)", 0, 10, 3, 1, help="0 ise geçmiş çeşitlilik baskısı kapatılır.")
-        policy_crop_margin = st.slider("Crop margin", 0.0, 0.5, 0.10, 0.02, help="Latent çıkarımı için kutuya eklenecek bağlam payı.")
+            policy_tau_delta = st.slider(t("params.policy.tau_delta"), 0.0, 1.0, 0.10, 0.05)
+        policy_history_m = st.slider(t("params.policy.history_m"), 0, 10, 3, 1, help=t("params.policy.history_m_help"))
+        policy_crop_margin = st.slider(t("params.policy.crop_margin"), 0.0, 0.5, 0.10, 0.02, help=t("params.policy.crop_margin_help"))
 
     globals()["policy_enable"] = bool(policy_enable)
     globals()["policy_budget"] = int(policy_budget)
@@ -1210,88 +1218,100 @@ def main():
     globals()["policy_history_m"] = int(policy_history_m)
     globals()["policy_crop_margin"] = float(policy_crop_margin)
 
-    with st.sidebar.expander("🔧 Tespit Ayarları (Gelişmiş)", expanded=False):
-        unified_threshold = st.slider("Birleşik Anomali Eşiği", 0.0, 1.0, 0.60, 0.01)
+    with st.sidebar.expander(t("params.detection.expander"), expanded=False):
+        unified_threshold = st.slider(t("params.detection.unified_threshold"), 0.0, 1.0, 0.60, 0.01)
         col_adv1, col_adv2 = st.columns(2)
         with col_adv1:
-            hyst_high = st.slider("Histerezis High (%)", 90, 99, 96, 1)
+            hyst_high = st.slider(t("params.detection.hyst_high"), 90, 99, 96, 1)
         with col_adv2:
-            hyst_low = st.slider("Histerezis Low (%)", 85, 98, 90, 1)
-        nms_iou = st.slider("NMS IoU", 0.10, 0.70, 0.25, 0.01)
-        top_k = st.number_input("Top-K Kutu", min_value=5, max_value=100, value=25, step=1)
-        min_area_pct = st.slider("Min Kutu Alanı (%)", 0.01, 2.00, 0.10, 0.01, help="Görüntü alanına göre")
-        st.markdown("**⚖️ Ağırlıklar**")
+            hyst_low = st.slider(t("params.detection.hyst_low"), 85, 98, 90, 1)
+        nms_iou = st.slider(t("params.detection.nms_iou"), 0.10, 0.70, 0.25, 0.01)
+        top_k = st.number_input(t("params.detection.top_k"), min_value=5, max_value=100, value=25, step=1)
+        min_area_pct = st.slider(t("params.detection.min_area"), 0.01, 2.00, 0.10, 0.01, help=t("params.detection.min_area_help"))
+        st.markdown(f"**{t('params.detection.weights_header')}**")
         with st.container(border=True):
-            w_recon = st.slider("w_recon (fark)", 0.0, 1.0, 0.50, 0.05)
-            w_depth = st.slider("w_depthEdge (∇depth)", 0.0, 1.0, 0.30, 0.05)
-            w_texture = st.slider("w_texture (gölge+kenar)", 0.0, 1.0, 0.20, 0.05)
-            w_lap = st.slider("w_lap (Δ depth)", 0.0, 0.5, 0.08, 0.01)
-            edge_reinf = st.slider("edge reinforce", 0.0, 1.0, 0.40, 0.05)
-            w_detail = st.slider("w_detail (ince detay)", 0.0, 0.5, 0.12, 0.01, help="Küçük taş/kum çizgilerini vurgulayan çok ölçekli detay bileşeni")
-            w_padim = st.slider("w_padim (PaDiM füzyon)", 0.0, 1.0, 0.30, 0.05, help="PaDiM anomali haritasının birleşik haritaya katkısı")
-            w_patchcore = st.slider("w_patchcore (PatchCore füzyon)", 0.0, 1.0, 0.25, 0.05, help="PatchCore anomali haritasının birleşik haritaya katkısı")
-        st.markdown("**🔗 Kutu Birleştirme**")
+            w_recon = st.slider(t("params.detection.w_recon"), 0.0, 1.0, 0.50, 0.05)
+            w_depth = st.slider(t("params.detection.w_depth"), 0.0, 1.0, 0.30, 0.05)
+            w_texture = st.slider(t("params.detection.w_texture"), 0.0, 1.0, 0.20, 0.05)
+            w_lap = st.slider(t("params.detection.w_lap"), 0.0, 0.5, 0.08, 0.01)
+            edge_reinf = st.slider(t("params.detection.edge_reinf"), 0.0, 1.0, 0.40, 0.05)
+            w_detail = st.slider(t("params.detection.w_detail"), 0.0, 0.5, 0.12, 0.01, help=t("params.detection.w_detail_help"))
+            w_padim = st.slider(t("params.detection.w_padim"), 0.0, 1.0, 0.30, 0.05, help=t("params.detection.w_padim_help"))
+            w_patchcore = st.slider(t("params.detection.w_patchcore"), 0.0, 1.0, 0.25, 0.05, help=t("params.detection.w_patchcore_help"))
+        st.markdown(f"**{t('params.detection.merge_header')}**")
         with st.container(border=True):
-            merge_iou = st.slider("Birleştirme IoU", 0.0, 0.8, 0.15, 0.01)
-            merge_tol = st.slider("Merkez Yakınlık (diagonal oranı)", 0.1, 1.5, 0.5, 0.05)
-            st.caption("Yakın küçük kutuları birleşik hedefe toplar; uzak alandaki küçük detaylar için daha düşük IoU ile koruma sağlar.")
-        st.markdown("**🌑 Gölge Bastırma (Saha Ayarı)**")
+            merge_iou = st.slider(t("params.detection.merge_iou"), 0.0, 0.8, 0.15, 0.01)
+            merge_tol = st.slider(t("params.detection.merge_tol"), 0.1, 1.5, 0.5, 0.05)
+            st.caption(t("params.detection.merge_caption"))
+        st.markdown(f"**{t('params.detection.shadow_header')}**")
         with st.container(border=True):
-            alpha_shad = st.slider("Gölge Bastırma Gücü", 0.0, 1.0, 0.65, 0.05, help="Koyu + düşük kenarlı bölgeleri bastırma")
-            beta_illum = st.slider("Aydınlatma-Kenar Azaltımı", 0.0, 1.0, 0.25, 0.05, help="Görüntü kenarı yüksek ama derinlik kenarı düşükse etkisini azaltır")
-            shadow_cut = st.slider("Gölge Eleme Eşiği", 0.0, 1.0, 0.45, 0.05, help="Saf gölge bölgeleri eleme için alt sınır")
-            img_edge_min = st.slider("Min Görüntü Kenarı", 0.0, 0.5, 0.10, 0.01)
-            depth_edge_min = st.slider("Min Derinlik Kenarı", 0.0, 0.5, 0.08, 0.01)
-            spec_gamma = st.slider("Speküler Bastırma Gücü", 0.0, 1.0, 0.35, 0.05, help="Yüksek parlaklık + düşük satürasyon bölgeleri bastırma")
-            spec_cut = st.slider("Speküler Eleme Eşiği", 0.0, 1.0, 0.50, 0.05)
-            spec_lowvar_gamma = st.slider("Düşük Varyans Azaltımı", 0.0, 1.0, 0.35, 0.05, help="Düşük doku (düşük varyans) speküler noktalara ek azaltım uygular")
-            spec_var_thresh = st.slider("Düşük Varyans Eşiği", 0.0005, 0.02, 0.005, 0.0005)
+            alpha_shad = st.slider(t("params.detection.alpha_shad"), 0.0, 1.0, 0.65, 0.05, help=t("params.detection.alpha_shad_help"))
+            beta_illum = st.slider(t("params.detection.beta_illum"), 0.0, 1.0, 0.25, 0.05, help=t("params.detection.beta_illum_help"))
+            shadow_cut = st.slider(t("params.detection.shadow_cut"), 0.0, 1.0, 0.45, 0.05, help=t("params.detection.shadow_cut_help"))
+            img_edge_min = st.slider(t("params.detection.img_edge_min"), 0.0, 0.5, 0.10, 0.01)
+            depth_edge_min = st.slider(t("params.detection.depth_edge_min"), 0.0, 0.5, 0.08, 0.01)
+            spec_gamma = st.slider(t("params.detection.spec_gamma"), 0.0, 1.0, 0.35, 0.05, help=t("params.detection.spec_gamma_help"))
+            spec_cut = st.slider(t("params.detection.spec_cut"), 0.0, 1.0, 0.50, 0.05)
+            spec_lowvar_gamma = st.slider(t("params.detection.spec_lowvar_gamma"), 0.0, 1.0, 0.35, 0.05, help=t("params.detection.spec_lowvar_help"))
+            spec_var_thresh = st.slider(t("params.detection.spec_var_thresh"), 0.0005, 0.02, 0.005, 0.0005)
 
-        st.markdown("**🎯 Odak Görselleri**")
+        st.markdown(f"**{t('params.detection.focus_header')}**")
         with st.container(border=True):
-            focus_h = st.slider("Odak Karo Yüksekliği", 160, 480, 300, 10)
-            focus_overlay = st.checkbox("Isı + Orijinal karışımını göster (overlay)", value=True)
-            focus_sharpen = st.checkbox("Odak Keskinleştirme (unsharp)", value=True)
-            focus_hide_empty_depth = st.checkbox("Derinlik karosu yoksa gizle", value=True)
-            focus_interp = st.selectbox("Yeniden örnekleme", ["INTER_LANCZOS4", "INTER_CUBIC", "INTER_AREA"], index=0,
-                help="Büyütmede LANCZOS4/CUBIC daha okunur sonuç verir; küçültmede AREA tercih edilir")
-            st.caption("Hız için analizden hemen sonra odak karoları önceden üretilir.")
+            focus_h = st.slider(t("params.detection.focus_h"), 160, 480, 300, 10)
+            focus_overlay = st.checkbox(t("params.detection.focus_overlay"), value=True)
+            focus_sharpen = st.checkbox(t("params.detection.focus_sharpen"), value=True)
+            focus_hide_empty_depth = st.checkbox(t("params.detection.focus_hide_empty_depth"), value=True)
+            focus_interp = st.selectbox(t("params.detection.focus_interp"), ["INTER_LANCZOS4", "INTER_CUBIC", "INTER_AREA"], index=0)
+            st.caption(t("params.detection.focus_caption"))
 
     # Curiosity ağırlıkları yönetimi (bozmadan opsiyonel)
-    with st.sidebar.expander("🧭 Curiosity Ağırlıkları (Opsiyonel)", expanded=False):
-        use_loaded = st.checkbox("Dosyadan yüklenen ağırlıkları kullan", value=False)
-        weights_path = st.text_input("Ağırlık dosyası (JSON)", value="results/curiosity_weights.json")
+    with st.sidebar.expander(t("params.curiosity.expander"), expanded=False):
+        use_loaded = st.checkbox(t("params.curiosity.use_loaded"), value=False)
+        weights_path = st.text_input(t("params.curiosity.weights_path"), value="results/curiosity_weights.json")
         col_w1, col_w2 = st.columns(2)
         with col_w1:
-            if st.button("Yükle"):
+            if st.button(t("params.curiosity.load_btn")):
                 try:
                     with open(weights_path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                     models['curiosity_scorer'] = CuriosityScorer(CuriosityWeights(**data))
-                    st.success("Ağırlıklar yüklendi")
+                    st.success(t("params.curiosity.loaded_ok"))
                 except Exception as e:
-                    st.error(f"Yükleme hatası: {e}")
+                    st.error(t("params.curiosity.load_error", error=e))
         with col_w2:
-            if st.button("Varsayılanlara dön"):
+            if st.button(t("params.curiosity.reset_btn")):
                 models['curiosity_scorer'] = CuriosityScorer(CuriosityWeights())
-                st.info("Varsayılan ağırlıklar aktif")
+                st.info(t("params.curiosity.defaults_active"))
         # Görüntüleme
         try:
             w = models['curiosity_scorer'].weights
-            st.caption(f"Aktif: known={w.w_known:.3f}, anomaly={w.w_anomaly:.3f}, combined={w.w_combined:.3f}, dvar={w.w_depth_variance:.3f}, rough={w.w_roughness:.3f}")
+            st.caption(t(
+                "params.curiosity.active_caption",
+                known=w.w_known,
+                anomaly=w.w_anomaly,
+                combined=w.w_combined,
+                dvar=w.w_depth_variance,
+                rough=w.w_roughness,
+            ))
         except Exception:
             pass
         globals()['use_loaded_weights'] = bool(use_loaded)
     
     # Ana içerik
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📸 Görüntü Analizi", "🔍 Derinlik Analizi", "📊 Sistem Durumu", "🎯 Demo Veriler", "ℹ️ Hakkında"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        t("tabs.image_analysis"),
+        t("tabs.depth"),
+        t("tabs.system"),
+        t("tabs.demo"),
+        t("tabs.about"),
+    ])
     
     with tab1:
-        section_header("📸 Mars Görüntüsü Hibrit Analizi")
+        section_header(t("section.image_analysis"))
         
         # Dosya yükleme
         uploaded_file = st.file_uploader(
-            "Mars görüntüsü yükleyin (JPG, PNG)",
+            t("analysis.upload_label"),
             type=['jpg', 'jpeg', 'png']
         )
         
@@ -1300,21 +1320,21 @@ def main():
             image = Image.open(uploaded_file).convert('RGB')
 
             # Otomatik görüntü iyileştirme seçenekleri
-            st.subheader("🧹 Otomatik Görüntü İyileştirme")
+            st.subheader(t("analysis.enhance_header"))
             enh_cols = st.columns(5)
             with enh_cols[0]:
-                opt_upscale = st.checkbox("Upscale", value=True, help="Düşük çözünürlüklü görselleri akıllı büyütme")
+                opt_upscale = st.checkbox(t("analysis.opt_upscale"), value=True, help=t("analysis.opt_upscale_help"))
             with enh_cols[1]:
-                opt_denoise = st.checkbox("Denoise", value=True, help="Yüksek gürültülü görüntülerde renkli gürültü giderme")
+                opt_denoise = st.checkbox(t("analysis.opt_denoise"), value=True, help=t("analysis.opt_denoise_help"))
             with enh_cols[2]:
-                opt_clahe = st.checkbox("Kontrast (CLAHE)", value=True)
+                opt_clahe = st.checkbox(t("analysis.opt_clahe"), value=True)
             with enh_cols[3]:
-                opt_gamma = st.checkbox("Pozlama (Gamma)", value=True)
+                opt_gamma = st.checkbox(t("analysis.opt_gamma"), value=True)
             with enh_cols[4]:
-                opt_sharp = st.checkbox("Keskinleştirme", value=True)
+                opt_sharp = st.checkbox(t("analysis.opt_sharp"), value=True)
 
             # İyileştirme uygula butonu
-            if st.button("✨ Görüntüyü Otomatik İyileştir"):
+            if st.button(t("analysis.enhance_btn")):
                 cfg = dict(
                     enable_upscale=opt_upscale,
                     enable_denoise=opt_denoise,
@@ -1329,14 +1349,14 @@ def main():
                     sharpen_radius=2,
                 )
                 enhanced, before_m, after_m, steps = enhance_image_auto(image, cfg)
-                st.success(f"Uygulanan adımlar: {', '.join(steps)}")
+                st.success(t("analysis.steps_applied", steps=", ".join(steps)))
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.image(image, caption="Önce", use_container_width=True)
-                    st.json({"Önce": before_m})
+                    st.image(image, caption=t("analysis.before"), use_container_width=True)
+                    st.json({t("analysis.before"): before_m})
                 with c2:
-                    st.image(enhanced, caption="Sonra", use_container_width=True)
-                    st.json({"Sonra": after_m})
+                    st.image(enhanced, caption=t("analysis.after"), use_container_width=True)
+                    st.json({t("analysis.after"): after_m})
                 # Analizde iyileştirilmiş görüntüyü kullan
                 image = enhanced
                 st.session_state["enhanced_image_for_analysis"] = image
@@ -1345,13 +1365,13 @@ def main():
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("📷 Orijinal Görüntü")
-                st.image(image, caption="Yüklenen Mars görüntüsü", use_container_width=True)
+                st.subheader(t("analysis.original_header"))
+                st.image(image, caption=t("analysis.original_caption"), use_container_width=True)
             
             # Analiz butonu
-            clicked = st.button("🔍 Hibrit Analiz Et", type="primary")
+            clicked = st.button(t("analysis.analyze_btn"), type="primary")
             if clicked:
-                with st.spinner("Hibrit analiz yapılıyor (Anomali + Derinlik + Dinamik Değer)..."):
+                with st.spinner(t("analysis.spinner")):
                     # Kapsamlı analiz
                     # Varsa iyileştirilmiş görüntüyü kullan
                     image_to_use = st.session_state.get("enhanced_image_for_analysis", image)
@@ -1390,21 +1410,21 @@ def main():
                     if results['anomaly_score'] is not None:
                         # Sonuçları göster
                         with col2:
-                            st.subheader("🔄 Yeniden Oluşturulan Görüntü")
+                            st.subheader(t("analysis.reconstructed_header"))
                             st.image(
                                 results['reconstructed'],
-                                caption=f"Anomali Skoru: {results['anomaly_score']:.6f}",
+                                caption=t("analysis.anomaly_caption", score=results['anomaly_score']),
                                 use_container_width=True,
                             )
                         
                         # Sonuç analizi
-                        st.subheader("📊 Hibrit Analiz Sonuçları")
+                        st.subheader(t("analysis.results_header"))
                         
                         # Metrikler
                         col1, col2, col3, col4, col5 = st.columns(5)
                         
                         with col1:
-                            st.metric("Anomali Skoru (MSE)", f"{results['anomaly_score']:.6f}")
+                            st.metric(t("analysis.metric.anomaly_mse"), f"{results['anomaly_score']:.6f}")
                         
                         with col2:
                             # Birleşik anomali skoru (derinlik + rekonstrüksiyon)
@@ -1412,31 +1432,33 @@ def main():
                                 mse_norm = float(np.clip(results['anomaly_score'] / max(anomaly_threshold, 1e-6), 0.0, 1.0))
                                 comb = float(results['combined_anomaly_score'])
                                 unified_anomaly = 0.5 * mse_norm + 0.5 * comb
-                                st.metric("Birleşik Anomali", f"{unified_anomaly:.3f}")
+                                st.metric(t("analysis.metric.combined"), f"{unified_anomaly:.3f}")
                                 is_anomaly = unified_anomaly > unified_threshold
                             else:
                                 is_anomaly = results['anomaly_score'] > anomaly_threshold
-                                st.metric("Birleşik Anomali", "N/A")
-                            st.metric("Anomali Durumu", "🚨 Anormal" if is_anomaly else "✅ Normal")
+                                st.metric(t("analysis.metric.combined"), t("analysis.metric.combined_na"))
+                            st.metric(
+                                t("analysis.metric.anomaly_status"),
+                                t("analysis.status.anomaly") if is_anomaly else t("analysis.status.normal"),
+                            )
                         
                         with col3:
-                            st.metric("Bilinen Değer", f"{results['known_value_score']:.3f}")
+                            st.metric(t("analysis.metric.known_value"), f"{results['known_value_score']:.3f}")
                         
                         with col4:
                             # İlginçlik puanı (modüler skorlayıcıdan)
                             curiosity_score = results.get('curiosity_score')
                             if curiosity_score is None:
                                 curiosity_score = alpha * results['known_value_score'] + beta * results['anomaly_score']
-                            st.metric("İlginçlik Puanı", f"{curiosity_score:.6f}")
+                            st.metric(t("analysis.metric.curiosity"), f"{curiosity_score:.6f}")
                         
                         with col5:
                             if 'predicted_class' in results:
-                                class_names = {0: "Değersiz", 1: "Düşük", 2: "Orta", 3: "Orta-Yüksek", 4: "Yüksek"}
-                                predicted_name = class_names.get(results['predicted_class'], "Bilinmiyor")
-                                st.metric("Tahmin Edilen Sınıf", predicted_name)
+                                predicted_name = class_label(results['predicted_class'])
+                                st.metric(t("analysis.metric.predicted_class"), predicted_name)
                         
                         # Fark görüntüsü + birleşik anomali haritası
-                        st.subheader("🔍 Fark ve Birleşik Anomali Haritası")
+                        st.subheader(t("analysis.diff_header"))
                         diff = np.abs(results['original'] - results['reconstructed'])
 
                         if results.get('combined_anomaly_map') is not None:
@@ -1453,16 +1475,16 @@ def main():
 
                             fig, axes = plt.subplots(1, 4, figsize=(20, 5))
                             _safe_imshow(axes[0], results['original'])
-                            axes[0].set_title("Original")
+                            axes[0].set_title(t("plot.original"))
                             axes[0].axis('off')
                             _safe_imshow(axes[1], results['reconstructed'])
-                            axes[1].set_title("Reconstructed")
+                            axes[1].set_title(t("plot.reconstructed"))
                             axes[1].axis('off')
                             _safe_imshow(axes[2], diff, cmap='hot')
-                            axes[2].set_title("Difference")
+                            axes[2].set_title(t("plot.difference"))
                             axes[2].axis('off')
                             _safe_imshow(axes[3], overlay)
-                            axes[3].set_title("Combined Anomaly (overlay)")
+                            axes[3].set_title(t("plot.combined_overlay"))
                             axes[3].axis('off')
                             st.pyplot(fig)
 
@@ -1475,15 +1497,9 @@ def main():
                                 st.session_state[select_key] = 0
                             col_vis, col_diag = st.columns([3, 2], gap="large")
                             with col_diag:
-                                st.subheader("🔎 Tespit Tanılama Paneli")
-                                with st.expander("❓ Metrik Açıklamaları", expanded=False):
-                                    st.markdown(
-                                        "- **sc**: Birleşik anomali skoru\n"
-                                        "- **e**: Kenar yoğunluğu göstergesi\n"
-                                        "- **s**: Gölge/karanlık etkisi (azaltım)\n"
-                                        "- **sp**: Parlama (speküler) etkisi (azaltım)\n"
-                                        "- **lv**: Düşük doku/varians etkisi (azaltım)"
-                                    )
+                                st.subheader(t("analysis.diag_header"))
+                                with st.expander("❓", expanded=False):
+                                    st.markdown(t("analysis.diag_help"))
                                 # Hızlı seçim widget'ını ÖNCE oluştur ki bu turda seçimi kullanabilelim
                                 try:
                                     table_rows = []
@@ -1508,10 +1524,10 @@ def main():
                                     if len(table_rows) > 0:
                                         st.table(table_rows)
                                         _ = st.radio(
-                                            "Hızlı Seçim",
+                                            t("analysis.quick_select"),
                                             options=[0] + [r["#"] for r in table_rows],
                                             index=([0] + [r["#"] for r in table_rows]).index(st.session_state.get(select_key, 0) if st.session_state.get(select_key, 0) in ([0] + [r["#"] for r in table_rows]) else 0),
-                                            format_func=lambda i: ("Tümü" if i == 0 else f"#{i}"),
+                                            format_func=lambda i: t("analysis.quick_all") if i == 0 else f"#{i}",
                                             horizontal=True,
                                             key=select_key,
                                         )
@@ -1616,20 +1632,20 @@ def main():
                             target_w = max(1, int(round(ow * scale)))
                             target_h = max(1, int(round(oh * scale)))
                             disp_small = cv2.resize(disp_to_show, (target_w, target_h), interpolation=cv2.INTER_AREA)
-                            caption = "Birleşik Anomali Tespitleri" + (" — tespit bulunamadı" if len(detections) == 0 else "")
+                            caption = t("analysis.detections_caption") + (t("analysis.detections_none_suffix") if len(detections) == 0 else "")
                             # Görsel ve paneli yukarıda oluşturduğumuz kolonlarda göster
                             with col_vis:
                                 st.markdown('<div id="anomaly_anchor"></div>', unsafe_allow_html=True)
                                 st.image(
                                     disp_small,
-                                    caption=f"{caption} (küçük cisimler dahil edilir)",
+                                    caption=f"{caption}{t('analysis.detections_small_objects')}",
                                     use_container_width=False,
                                 )
                             with col_diag:
                                 if diag_lines:
                                     st.code("\n".join(diag_lines), language="text")
                                 else:
-                                    st.info("Tespit bulunamadı veya tanılama verisi yok.")
+                                    st.info(t("analysis.no_detections"))
                                 # Seçili anomali için yakınlaştırılmış odak görüntüsü
                                 try:
                                     selected_idx_view = int(st.session_state.get(select_key, 0))
@@ -1639,7 +1655,7 @@ def main():
                                     tiles = results.get('focus_tiles') or []
                                     tile = tiles[selected_idx_view - 1] if (selected_idx_view - 1) < len(tiles) else None
                                     if tile is not None:
-                                        st.image(tile, caption=f"Odak: #{selected_idx_view}")
+                                        st.image(tile, caption=t("analysis.focus_tile", idx=selected_idx_view))
                                 # Seçim değiştiğinde otomatik kaydırma
                                 _prev = st.session_state.get("_prev_selected_idx", -1)
                                 if _prev != selected_idx:
@@ -1653,13 +1669,13 @@ def main():
                         else:
                             fig, axes = plt.subplots(1, 3, figsize=(15, 5))
                             _safe_imshow(axes[0], results['original'])
-                            axes[0].set_title("Original")
+                            axes[0].set_title(t("plot.original"))
                             axes[0].axis('off')
                             _safe_imshow(axes[1], results['reconstructed'])
-                            axes[1].set_title("Reconstructed")
+                            axes[1].set_title(t("plot.reconstructed"))
                             axes[1].axis('off')
                             _safe_imshow(axes[2], diff, cmap='hot')
-                            axes[2].set_title("Difference (Anomaly)")
+                            axes[2].set_title(t("plot.difference_anomaly"))
                             axes[2].axis('off')
                             st.pyplot(fig)
 
@@ -1681,16 +1697,16 @@ def main():
 
                     fig, axes = plt.subplots(1, 4, figsize=(20, 5))
                     _safe_imshow(axes[0], results['original'])
-                    axes[0].set_title("Original")
+                    axes[0].set_title(t("plot.original"))
                     axes[0].axis('off')
                     _safe_imshow(axes[1], results['reconstructed'])
-                    axes[1].set_title("Reconstructed")
+                    axes[1].set_title(t("plot.reconstructed"))
                     axes[1].axis('off')
                     _safe_imshow(axes[2], diff, cmap='hot')
-                    axes[2].set_title("Difference")
+                    axes[2].set_title(t("plot.difference"))
                     axes[2].axis('off')
                     _safe_imshow(axes[3], overlay)
-                    axes[3].set_title("Combined Anomaly (overlay)")
+                    axes[3].set_title(t("plot.combined_overlay"))
                     axes[3].axis('off')
                     st.pyplot(fig)
 
@@ -1700,15 +1716,9 @@ def main():
                         st.session_state[select_key] = 0
                     col_vis, col_diag = st.columns([3, 2], gap="large")
                     with col_diag:
-                        st.subheader("🔎 Tespit Tanılama Paneli")
-                        with st.expander("❓ Metrik Açıklamaları", expanded=False):
-                            st.markdown(
-                                "- **sc**: Birleşik anomali skoru\n"
-                                "- **e**: Kenar yoğunluğu göstergesi\n"
-                                "- **s**: Gölge/karanlık etkisi (azaltım)\n"
-                                "- **sp**: Parlama (speküler) etkisi (azaltım)\n"
-                                "- **lv**: Düşük doku/varians etkisi (azaltım)"
-                            )
+                        st.subheader(t("analysis.diag_header"))
+                        with st.expander("❓", expanded=False):
+                            st.markdown(t("analysis.diag_help"))
                         # Hızlı seçim bileşeni: aynı turda seçimi yakalamak için ÖNCE oluştur
                         if len(detections) > 0:
                             try:
@@ -1724,10 +1734,10 @@ def main():
                                     })
                                 st.table(table_rows)
                                 _ = st.radio(
-                                    "Hızlı Seçim",
+                                    t("analysis.quick_select"),
                                     options=[0] + [r["#"] for r in table_rows],
                                     index=([0] + [r["#"] for r in table_rows]).index(st.session_state.get(select_key, 0) if st.session_state.get(select_key, 0) in ([0] + [r["#"] for r in table_rows]) else 0),
-                                    format_func=lambda i: ("Tümü" if i == 0 else f"#{i}"),
+                                    format_func=lambda i: t("analysis.quick_all") if i == 0 else f"#{i}",
                                     horizontal=True,
                                     key=select_key,
                                 )
@@ -1797,14 +1807,14 @@ def main():
                     target_w = max(1, int(round(ow * scale)))
                     target_h = max(1, int(round(oh * scale)))
                     disp_small = cv2.resize(disp_to_show, (target_w, target_h), interpolation=cv2.INTER_AREA)
-                    caption = "Birleşik Anomali Tespitleri" + (" — tespit bulunamadı" if len(detections) == 0 else "")
+                    caption = t("analysis.detections_caption") + (t("analysis.detections_none_suffix") if len(detections) == 0 else "")
                     with col_vis:
-                        st.image(disp_small, caption=f"{caption} (küçük cisimler dahil edilir)", use_container_width=False)
+                        st.image(disp_small, caption=f"{caption}{t('analysis.detections_small_objects')}", use_container_width=False)
                     with col_diag:
                         if diag_lines:
                             st.code("\n".join(diag_lines), language="text")
                         else:
-                            st.info("Tespit bulunamadı veya tanılama verisi yok.")
+                            st.info(t("analysis.no_detections"))
                         try:
                             selected_idx_view = int(st.session_state.get(select_key, 0))
                         except Exception:
@@ -1813,7 +1823,7 @@ def main():
                             tiles = results.get('focus_tiles') or []
                             tile = tiles[selected_idx_view - 1] if (selected_idx_view - 1) < len(tiles) else None
                             if tile is not None:
-                                st.image(tile, caption=f"Odak: #{selected_idx_view}")
+                                st.image(tile, caption=t("analysis.focus_tile", idx=selected_idx_view))
                         
                         # is_anomaly'yi (persisted sonuçlar için) yeniden hesapla
                         try:
@@ -1834,43 +1844,44 @@ def main():
                                 is_anomaly = False
 
                         # Öneriler
-                        st.subheader("💡 Hibrit Öneriler")
+                        st.subheader(t("analysis.recommendations_header"))
                         
                         if is_anomaly and results['known_value_score'] > 0.6:
-                            st.success("🎯 **YÜKSEK ÖNCELİK**: Bu hedef hem anormal hem de yüksek bilimsel değere sahip!")
+                            st.success(t("analysis.reco.high"))
                         elif is_anomaly:
-                            st.warning("🔍 **ORTA ÖNCELİK**: Bu hedef anormal ama bilimsel değeri orta seviyede.")
+                            st.warning(t("analysis.reco.medium"))
                         elif results['known_value_score'] > 0.7:
-                            st.info("📋 **DÜŞÜK ÖNCELİK**: Bu hedef normal ama bilinen değerli hedeflere benziyor.")
+                            st.info(t("analysis.reco.low_known"))
                         else:
-                            st.info("📋 **DÜŞÜK ÖNCELİK**: Bu hedef normal Mars yüzeyi görünüyor.")
+                            st.info(t("analysis.reco.low_normal"))
     
     with tab2:
-        section_header("🔍 Derinlik Analizi")
+        section_header(t("section.depth"))
         
         if uploaded_file is not None and 'depth_estimator' in models:
             depth_model_info = models['depth_model_info']
-            st.subheader(f"🌊 Derinlik Haritası ({depth_model_info['model_type']}) - {'Yüksek Doğruluk' if depth_model_info['is_real_dpt'] else 'Basit Model'}")
+            _dq = t("models.quality.high") if depth_model_info['is_real_dpt'] else t("models.quality.simple")
+            st.subheader(t("depth.map_header", model_type=depth_model_info['model_type'], quality=_dq))
             
             # Kullanıcı seçenekleri: çözünürlük ve iyileştirme
             col_opts1, col_opts2, col_opts3 = st.columns(3)
             with col_opts1:
                 target_resolution = st.selectbox(
-                    "Çözünürlük",
+                    t("depth.resolution"),
                     options=[512, 768, 1024],
                     index=2,
-                    help="Giriş görüntüsünün analizde kullanılacak çözünürlüğü"
+                    help=t("depth.resolution_help"),
                 )
             with col_opts2:
                 apply_enhancement = st.checkbox(
-                    "Geliştirme Uygula (kontrast + keskinleştirme)",
-                    value=True
+                    t("depth.apply_enhancement"),
+                    value=True,
                 )
             with col_opts3:
                 show_raw_compare = st.checkbox(
-                    "Ham çıktıyla karşılaştır",
+                    t("depth.raw_compare"),
                     value=False,
-                    help="Geliştirme kapalı (ham) ve açık çıktıları yan yana göster"
+                    help=t("depth.raw_compare_help"),
                 )
 
             # Derinlik analizi (yüksek çözünürlük)
@@ -1899,7 +1910,7 @@ def main():
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.image(image, caption="Orijinal Görüntü", use_container_width=True)
+                    st.image(image, caption=t("depth.original_caption"), use_container_width=True)
                 
                 with col2:
                     # Geliştirilmiş derinlik görselleştirmesi
@@ -1907,12 +1918,12 @@ def main():
                     
                     # Daha iyi colormap ve kontrast (turbo daha kontrastlı)
                     im = ax.imshow(depth_map, cmap='turbo', interpolation='bilinear')
-                    ax.set_title("Gelistirilmis Derinlik Haritasi", fontsize=14, fontweight='bold')
+                    ax.set_title(t("depth.map_title"), fontsize=14, fontweight='bold')
                     ax.axis('off')
                     
                     # Geliştirilmiş colorbar
                     cbar = plt.colorbar(im, ax=ax, shrink=0.8, aspect=20)
-                    cbar.set_label('Derinlik (0=Yakın, 1=Uzak)', fontsize=12)
+                    cbar.set_label(t("depth.colorbar_label"), fontsize=12)
                     cbar.ax.tick_params(labelsize=10)
                     
                     # Grid ekle
@@ -1928,20 +1939,27 @@ def main():
                     )
                     fig_cmp, (axc1, axc2) = plt.subplots(1, 2, figsize=(14, 6))
                     axc1.imshow(depth_raw, cmap='turbo', interpolation='bilinear')
-                    axc1.set_title('Ham DPT Çıkışı')
+                    axc1.set_title(t("depth.raw_output"))
                     axc1.axis('off')
                     axc2.imshow(depth_map, cmap='turbo', interpolation='bilinear')
-                    axc2.set_title('Geliştirme Uygulandı' if apply_enhancement else 'Geliştirme Kapalı')
+                    axc2.set_title(t("depth.enhanced_output") if apply_enhancement else t("depth.enhancement_off"))
                     axc2.axis('off')
                     plt.tight_layout()
                     st.pyplot(fig_cmp)
                     
                 # Derinlik analizi bilgileri ve süre
-                st.info(f"📊 **Derinlik Analizi ({depth_model_info['model_type']})**: {depth_map.shape[1]}x{depth_map.shape[0]} çözünürlük, "
-                       f"Kontrast: {depth_map.std():.3f}, Ortalama Derinlik: {depth_map.mean():.3f}, Süre: {infer_ms:.1f} ms")
+                st.info(t(
+                    "depth.summary",
+                    model_type=depth_model_info['model_type'],
+                    width=depth_map.shape[1],
+                    height=depth_map.shape[0],
+                    contrast=depth_map.std(),
+                    mean=depth_map.mean(),
+                    ms=infer_ms,
+                ))
                 
                 # İnce ayar paneli
-                with st.expander("🔧 Derinlik İnce Ayar (Gelişmiş)", expanded=False):
+                with st.expander(t("depth.tuning_expander"), expanded=False):
                     colp1, colp2, colp3 = st.columns(3)
                     with colp1:
                         gf_radius = st.slider("GuidedFilter radius", 2, 32, 8, 1,
@@ -1964,32 +1982,31 @@ def main():
                                                help="Weighted Median Filter yarıçapı. Gürültüye karşı sağlam, kenarları iyi korur.")
                         wmf_sigma = st.slider("WMF sigma", 1.0, 80.0, 25.5, 0.5,
                                               help="WMF ağırlıklandırma gücü. Büyük değer: daha fazla düzeltme/yumuşatma.")
-                    if st.button("Uygula (Derinlik İyileştirmeyi Güncelle)"):
+                    if st.button(t("depth.apply_tuning_btn")):
                         models['depth_estimator'].set_refine_params(
                             gf_radius=gf_radius, gf_eps=float(gf_eps), jbf_d=jbf_d,
                             jbf_sigma_color=jbf_sc, jbf_sigma_space=jbf_ss,
                             fgs_lambda=float(fgs_lambda), fgs_sigma_color=float(fgs_sigma),
                             wmf_radius=wmf_radius, wmf_sigma=float(wmf_sigma),
                         )
-                        st.success("İnce ayar parametreleri güncellendi. 'Derinlik Analizi' bölümünü tekrar çalıştırın.")
+                        st.success(t("depth.tuning_applied"))
 
                 # Colormap seçenekleri
-                st.subheader("🎨 Derinlik Görselleştirme Seçenekleri")
+                st.subheader(t("depth.viz_options"))
                 colormap_option = st.selectbox(
-                    "Colormap Seçin:",
+                    t("depth.colormap"),
                     ["turbo", "plasma", "inferno", "magma", "viridis", "cividis"],
                     index=0,
-                    help="Farklı colormap'ler derinlik detaylarını farklı şekilde vurgular"
                 )
                 
                 # Seçilen colormap ile yeniden çiz
                 fig2, ax2 = plt.subplots(figsize=(10, 8))
                 im2 = ax2.imshow(depth_map, cmap=colormap_option, interpolation='bilinear')
-                ax2.set_title(f"Derinlik Haritasi ({colormap_option})", fontsize=14, fontweight='bold')
+                ax2.set_title(f"{t('depth.map_title')} ({colormap_option})", fontsize=14, fontweight='bold')
                 ax2.axis('off')
                 
                 cbar2 = plt.colorbar(im2, ax=ax2, shrink=0.8, aspect=20)
-                cbar2.set_label('Derinlik (0=Yakın, 1=Uzak)', fontsize=12)
+                cbar2.set_label(t("depth.colorbar_label"), fontsize=12)
                 cbar2.ax.tick_params(labelsize=10)
                 
                 ax2.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
@@ -2000,44 +2017,44 @@ def main():
                 depth_features = models['depth_estimator'].extract_depth_features(depth_map)
                 
                 # Derinlik özellikleri
-                st.subheader("📊 Geliştirilmiş Derinlik Özellikleri")
+                st.subheader(t("depth.features_header"))
                 
                 # Özellikleri göster (daha detaylı)
                 col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
-                    st.metric("🌊 Ortalama Derinlik", f"{depth_features.get('depth_mean', 0):.3f}")
-                    st.metric("📏 Derinlik Std", f"{depth_features.get('depth_std', 0):.3f}")
-                    st.metric("📊 Derinlik Varyansı", f"{depth_features.get('depth_variance', 0):.3f}")
+                    st.metric(t("depth.metric.mean"), f"{depth_features.get('depth_mean', 0):.3f}")
+                    st.metric(t("depth.metric.std"), f"{depth_features.get('depth_std', 0):.3f}")
+                    st.metric(t("depth.metric.variance"), f"{depth_features.get('depth_variance', 0):.3f}")
                 
                 with col2:
-                    st.metric("⬇️ Min Derinlik", f"{depth_features.get('depth_min', 0):.3f}")
-                    st.metric("⬆️ Max Derinlik", f"{depth_features.get('depth_max', 0):.3f}")
-                    st.metric("📈 Derinlik Medyan", f"{depth_features.get('depth_median', 0):.3f}")
+                    st.metric(t("depth.metric.min"), f"{depth_features.get('depth_min', 0):.3f}")
+                    st.metric(t("depth.metric.max"), f"{depth_features.get('depth_max', 0):.3f}")
+                    st.metric(t("depth.metric.median"), f"{depth_features.get('depth_median', 0):.3f}")
                 
                 with col3:
-                    st.metric("🏔️ Yüzey Karmaşıklığı", f"{depth_features.get('surface_complexity', 0):.3f}")
-                    st.metric("🌊 Gradient Ortalama", f"{depth_features.get('depth_gradient_mean', 0):.3f}")
-                    st.metric("📐 Gradient Std", f"{depth_features.get('depth_gradient_std', 0):.3f}")
+                    st.metric(t("depth.metric.complexity"), f"{depth_features.get('surface_complexity', 0):.3f}")
+                    st.metric(t("depth.metric.grad_mean"), f"{depth_features.get('depth_gradient_mean', 0):.3f}")
+                    st.metric(t("depth.metric.grad_std"), f"{depth_features.get('depth_gradient_std', 0):.3f}")
                 
                 with col4:
-                    st.metric("📊 Skewness", f"{depth_features.get('depth_skewness', 0):.3f}")
-                    st.metric("📈 Kurtosis", f"{depth_features.get('depth_kurtosis', 0):.3f}")
-                    st.metric("🎯 P75-P25", f"{depth_features.get('depth_percentile_75', 0) - depth_features.get('depth_percentile_25', 0):.3f}")
+                    st.metric(t("depth.metric.skewness"), f"{depth_features.get('depth_skewness', 0):.3f}")
+                    st.metric(t("depth.metric.kurtosis"), f"{depth_features.get('depth_kurtosis', 0):.3f}")
+                    st.metric(t("depth.metric.p75_p25"), f"{depth_features.get('depth_percentile_75', 0) - depth_features.get('depth_percentile_25', 0):.3f}")
                 
                 # Derinlik metadata ve ek analizler
-                st.subheader("📋 Derinlik Metadata")
+                st.subheader(t("depth.metadata_header"))
                 st.json(metadata)
                 
                 # Derinlik histogramı
-                st.subheader("📊 Derinlik Dağılımı")
+                st.subheader(t("depth.distribution_header"))
                 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
                 
                 # Histogram
                 ax1.hist(depth_map.flatten(), bins=50, alpha=0.7, color='skyblue', edgecolor='black')
-                ax1.set_title("Depth Histogram")
-                ax1.set_xlabel("Depth Value")
-                ax1.set_ylabel("Frequency")
+                ax1.set_title(t("depth.plot.histogram_title"))
+                ax1.set_xlabel(t("depth.plot.depth_value"))
+                ax1.set_ylabel(t("depth.plot.frequency"))
                 ax1.grid(True, alpha=0.3)
                 
                 # 3D yüzey plot (küçük örnek)
@@ -2047,22 +2064,22 @@ def main():
                     y, x = np.mgrid[0:sample_depth.shape[0], 0:sample_depth.shape[1]]
                     
                     surf = ax2.plot_surface(x, y, sample_depth, cmap='viridis', alpha=0.8)
-                    ax2.set_title("3D Depth Surface (Sample)")
-                    ax2.set_xlabel("X")
-                    ax2.set_ylabel("Y")
-                    ax2.set_zlabel("Depth")
+                    ax2.set_title(t("depth.plot.surface_3d"))
+                    ax2.set_xlabel(t("depth.plot.axis_x"))
+                    ax2.set_ylabel(t("depth.plot.axis_y"))
+                    ax2.set_zlabel(t("depth.plot.axis_z"))
                 except Exception as e:
                     # 3D plot başarısız olursa 2D contour plot göster
                     ax2.contourf(sample_depth, cmap='viridis', levels=20)
-                    ax2.set_title("2D Depth Contour (Fallback)")
-                    ax2.set_xlabel("X")
-                    ax2.set_ylabel("Y")
+                    ax2.set_title(t("depth.plot.contour_2d"))
+                    ax2.set_xlabel(t("depth.plot.axis_x"))
+                    ax2.set_ylabel(t("depth.plot.axis_y"))
                 
                 plt.tight_layout()
                 st.pyplot(fig)
                 
                 # Derinlik kalitesi değerlendirmesi
-                st.subheader("🎯 Derinlik Kalitesi Değerlendirmesi")
+                st.subheader(t("depth.quality_header"))
                 
                 # Kalite metrikleri
                 depth_contrast = depth_map.std()
@@ -2073,38 +2090,38 @@ def main():
                 
                 with col1:
                     if depth_contrast > 0.1:
-                        st.success(f"✅ **Yüksek Kontrast**: {depth_contrast:.3f}")
+                        st.success(t("depth.contrast.high", value=depth_contrast))
                     elif depth_contrast > 0.05:
-                        st.warning(f"⚠️ **Orta Kontrast**: {depth_contrast:.3f}")
+                        st.warning(t("depth.contrast.medium", value=depth_contrast))
                     else:
-                        st.error(f"❌ **Düşük Kontrast**: {depth_contrast:.3f}")
+                        st.error(t("depth.contrast.low", value=depth_contrast))
                 
                 with col2:
                     if depth_range > 0.5:
-                        st.success(f"✅ **Geniş Derinlik Aralığı**: {depth_range:.3f}")
+                        st.success(t("depth.range.wide", value=depth_range))
                     elif depth_range > 0.2:
-                        st.warning(f"⚠️ **Orta Derinlik Aralığı**: {depth_range:.3f}")
+                        st.warning(t("depth.range.medium", value=depth_range))
                     else:
-                        st.error(f"❌ **Dar Derinlik Aralığı**: {depth_range:.3f}")
+                        st.error(t("depth.range.narrow", value=depth_range))
                 
                 with col3:
                     if depth_smoothness > 0.7:
-                        st.success(f"✅ **Yumuşak Yüzey**: {depth_smoothness:.3f}")
+                        st.success(t("depth.surface.smooth", value=depth_smoothness))
                     elif depth_smoothness > 0.4:
-                        st.warning(f"⚠️ **Orta Yüzey**: {depth_smoothness:.3f}")
+                        st.warning(t("depth.surface.medium", value=depth_smoothness))
                     else:
-                        st.error(f"❌ **Karmaşık Yüzey**: {depth_smoothness:.3f}")
+                        st.error(t("depth.surface.rough", value=depth_smoothness))
                 
             except Exception as e:
-                st.error(f"❌ Derinlik analizi hatası: {e}")
+                st.error(t("depth.analysis_error", error=e))
         else:
-            st.info("📸 Derinlik analizi için önce bir görüntü yükleyin.")
+            st.info(t("depth.upload_first"))
     
     with tab3:
-        section_header("📊 Sistem Durumu")
+        section_header(t("section.system"))
         
         # Model bilgileri
-        st.subheader("🤖 Hibrit Model Bilgileri")
+        st.subheader(t("system.model_info"))
         
         if 'autoencoder' in models:
             total_params = sum(p.numel() for p in models['autoencoder'].parameters())
@@ -2113,13 +2130,13 @@ def main():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.metric("Autoencoder Parametreleri", f"{total_params:,}")
+                st.metric(t("system.ae_params"), f"{total_params:,}")
             
             with col2:
-                st.metric("Autoencoder Boyutu", f"{model_size_mb:.2f} MB")
+                st.metric(t("system.ae_size"), f"{model_size_mb:.2f} MB")
             
             with col3:
-                st.metric("Latent Boyutu", "1024")
+                st.metric(t("system.latent_size"), "1024")
         
         if 'classifier' in models:
             classifier_params = sum(p.numel() for p in models['classifier'].parameters())
@@ -2128,16 +2145,16 @@ def main():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.metric("Sınıflandırıcı Parametreleri", f"{classifier_params:,}")
+                st.metric(t("system.clf_params"), f"{classifier_params:,}")
             
             with col2:
-                st.metric("Sınıflandırıcı Boyutu", f"{classifier_size_mb:.2f} MB")
+                st.metric(t("system.clf_size"), f"{classifier_size_mb:.2f} MB")
             
             with col3:
-                st.metric("Sınıf Sayısı", "5")
+                st.metric(t("system.class_count"), "5")
         
         # Eğitim verisi analizi
-        st.subheader("📈 Eğitim Verisi")
+        st.subheader(t("system.training_data"))
         
         data_dir = Path("mars_images")
         categories = {}
@@ -2157,24 +2174,24 @@ def main():
         col1, col2 = st.columns(2)
         
         with col1:
-            st.metric("Toplam Görüntü", total_images)
-            st.metric("Kategori Sayısı", len(categories))
+            st.metric(t("system.total_images"), total_images)
+            st.metric(t("system.category_count"), len(categories))
         
         with col2:
             # Kategori dağılımı grafiği
             if categories:
                 fig = px.pie(
                     values=list(categories.values()),
-                    names=list(categories.keys()),
-                    title="Kategori Dağılımı"
+                    names=[category_label(k) for k in categories.keys()],
+                    title=t("system.pie_title"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
     
     with tab4:
-        section_header("🎯 Demo Veriler")
+        section_header(t("section.demo"))
         
         # Demo görüntüleri
-        st.subheader("📸 Test Görüntüleri")
+        st.subheader(t("system.test_images"))
         
         # Curiosity verilerinden örnekler
         data_dir = Path("mars_images/valid")
@@ -2196,91 +2213,24 @@ def main():
             for i, (category, img_path) in enumerate(demo_images):
                 with cols[i % 3]:
                     image = Image.open(img_path)
-                    st.image(image, caption=f"{category}", use_container_width=True)
+                    st.image(image, caption=category_label(category), use_container_width=True)
                     
                     # Hızlı analiz butonu
-                    if st.button(f"🔍 {category} Hibrit Analiz", key=f"demo_{i}"):
-                        with st.spinner(f"{category} hibrit analiz ediliyor..."):
+                    if st.button(t("demo.analyze_btn", category=category_label(category)), key=f"demo_{i}"):
+                        with st.spinner(t("demo.spinner", category=category_label(category))):
                             results = analyze_mars_image(models, image)
                             if results['anomaly_score'] is not None:
-                                st.success(f"Anomali: {results['anomaly_score']:.6f}")
-                                st.success(f"Bilinen Değer: {results['known_value_score']:.3f}")
+                                st.success(t("demo.anomaly_result", score=results['anomaly_score']))
+                                st.success(t("demo.known_result", score=results['known_value_score']))
                                 
                                 # İlginçlik puanı
                                 curiosity_score = alpha * results['known_value_score'] + beta * results['anomaly_score']
-                                st.metric("İlginçlik Puanı", f"{curiosity_score:.6f}")
+                                st.metric(t("demo.curiosity_metric"), f"{curiosity_score:.6f}")
     
     with tab5:
-        section_header("ℹ️ ARTPS Hibrit Sistem Hakkında")
+        section_header(t("section.about"))
         
-        st.markdown("""
-        ## 🚀 ARTPS - Otonom Bilimsel Keşif Sistemi (Hibrit)
-        
-        **ARTPS (Autonomous Rover Target Prioritization System)**, Mars rover'larının 
-        Dünya'dan komut beklemeden bilimsel olarak ilginç hedefleri tespit etmesini 
-        sağlayan **hibrit yapay zeka sistemidir**.
-        
-        **🛰️ Yapım:** [Poyraz BAYDEMİR](https://github.com/Poyqraz) · [ResearchGate DOI](http://dx.doi.org/10.13140/RG.2.2.12215.18088)  
-        **📄 Lisans:** [MIT License](https://github.com/Poyqraz/ARTPS/blob/main/LICENSE)
-        
-        ### 🎯 Sistem Amacı
-        - Mars yüzeyinde bilimsel olarak değerli hedefleri otonom olarak tespit etmek
-        - **Derinlik algısı** ile 3D analiz yapmak
-        - **Dinamik "Bilinen Değer"** puanı hesaplamak
-        - Hedefleri öncelik sırasına göre sıralamak
-        - Rover'ın verimliliğini artırmak
-        
-        ### 🔬 Hibrit Teknik Özellikler (Güncel)
-        - **Convolutional Autoencoder**: Anomali tespiti (optimize 17M param.)
-        - **Derinlik Geliştirilmiş Sınıflandırıcı**: Dinamik değer (RGB latent + 14 derinlik öz.)
-        - **DPT_Large Derinlik Tahmini**: Yüksek doğruluk (CUDA hızlandırmalı)
-        - **PaDiM (Patch Distribution Modeling)**: Görüntü tabanlı anomaliyi AE+Derinlik ile füzyon
-        - **Çok Ölçekli İnce Detay**: Laplacian(3,5) + DoG ile küçük taş/kum çizgisi vurgusu
-        - **Uzak Alan Hassasiyeti**: Yakınlık karışımı ve derinliğe koşullu alan eşiği
-        - **Curiosity Verileri**: ~2,575 görüntü (train/valid)
-        - **Odağa Yumuşak Maske**: Seçili hedef çevresinde Gauss geçişli vurgulama
-        
-        ### 📊 Gelişmiş İlginçlik Puanı
-        ```
-        İlginçlik Puanı = α × Dinamik Bilinen Değer + β × Anomali Skoru
-        ```
-        
-        - **α (Alfa)**: Dinamik bilinen değer ağırlığı (0-1)
-        - **β (Beta)**: Anomali/keşif ağırlığı (0-1)
-        - **Dinamik Bilinen Değer**: Kategori bazlı otomatik etiketleme (0-1)
-        
-        ### 🌊 Derinlik Analizi (Güncel)
-        - **DPT_Large**: Yüksek doğruluklu monocular depth, rehberli iyileştirme ve filtreleme
-        - **14 Derinlik Özelliği**: Ortalama, std, min, max, yüzey karmaşıklığı, gradient vb.
-        - **Uzak/ Yakın Denge**: Uzak alanlarda küçük detayları korumak için eşik uyarlama
-        - **3D/2D Görselleştirme**: Turbo colormap, 3D yüzey, histogram ve istatistikler
-        
-        ### 🎮 Hibrit Kullanım
-        1. Mars görüntüsü yükleyin
-        2. Parametreleri ayarlayın (α, β)
-        3. "Hibrit Analiz Et" butonuna basın
-        4. Anomali + Derinlik + Dinamik Değer sonuçlarını inceleyin
-        
-        ### 🔍 Gelişmiş Anomali Tespiti
-        - **Düşük MSE**: Normal Mars yüzeyi
-        - **Yüksek MSE**: Anormal/ilginç hedef
-        - **Derinlik Entegrasyonu**: 3D anomali tespiti
-        - **Dinamik Sınıflandırma**: Otomatik kategori belirleme
-        
-        ### 📈 Hibrit Model Performansı
-        - **Anomali Tespiti**: %95+ doğruluk
-        - **Sınıflandırma**: %74 doğruluk
-        - **Derinlik Tahmini**: DPT_Large (Yüksek Doğruluk) + Fallback
-        - **Gerçek Zamanlı**: <1 saniye analiz süresi
-        
-        ### 🚀 Gelecek Geliştirmeler
-        - Perseverance verileri entegrasyonu
-        - Gelişmiş segmentasyon algoritmaları
-        - Stereo vision entegrasyonu
-        - Gerçek zamanlı rover entegrasyonu
-        - Çoklu rover desteği
-        - Uzay istasyonu entegrasyonu
-        """)
+        st.markdown(t("about.markdown"))
 
 if __name__ == "__main__":
     main() 
