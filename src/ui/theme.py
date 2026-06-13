@@ -10,6 +10,8 @@ from pathlib import Path
 
 import streamlit as st
 
+from .i18n import t
+
 _ROOT = Path(__file__).resolve().parents[2]
 _CSS_PATH = _ROOT / "assets" / "style.css"
 _HERO_IMG_CANDIDATES = [
@@ -85,7 +87,7 @@ def render_hero(
           <div class="logo">A</div>
           <div>
             <div class="name">ARTPS</div>
-            <div class="tag">Target Prioritization</div>
+            <div class="tag">{t("hero.brand_tag")}</div>
           </div>
         </div>
         <a class="artps-chip" href="{github_url}" target="_blank"
@@ -94,19 +96,13 @@ def render_hero(
 
       <span class="artps-badge">
         <span class="dot"></span>
-        ARTPS {version} · PUBLISHED · DOI {doi}
+        {t("hero.badge", version=version, doi=doi)}
       </span>
 
-      <h1>Autonomous target prioritization for
-        <span class="accent">planetary rovers</span>.</h1>
-      <div class="artps-tr">Gezgin robotlar için otonom bilimsel hedef önceliklendirme</div>
+      <h1>{t("hero.title_html")}</h1>
+      <div class="artps-tr">{t("hero.subtitle")}</div>
 
-      <p class="artps-sub">
-        ARTPS; bir autoencoder, iki anomali dedektörü (PaDiM + PatchCore),
-        bir Vision Transformer derinlik modeli ve öğrenilebilir bir
-        <b style="color:#E2725B">İlginçlik (Curiosity) Puanı</b> başlığını birleştirerek
-        bir rover'ın Mars yüzeyinde bir sonraki <i>hangi hedefi</i> inceleyeceğine karar verir.
-      </p>
+      <p class="artps-sub">{t("hero.body_html")}</p>
 
       <div class="artps-telemetry">{chips}</div>
     </div>
