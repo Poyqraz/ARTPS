@@ -41,8 +41,17 @@ data/pds_mastcam/
 *.log
 streamlit_run*.log
 
+# --- LaTeX build çıktıları ---
+*.aux
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
 # --- Geçici / araç çıktıları ---
 agent-tools/
+.cursor/hooks/state/
 
 # --- İşletim sistemi / IDE ---
 .DS_Store
