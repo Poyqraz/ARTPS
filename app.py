@@ -42,6 +42,7 @@ from src.ui import (
     apply_chart_theme,
     t,
     lang_selector,
+    get_locale,
     category_label,
     class_label,
 )
@@ -78,7 +79,11 @@ st.set_page_config(
 inject_theme()
 
 def _show_load_messages(messages: list[tuple[str, str, dict]]) -> None:
-    """Model yukleme mesajlarini secili dilde gosterir."""
+    """Model yukleme mesajlarini secili dilde, locale basina bir kez gosterir."""
+    locale = get_locale()
+    if st.session_state.get("_load_messages_shown_for") == locale:
+        return
+    st.session_state["_load_messages_shown_for"] = locale
     for level, key, kwargs in messages:
         msg = t(key, **kwargs)
         getattr(st, level)(msg)
@@ -141,20 +146,25 @@ def load_models():
 
     try:
         depth_estimator = MiDaSDepthEstimator(model_type="DPT_Large", device=device)
-        model_params = sum(p.numel() for p in depth_estimator.model.parameters())
-        is_real_dpt = model_params > 100_000_000
+        is_real_dpt = depth_estimator.is_real_dpt
+        try:
+            model_params = sum(p.numel() for p in depth_estimator.model.parameters())
+        except Exception:
+            model_params = 0
 
         if is_real_dpt:
             messages.append(("success", "models.dpt_success", {"params": model_params}))
         else:
             messages.append(("warning", "models.dpt_fallback", {"params": model_params}))
-            messages.append(("info", "models.dpt_hub_fallback", {}))
+            if depth_estimator.load_source == "fallback":
+                messages.append(("info", "models.dpt_hub_fallback", {}))
 
         models['depth_estimator'] = depth_estimator
         models['depth_model_info'] = {
             'is_real_dpt': is_real_dpt,
             'param_count': model_params,
             'model_type': depth_estimator.model_type,
+            'load_source': depth_estimator.load_source,
         }
     except Exception as e:
         messages.append(("error", "models.depth_load_failed", {"error": e}))
