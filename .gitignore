@@ -23,7 +23,8 @@ ENV/
 *.ckpt
 *.onnx
 *.safetensors
-raw_models/
+raw_models/*
+!raw_models/README.md
 
 # --- Veri setleri / görüntüler (yerel) ---
 mars_images/

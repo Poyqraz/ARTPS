@@ -9,10 +9,16 @@ import torch.nn.functional as F
 import numpy as np
 import cv2
 import os
+from pathlib import Path
 from PIL import Image
 from typing import Tuple, Optional, Dict, Any, List
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_LOCAL_DPT_PATH = _PROJECT_ROOT / "raw_models" / "dpt_large_384.pt"
+_REAL_DPT_PARAM_THRESHOLD = 100_000_000
+
 
 class MiDaSDepthEstimator:
     """
@@ -50,10 +56,20 @@ class MiDaSDepthEstimator:
             'wmf_sigma': 25.5,
         }
 
+        self.load_source = "unknown"
+        self.is_real_dpt = False
+        self.is_torchscript = False
+
         # MiDaS/DPT modelini yükle
         self.model = self._load_midas_model()
         self.model.to(self.device)
         self.model.eval()
+        if not self.is_real_dpt:
+            try:
+                model_params = sum(p.numel() for p in self.model.parameters())
+                self.is_real_dpt = model_params > _REAL_DPT_PARAM_THRESHOLD
+            except Exception:
+                pass
         
         # Transform parametreleri
         self.transform = self._get_transform()
@@ -75,59 +91,102 @@ class MiDaSDepthEstimator:
         """Refine parametrelerini güncelle (guided/joint bilateral/FGS/WMF)."""
         self.refine_params.update(kwargs)
     
+    def _local_dpt_path(self) -> Path:
+        """Yerel DPT ağırlık dosyası (git dışı, raw_models/)."""
+        return _LOCAL_DPT_PATH
+
+    @staticmethod
+    def _looks_like_state_dict(checkpoint: object) -> bool:
+        if not isinstance(checkpoint, dict):
+            return False
+        keys = list(checkpoint.keys())
+        if not keys:
+            return False
+        sample = keys[0]
+        return isinstance(sample, str) and (
+            sample.startswith("pretrained.")
+            or sample.startswith("scratch.")
+            or "patch_embed" in sample
+        )
+
+    def _load_local_dpt_weights(self, local_path: Path) -> Optional[nn.Module]:
+        """Yerel .pt dosyasını state_dict veya TorchScript olarak yükle."""
+        file_size = local_path.stat().st_size
+        print(
+            f"🔄 {self.model_type} yerel dosya bulundu "
+            f"({file_size / 1024 / 1024:.1f} MB): {local_path}"
+        )
+        if file_size < 800 * 1024 * 1024:
+            print("⚠️ Yerel DPT_Large dosyası beklenenden küçük; yeniden indirilmesi gerekebilir.")
+
+        weights: Optional[object] = None
+        try:
+            weights = torch.load(local_path, map_location="cpu", weights_only=True)
+        except Exception:
+            weights = torch.load(local_path, map_location="cpu", weights_only=False)
+
+        if self._looks_like_state_dict(weights):
+            try:
+                model = torch.hub.load(
+                    "intel-isl/MiDaS", "DPT_Large", pretrained=False, trust_repo=True
+                )
+                model.load_state_dict(weights)  # type: ignore[arg-type]
+                self.load_source = "local_state_dict"
+                self.is_real_dpt = True
+                self.is_torchscript = False
+                print("✅ Mimari + yerel ağırlıklar ile yüklendi")
+                return model
+            except Exception as local_err:
+                print(f"⚠️ Yerel state_dict yükleme başarısız: {local_err}")
+
+        try:
+            print("🔍 TorchScript (jit) deneniyor...")
+            scripted = torch.jit.load(str(local_path), map_location="cpu")
+            self.load_source = "local_torchscript"
+            self.is_real_dpt = file_size >= 800 * 1024 * 1024
+            self.is_torchscript = True
+            print("✅ TorchScript model yüklendi")
+            return scripted
+        except Exception as jit_err:
+            print(f"⚠️ TorchScript başarısız: {jit_err}")
+        return None
+
     def _load_midas_model(self) -> nn.Module:
         """MiDaS/DPT modelini yükle ve DPT_Large'ı zorla.
 
         Sıra:
-        1) Yerel TorchScript (.pt) → torch.jit.load
-        2) Mimari (pretrained=False) + state_dict (yerel)
+        1) Yerel state_dict (.pt, git dışı raw_models/)
+        2) Yerel TorchScript (.pt)
         3) PyTorch Hub (intel-isl/MiDaS)
-        4) Hugging Face (Intel/dpt-large)
-        5) Basit CNN fallback
+        4) Basit CNN fallback
         """
-        # 1-3: MiDaS yükleme yolları
         try:
             if self.model_type == "DPT_Large":
-                local_path = "raw_models/dpt_large_384.pt"
-                if os.path.exists(local_path):
-                    file_size = os.path.getsize(local_path)
-                    print(f"🔄 {self.model_type} yerel dosya bulundu ({file_size/1024/1024:.1f} MB): {local_path}")
-                    if file_size < 800 * 1024 * 1024:
-                        print("⚠️ Yerel DPT_Large dosyası beklenenden küçük; yeniden indirilmesi gerekebilir.")
-                    # 1) TorchScript
-                    try:
-                        print("🔍 TorchScript (jit) deneniyor...")
-                        scripted = torch.jit.load(local_path, map_location="cpu")
-                        print("✅ TorchScript model yüklendi")
-                        return scripted
-                    except Exception as jit_err:
-                        print(f"⚠️ TorchScript başarısız: {jit_err}")
-                    # 2) Mimari + state_dict
-                    try:
-                        model = torch.hub.load("intel-isl/MiDaS", "DPT_Large", pretrained=False, trust_repo=True)
-                        weights = torch.load(local_path, map_location="cpu")
-                        model.load_state_dict(weights)
-                        print("✅ Mimari + yerel ağırlıklar ile yüklendi")
-                        return model
-                    except Exception as local_err:
-                        print(f"⚠️ Yerel ağırlık yükleme başarısız: {local_err}")
-                # 3) Hub
+                local_path = self._local_dpt_path()
+                if local_path.is_file():
+                    local_model = self._load_local_dpt_weights(local_path)
+                    if local_model is not None:
+                        return local_model
                 print("🔄 PyTorch Hub üzerinden DPT_Large yükleniyor...")
                 model = torch.hub.load("intel-isl/MiDaS", "DPT_Large", trust_repo=True)
+                self.load_source = "hub"
+                self.is_real_dpt = True
+                self.is_torchscript = False
                 print("✅ DPT_Large (Hub) yüklendi")
                 return model
-            # Diğer tipler
             print(f"🔄 {self.model_type} Hub'dan yükleniyor...")
             model = torch.hub.load("intel-isl/MiDaS", self.model_type, trust_repo=True)
+            self.load_source = "hub"
+            self.is_real_dpt = True
+            self.is_torchscript = False
             print(f"✅ {self.model_type} yüklendi")
             return model
         except Exception as hub_error:
             print(f"⚠️ MiDaS yükleme başarısız: {hub_error}")
 
-        # 4: Hugging Face alternatifi (devre dışı: TF ve NumPy 2.x zincir import sorunları)
-        # Tasarım gereği, bu yol kapatıldı. MiDaS Hub ve yerel ağırlıklar önceliklidir.
-
-        # 5: Basit fallback
+        self.load_source = "fallback"
+        self.is_real_dpt = False
+        self.is_torchscript = False
         print("⚠️ Basit derinlik modeli kullanılıyor")
         return self._create_simple_depth_model()
     
