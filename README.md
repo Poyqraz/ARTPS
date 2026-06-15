@@ -59,7 +59,6 @@ python scripts/verify_i18n.py
 ├── app.py                 # Active Streamlit application (root)
 ├── src/                   # Models, UI (i18n, theme), data utilities
 ├── assets/                # UI theme assets
-├── docs/                  # Paper LaTeX sources and submission packages
 ├── raw_models/            # Local DPT weights (gitignored; README only in git)
 ├── results/               # Trained weights and generated outputs (gitignored)
 ├── scripts/               # Paper figures, benchmarks, i18n verification
