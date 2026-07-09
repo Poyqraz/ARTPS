@@ -69,24 +69,69 @@ def compute_boundary_shadow_mask(
     return cv2.GaussianBlur(keep, (5, 5), 0)
 
 
+def compute_rover_body_mask(
+    depth: np.ndarray,
+    *,
+    deviation_k: float = 2.5,
+    min_area_frac: float = 0.01,
+    top_exclude_frac: float = 0.25,
+) -> np.ndarray:
+    """Sinira bagli araç gövdesi (tekerlek/kol) bölgelerini yakala.
+
+    Depth isaret yönünden bagimsizdir: merkez arazi derinligine göre robust
+    MAD sapmasi kullanir. Rover parcalari (yakin) ve gökyüzü (uzak) yüksek
+    sapma verir; sadece sol/sag/alt sinira bagli ve ust bantta olmayan
+    bilesenler tutulur (gökyüzü elenir).
+    """
+    depth = depth.astype(np.float32, copy=False)
+    height, width = depth.shape[:2]
+    cy0, cy1 = int(0.3 * height), int(0.7 * height)
+    cx0, cx1 = int(0.3 * width), int(0.7 * width)
+    central = depth[cy0:cy1, cx0:cx1]
+    ref = float(np.median(central))
+    mad = float(np.median(np.abs(central - ref))) + 1e-6
+    deviation = np.abs(depth - ref) / mad
+
+    binary = (deviation > deviation_k).astype(np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
+    binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+
+    labels_count, labels, stats, centroids = cv2.connectedComponentsWithStats(binary, connectivity=8)
+    min_area = max(1, int(height * width * min_area_frac))
+    top_limit = top_exclude_frac * height
+    keep = np.zeros(depth.shape, dtype=np.float32)
+    for label in range(1, labels_count):
+        x, y, w, h, area = stats[label]
+        touches_side_or_bottom = x == 0 or x + w >= width or y + h >= height
+        if touches_side_or_bottom and area >= min_area and centroids[label][1] > top_limit:
+            keep[labels == label] = 1.0
+    return cv2.GaussianBlur(keep, (5, 5), 0)
+
+
 def apply_fp_suppression(
     combined: np.ndarray,
     *,
     shadow_like: np.ndarray | None = None,
     boundary_shadow: np.ndarray | None = None,
+    rover_body: np.ndarray | None = None,
     alpha_shad: float = 0.65,
     alpha_boundary: float = 0.85,
+    alpha_rover: float = 0.9,
 ) -> np.ndarray:
     output = combined.astype(np.float32, copy=True)
     if shadow_like is not None:
         output *= 1.0 - alpha_shad * shadow_like
     if boundary_shadow is not None:
         output *= 1.0 - alpha_boundary * boundary_shadow
+    if rover_body is not None:
+        output *= 1.0 - alpha_rover * rover_body
     return np.clip(output, 0.0, 1.0)
 
 
 __all__ = [
     "apply_fp_suppression",
     "compute_boundary_shadow_mask",
+    "compute_rover_body_mask",
     "compute_shadow_like",
 ]
