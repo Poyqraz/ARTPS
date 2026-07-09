@@ -201,6 +201,8 @@ MESSAGES: dict[str, str] = {
         "- **sc**: Birleşik anomali skoru\n"
         "- **e**: Kenar yoğunluğu göstergesi\n"
         "- **s**: Gölge/karanlık etkisi (azaltım)\n"
+        "- **b**: Sınır bağlantılı araç gölgesi/gövde etkisi (azaltım)\n"
+        "- **r**: Sınır bağlantılı araç gövdesi/tekerlek/kol (derinlik sapması, azaltım)\n"
         "- **sp**: Parlama (speküler) etkisi (azaltım)\n"
         "- **lv**: Düşük doku/varians etkisi (azaltım)"
     ),

@@ -201,6 +201,8 @@ MESSAGES: dict[str, str] = {
         "- **sc**: Combined anomaly score\n"
         "- **e**: Edge density indicator\n"
         "- **s**: Shadow/darkness effect (reduction)\n"
+        "- **b**: Border-connected rover shadow/body effect (reduction)\n"
+        "- **r**: Border-connected rover body/wheel/arm (depth deviation, reduction)\n"
         "- **sp**: Specular glare effect (reduction)\n"
         "- **lv**: Low texture/variance effect (reduction)"
     ),
