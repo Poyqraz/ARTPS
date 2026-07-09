@@ -940,9 +940,11 @@ def calculate_known_value_score(classifier, depth_estimator, image_array, latent
         st.warning(t("analysis.known_value_error", error=e))
         return 0.5, 0.0, 2, None, {}  # Fallback değerler
 
-def analyze_mars_image(models, image):
+def analyze_mars_image(models, image, analysis_cfg=None):
     """Mars görüntüsünü kapsamlı analiz et - GPU Optimizasyonu"""
-    
+
+    analysis_cfg = analysis_cfg or {}
+
     # Son analiz sonuçlarını yeniden çalıştırmada kaybetmemek için session_state'ten çek
     results = st.session_state.get("results", {})
     device = models.get('device', torch.device('cpu'))
@@ -1004,28 +1006,28 @@ def analyze_mars_image(models, image):
 
         # Birleşik anomali haritası hesapla (her durumda)
         # UI'dan ayarlar mevcutsa kullan; yoksa varsayılanlar
-        cfg_hh = int(globals().get('hyst_high', 97))
-        cfg_hl = int(globals().get('hyst_low', 92))
-        cfg_nms = float(globals().get('nms_iou', 0.35))
-        cfg_topk = int(globals().get('top_k', 25))
-        cfg_wr = float(globals().get('w_recon', 0.50))
-        cfg_wd = float(globals().get('w_depth', 0.30))
-        cfg_wt = float(globals().get('w_texture', 0.20))
-        cfg_er = float(globals().get('edge_reinf', 0.35))
+        cfg_hh = int(analysis_cfg.get('hyst_high', 97))
+        cfg_hl = int(analysis_cfg.get('hyst_low', 92))
+        cfg_nms = float(analysis_cfg.get('nms_iou', 0.35))
+        cfg_topk = int(analysis_cfg.get('top_k', 25))
+        cfg_wr = float(analysis_cfg.get('w_recon', 0.50))
+        cfg_wd = float(analysis_cfg.get('w_depth', 0.30))
+        cfg_wt = float(analysis_cfg.get('w_texture', 0.20))
+        cfg_er = float(analysis_cfg.get('edge_reinf', 0.35))
         fp_kwargs = {
-            "alpha_shad": float(globals().get("alpha_shad", 0.65)),
-            "beta_illum": float(globals().get("beta_illum", 0.25)),
-            "shadow_cut": float(globals().get("shadow_cut", 0.45)),
-            "img_edge_min": float(globals().get("img_edge_min", 0.10)),
-            "depth_edge_min": float(globals().get("depth_edge_min", 0.08)),
-            "alpha_rover": float(globals().get("alpha_rover", 0.85)),
-            "alpha_cast": float(globals().get("alpha_cast", 0.75)),
-            "alpha_horizon": float(globals().get("alpha_horizon", 0.55)),
-            "rover_bottom_frac": float(globals().get("rover_bottom_frac", 0.28)),
-            "rover_near_thresh": float(globals().get("rover_near_thresh", 0.45)),
-            "horizon_depth_thresh": float(globals().get("horizon_depth_thresh", 0.80)),
-            "enable_rover_mask": bool(globals().get("enable_rover_mask", True)),
-            "enable_horizon_mask": bool(globals().get("enable_horizon_mask", True)),
+            "alpha_shad": float(analysis_cfg.get("alpha_shad", 0.65)),
+            "beta_illum": float(analysis_cfg.get("beta_illum", 0.25)),
+            "shadow_cut": float(analysis_cfg.get("shadow_cut", 0.45)),
+            "img_edge_min": float(analysis_cfg.get("img_edge_min", 0.10)),
+            "depth_edge_min": float(analysis_cfg.get("depth_edge_min", 0.08)),
+            "alpha_rover": float(analysis_cfg.get("alpha_rover", 0.85)),
+            "alpha_cast": float(analysis_cfg.get("alpha_cast", 0.75)),
+            "alpha_horizon": float(analysis_cfg.get("alpha_horizon", 0.55)),
+            "rover_bottom_frac": float(analysis_cfg.get("rover_bottom_frac", 0.28)),
+            "rover_near_thresh": float(analysis_cfg.get("rover_near_thresh", 0.45)),
+            "horizon_depth_thresh": float(analysis_cfg.get("horizon_depth_thresh", 0.80)),
+            "enable_rover_mask": bool(analysis_cfg.get("enable_rover_mask", True)),
+            "enable_horizon_mask": bool(analysis_cfg.get("enable_horizon_mask", True)),
         }
 
         combined_map, detections = compute_combined_anomaly_map(
@@ -1039,11 +1041,11 @@ def analyze_mars_image(models, image):
             base_u8 = (results['original'] * 255).astype(np.uint8)
             if 'padim' in models:
                 padim_map = models['padim'].predict_anomaly_map(base_u8)
-                padim_w = float(globals().get('w_padim', 0.30))
+                padim_w = float(analysis_cfg.get('w_padim', 0.30))
                 combined_map = np.clip((1.0 - padim_w) * combined_map + padim_w * padim_map, 0.0, 1.0)
             if 'patchcore' in models:
                 pcore_map = models['patchcore'].predict_anomaly_map(base_u8)
-                pcore_w = float(globals().get('w_patchcore', 0.25))
+                pcore_w = float(analysis_cfg.get('w_patchcore', 0.25))
                 combined_map = np.clip((1.0 - pcore_w) * combined_map + pcore_w * pcore_map, 0.0, 1.0)
         except Exception:
             pass
@@ -1365,8 +1367,7 @@ def main():
             focus_interp = st.selectbox(t("params.detection.focus_interp"), ["INTER_LANCZOS4", "INTER_CUBIC", "INTER_AREA"], index=0)
             st.caption(t("params.detection.focus_caption"))
 
-    globals().update({
-        "unified_threshold": float(unified_threshold),
+    analysis_cfg = {
         "hyst_high": int(hyst_high),
         "hyst_low": int(hyst_low),
         "nms_iou": float(nms_iou),
@@ -1392,6 +1393,11 @@ def main():
         "horizon_depth_thresh": float(horizon_depth_thresh),
         "enable_rover_mask": bool(enable_rover_mask),
         "enable_horizon_mask": bool(enable_horizon_mask),
+        "w_padim": float(w_padim),
+        "w_patchcore": float(w_patchcore),
+    }
+    globals().update({
+        "unified_threshold": float(unified_threshold),
         "focus_h": int(focus_h),
         "focus_overlay": bool(focus_overlay),
         "focus_sharpen": bool(focus_sharpen),
@@ -1510,35 +1516,7 @@ def main():
                     # Kapsamlı analiz
                     # Varsa iyileştirilmiş görüntüyü kullan
                     image_to_use = st.session_state.get("enhanced_image_for_analysis", image)
-                    # Gelişmiş tespit ayarlarını global değişken olarak geçir
-                    globals().update({
-                        'unified_threshold': unified_threshold,
-                        'hyst_high': hyst_high,
-                        'hyst_low': hyst_low,
-                        'nms_iou': nms_iou,
-                        'top_k': top_k,
-                        'w_recon': w_recon,
-                        'w_depth': w_depth,
-                        'w_texture': w_texture,
-                        'edge_reinf': edge_reinf,
-                        'alpha_shad': alpha_shad,
-                        'beta_illum': beta_illum,
-                        'shadow_cut': shadow_cut,
-                        'img_edge_min': img_edge_min,
-                        'depth_edge_min': depth_edge_min,
-                        'spec_gamma': spec_gamma,
-                        'spec_cut': spec_cut,
-                        'spec_lowvar_gamma': spec_lowvar_gamma,
-                        'spec_var_thresh': spec_var_thresh,
-                        'w_padim': w_padim,
-                        'w_patchcore': w_patchcore,
-                         'focus_h': focus_h,
-                         'focus_overlay': focus_overlay,
-                         'focus_sharpen': focus_sharpen,
-                         'focus_hide_empty_depth': focus_hide_empty_depth,
-                         'focus_interp': focus_interp,
-                    })
-                    results = analyze_mars_image(models, image_to_use)
+                    results = analyze_mars_image(models, image_to_use, analysis_cfg=analysis_cfg)
                     # Sonuçları yeniden çalıştırmalarda koru
                     st.session_state["results"] = results
                     
@@ -2367,7 +2345,7 @@ def main():
                     # Hızlı analiz butonu
                     if st.button(t("demo.analyze_btn", category=category_label(category)), key=f"demo_{i}"):
                         with st.spinner(t("demo.spinner", category=category_label(category))):
-                            results = analyze_mars_image(models, image)
+                            results = analyze_mars_image(models, image, analysis_cfg=analysis_cfg)
                             if results['anomaly_score'] is not None:
                                 st.success(t("demo.anomaly_result", score=results['anomaly_score']))
                                 st.success(t("demo.known_result", score=results['known_value_score']))
