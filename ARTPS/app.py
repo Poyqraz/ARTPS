@@ -21,6 +21,11 @@ os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 
 from src.models.depth_estimation import MiDaSDepthEstimator
 from src.core import CuriosityScorer, CuriosityWeights
+from src.core.false_positive_masks import (
+    apply_fp_suppression,
+    compute_boundary_shadow_mask,
+    compute_rover_body_mask,
+)
 from src.utils.image_enhancement import enhance_image_auto
 import plotly.express as px
 import plotly.graph_objects as go
@@ -423,10 +428,20 @@ def compute_combined_anomaly_map(
 
     # Gölge bastırma: (koyu) AND (düşük görüntü gradyanı) AND (düşük derinlik kenarı)
     # ve aydınlatma-kenar etkisi azaltımı: görüntü kenarı yüksek ama derinlik kenarı düşükse etkisini düşür.
+    shadow_like = None
+    boundary_shadow = None
+    rover_body = None
+    illumination_edge = None
+    spec_mask = None
+    lowvar_mask = None
+    alpha_shad = float(globals().get('alpha_shad', 0.65))
+    alpha_rover = float(globals().get('alpha_rover', 0.9))
     try:
         illumination_edge = np.clip(grad_mag_n - depth_edge_n, 0.0, 1.0)
         shadow_like = np.clip(shadow_n * (1.0 - grad_mag_n) * (1.0 - depth_edge_n), 0.0, 1.0)
         shadow_like = cv2.GaussianBlur(shadow_like, (5, 5), 0)
+        boundary_shadow = compute_boundary_shadow_mask(orig, depth)
+        rover_body = compute_rover_body_mask(depth)
         # Speküler/parlak nokta maskesi: yüksek V, düşük S ve düşük kenar
         spec_mask = np.clip(Vc * (1.0 - Sc) * (1.0 - grad_mag_n) * (1.0 - depth_edge_n), 0.0, 1.0)
         spec_mask = cv2.GaussianBlur(spec_mask, (3, 3), 0)
@@ -439,7 +454,6 @@ def compute_combined_anomaly_map(
         var_norm = variance / max(variance.max(), 1e-6)
 
         # Saha ayarlı katsayılar
-        alpha_shad = float(globals().get('alpha_shad', 0.65))
         beta_illum = float(globals().get('beta_illum', 0.25))
         spec_gamma = float(globals().get('spec_gamma', 0.35))
         spec_lowvar_gamma = float(globals().get('spec_lowvar_gamma', 0.35))
@@ -447,9 +461,16 @@ def compute_combined_anomaly_map(
         # Düşük varyans bölgeleri için ek azaltım (speküler düz alanlar)
         lowvar_mask = (var_norm < spec_var_thresh).astype(np.float32)
         lowvar_mask = cv2.GaussianBlur(lowvar_mask, (3, 3), 0)
+        combined = apply_fp_suppression(
+            combined,
+            shadow_like=shadow_like,
+            boundary_shadow=boundary_shadow,
+            rover_body=rover_body,
+            alpha_shad=alpha_shad,
+            alpha_rover=alpha_rover,
+        )
         combined = np.clip(
-            combined * (1.0 - alpha_shad * shadow_like)
-            - beta_illum * illumination_edge
+            combined - beta_illum * illumination_edge
             - spec_gamma * spec_mask
             - spec_lowvar_gamma * lowvar_mask,
             0.0,
@@ -474,6 +495,14 @@ def compute_combined_anomaly_map(
         # Unsharp mask + kenar vurgusu
         edges = cv2.Canny(guide_gray, 50, 150).astype(np.float32) / 255.0
         combined = np.clip(combined + edge_reinforce * (edges * (combined - cv2.GaussianBlur(combined, (0, 0), 1.0))), 0.0, 1.0)
+        combined = apply_fp_suppression(
+            combined,
+            shadow_like=shadow_like,
+            boundary_shadow=boundary_shadow,
+            rover_body=rover_body,
+            alpha_shad=alpha_shad,
+            alpha_rover=alpha_rover,
+        )
     except Exception:
         combined = cv2.GaussianBlur(combined, (3, 3), 0.0)
 
@@ -516,15 +545,17 @@ def compute_combined_anomaly_map(
         # Döndürülmüş dikdörtgen (daha sıkı kutulama)
         rect = cv2.minAreaRect(cnt)
         box_pts = cv2.boxPoints(rect)
-        box_pts = np.int0(box_pts)
+        box_pts = box_pts.astype(np.intp)
         # Bölge sınırlarını güvenli kırp
         y1, y2 = y1c, y2c
         x1, x2 = x1c, x2c
         region = combined[y1:y2, x1:x2]
         region_edges = grad_mag_n[y1:y2, x1:x2]
-        region_shadow = shadow_like[y1:y2, x1:x2] if 'shadow_like' in locals() else None
-        region_illum = illumination_edge[y1:y2, x1:x2] if 'illumination_edge' in locals() else None
-        region_spec = spec_mask[y1:y2, x1:x2] if 'spec_mask' in locals() else None
+        region_shadow = shadow_like[y1:y2, x1:x2] if shadow_like is not None else None
+        region_boundary = boundary_shadow[y1:y2, x1:x2] if boundary_shadow is not None else None
+        region_rover = rover_body[y1:y2, x1:x2] if rover_body is not None else None
+        region_illum = illumination_edge[y1:y2, x1:x2] if illumination_edge is not None else None
+        region_spec = spec_mask[y1:y2, x1:x2] if spec_mask is not None else None
         region_prox = proximity_w[y1:y2, x1:x2]
         # Yakınlık ortalaması
         prox_mean = float(np.mean(region_prox)) if region_prox.size else 0.0
@@ -533,12 +564,14 @@ def compute_combined_anomaly_map(
         edge_mean = float(np.mean(region_edges)) if region_edges.size else 0.0
         # Gölge ve aydınlatma-kenarı azaltımları
         shadow_pen = float(np.mean(region_shadow)) if (region_shadow is not None and region_shadow.size) else 0.0
+        boundary_shadow_pen = float(np.mean(region_boundary)) if (region_boundary is not None and region_boundary.size) else 0.0
+        rover_pen = float(np.mean(region_rover)) if (region_rover is not None and region_rover.size) else 0.0
         illum_pen = float(np.mean(region_illum)) if (region_illum is not None and region_illum.size) else 0.0
         spec_pen = float(np.mean(region_spec)) if (region_spec is not None and region_spec.size) else 0.0
-        lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if 'lowvar_mask' in locals() else 0.0
+        lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if lowvar_mask is not None else 0.0
         # Uzak alanlar için küçük ayrıntıları daha iyi puanlamak adına fine_detail katkısını ekle
         fine_local = float(np.mean(fine_detail[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
-        score = 0.5 * comb_mean + 0.25 * edge_mean + 0.2 * prox_mean + 0.05 * fine_local - 0.35 * shadow_pen - 0.20 * illum_pen - 0.30 * spec_pen - 0.25 * lowvar_pen
+        score = 0.5 * comb_mean + 0.25 * edge_mean + 0.2 * prox_mean + 0.05 * fine_local - 0.35 * shadow_pen - 0.45 * boundary_shadow_pen - 0.5 * rover_pen - 0.20 * illum_pen - 0.30 * spec_pen - 0.25 * lowvar_pen
         score = float(max(0.0, score))
 
         # Saf gölge veya speküler bölgeleri ele: saha ayarlı eşikler
@@ -547,6 +580,10 @@ def compute_combined_anomaly_map(
         dp_edge_min = float(globals().get('depth_edge_min', 0.08))
         sp_cut = float(globals().get('spec_cut', 0.50))
         if shadow_pen > sh_cut and edge_mean < im_edge_min and float(np.mean(depth_edge_n[y1:y2, x1:x2])) < dp_edge_min:
+            continue
+        if boundary_shadow_pen > 0.35:
+            continue
+        if rover_pen > 0.35:
             continue
         if spec_pen > sp_cut and edge_mean < im_edge_min and float(np.mean(depth_edge_n[y1:y2, x1:x2])) < dp_edge_min:
             continue
@@ -562,9 +599,11 @@ def compute_combined_anomaly_map(
             "edge_mean": float(edge_mean),
             "prox_mean": float(prox_mean),
             "shadow_pen": float(shadow_pen),
+            "boundary_shadow_pen": float(boundary_shadow_pen),
+            "rover_pen": float(rover_pen),
             "illum_pen": float(illum_pen),
             "spec_pen": float(spec_pen),
-            "lowvar_pen": float(lowvar_pen) if 'lowvar_pen' in locals() else 0.0,
+            "lowvar_pen": float(lowvar_pen),
         })
 
     # Non-Maximum Suppression (IoU tabanlı) ile kutuları rafine et
@@ -1188,6 +1227,8 @@ def main():
                                         "- **sc**: Birleşik anomali skoru\n"
                                         "- **e**: Kenar yoğunluğu göstergesi\n"
                                         "- **s**: Gölge/karanlık etkisi (azaltım)\n"
+                                        "- **b**: Sınır bağlantılı araç gölgesi/gövde etkisi (azaltım)\n"
+                                        "- **r**: Sınır bağlantılı araç gövdesi/tekerlek/kol (derinlik sapması, azaltım)\n"
                                         "- **sp**: Parlama (speküler) etkisi (azaltım)\n"
                                         "- **lv**: Düşük doku/varians etkisi (azaltım)"
                                     )
@@ -1200,6 +1241,8 @@ def main():
                                             "sc": round(float(det.get('score', 0.0)), 3),
                                             "e": round(float(det.get('edge_mean', 0.0)), 3),
                                             "s": round(float(det.get('shadow_pen', 0.0)), 3),
+                                            "b": round(float(det.get('boundary_shadow_pen', 0.0)), 3),
+                                            "r": round(float(det.get('rover_pen', 0.0)), 3),
                                             "sp": round(float(det.get('spec_pen', 0.0)), 3),
                                             "lv": round(float(det.get('lowvar_pen', 0.0)), 3),
                                         })
@@ -1271,7 +1314,7 @@ def main():
                                 cv2.rectangle(disp, (bx1, by1), (bx2, by2), box_color, -1)
                                 cv2.putText(disp, label, (xs + 3, by2 - 4), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), text_thickness, cv2.LINE_AA)
                                 # Mini-diagnostic metni bir listede topla (sağ panelde gösterilecek)
-                                diag = f"#{idx_num} sc:{det.get('score',0):.2f} e:{det.get('edge_mean',0):.2f} s:{det.get('shadow_pen',0):.2f} sp:{det.get('spec_pen',0):.2f} lv:{det.get('lowvar_pen',0):.2f}"
+                                diag = f"#{idx_num} sc:{det.get('score',0):.2f} e:{det.get('edge_mean',0):.2f} s:{det.get('shadow_pen',0):.2f} b:{det.get('boundary_shadow_pen',0):.2f} r:{det.get('rover_pen',0):.2f} sp:{det.get('spec_pen',0):.2f} lv:{det.get('lowvar_pen',0):.2f}"
                                 diag_lines.append(diag)
 
                             # Not: diag_lines ayrı panelde gösterilecektir (görsele eklenmez)
@@ -1386,6 +1429,8 @@ def main():
                                 "- **sc**: Birleşik anomali skoru\n"
                                 "- **e**: Kenar yoğunluğu göstergesi\n"
                                 "- **s**: Gölge/karanlık etkisi (azaltım)\n"
+                                "- **b**: Sınır bağlantılı araç gölgesi/gövde etkisi (azaltım)\n"
+                                "- **r**: Sınır bağlantılı araç gövdesi/tekerlek/kol (derinlik sapması, azaltım)\n"
                                 "- **sp**: Parlama (speküler) etkisi (azaltım)\n"
                                 "- **lv**: Düşük doku/varians etkisi (azaltım)"
                             )
@@ -1399,6 +1444,8 @@ def main():
                                         "sc": round(float(det.get('score', 0.0)), 3),
                                         "e": round(float(det.get('edge_mean', 0.0)), 3),
                                         "s": round(float(det.get('shadow_pen', 0.0)), 3),
+                                        "b": round(float(det.get('boundary_shadow_pen', 0.0)), 3),
+                                        "r": round(float(det.get('rover_pen', 0.0)), 3),
                                         "sp": round(float(det.get('spec_pen', 0.0)), 3),
                                         "lv": round(float(det.get('lowvar_pen', 0.0)), 3),
                                     })
@@ -1457,7 +1504,7 @@ def main():
                         bx2, by2 = xs + tw + 6, by1 + th + 4
                         cv2.rectangle(disp, (bx1, by1), (bx2, by2), box_color, -1)
                         cv2.putText(disp, label, (xs + 3, by2 - 4), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), text_thickness, cv2.LINE_AA)
-                        diag = f"#{idx_num} sc:{det.get('score',0):.2f} e:{det.get('edge_mean',0):.2f} s:{det.get('shadow_pen',0):.2f} sp:{det.get('spec_pen',0):.2f} lv:{det.get('lowvar_pen',0):.2f}"
+                        diag = f"#{idx_num} sc:{det.get('score',0):.2f} e:{det.get('edge_mean',0):.2f} s:{det.get('shadow_pen',0):.2f} b:{det.get('boundary_shadow_pen',0):.2f} r:{det.get('rover_pen',0):.2f} sp:{det.get('spec_pen',0):.2f} lv:{det.get('lowvar_pen',0):.2f}"
                         diag_lines.append(diag)
 
                     disp_to_show = disp
