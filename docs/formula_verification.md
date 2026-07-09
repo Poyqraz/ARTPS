@@ -78,9 +78,10 @@ A_i'(p) = (A_i(p) - min(A_i)) / (max(A_i) - min(A_i))
 
 #### Gölge Bastırma
 ```
-A_shadow(p) = exp(-(L(p) - μ_L)²/(2σ_L²))
+A_shadow(p) = dark(V(p)) · (1 - ∇I_n(p)) · (1 - ∇D_n(p))
+A_combined'(p) = A_combined(p) · (1 - α_shad · A_shadow(p))
 ```
-**Doğruluk:** ✅ Gaussian bastırma formülü
+**Doğruluk:** ✅ Kod, Gaussian tabanlı bir bastırma değil; gölge-benzeri maskeyi çarpımsal olarak uygular.
 
 #### Speküler Bastırma
 ```

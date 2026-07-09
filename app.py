@@ -33,6 +33,13 @@ os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 
 from src.models.depth_estimation import MiDaSDepthEstimator
 from src.core import CuriosityScorer, CuriosityWeights
+from src.core.false_positive_masks import (
+    apply_fp_suppression,
+    compute_cast_shadow_mask,
+    compute_horizon_mask,
+    compute_rover_body_mask,
+    compute_shadow_like,
+)
 from src.utils.image_enhancement import enhance_image_auto
 from src.ui import (
     inject_theme,
@@ -549,6 +556,19 @@ def compute_combined_anomaly_map(
     w_depth: float = 0.30,
     w_texture: float = 0.20,
     edge_reinforce: float = 0.35,
+    alpha_shad: float = 0.65,
+    beta_illum: float = 0.25,
+    shadow_cut: float = 0.45,
+    img_edge_min: float = 0.10,
+    depth_edge_min: float = 0.08,
+    alpha_rover: float = 0.85,
+    alpha_cast: float = 0.75,
+    alpha_horizon: float = 0.55,
+    rover_bottom_frac: float = 0.28,
+    rover_near_thresh: float = 0.45,
+    horizon_depth_thresh: float = 0.80,
+    enable_rover_mask: bool = True,
+    enable_horizon_mask: bool = True,
 ):
     """Rekonstrüksiyon farkı + derinlik süreksizliği + gölge/kenar farkındalığı birleşik haritası.
 
@@ -616,12 +636,29 @@ def compute_combined_anomaly_map(
     proximity_mix = 0.65 * proximity_w + 0.35 * (1.0 - proximity_w)
     combined = np.clip(raw_combined * (0.5 + 0.5 * proximity_mix), 0.0, 1.0)
 
-    # Gölge bastırma: (koyu) AND (düşük görüntü gradyanı) AND (düşük derinlik kenarı)
+    shadow_like = None
+    rover_body = None
+    cast_shadow = None
+    horizon = None
+    illumination_edge = None
+    spec_mask = None
+    lowvar_mask = None
+
+    # False-positive maskeleme: gölge/rover/araç gölgesi/ufuk bastırma
     # ve aydınlatma-kenar etkisi azaltımı: görüntü kenarı yüksek ama derinlik kenarı düşükse etkisini düşür.
     try:
         illumination_edge = np.clip(grad_mag_n - depth_edge_n, 0.0, 1.0)
-        shadow_like = np.clip(shadow_n * (1.0 - grad_mag_n) * (1.0 - depth_edge_n), 0.0, 1.0)
-        shadow_like = cv2.GaussianBlur(shadow_like, (5, 5), 0)
+        shadow_like = compute_shadow_like(orig, depth)
+        if enable_rover_mask:
+            rover_body = compute_rover_body_mask(
+                orig,
+                depth,
+                bottom_frac=rover_bottom_frac,
+                near_thresh=rover_near_thresh,
+            )
+            cast_shadow = compute_cast_shadow_mask(shadow_like, rover_body)
+        if enable_horizon_mask:
+            horizon = compute_horizon_mask(depth, depth_thresh=horizon_depth_thresh)
         # Speküler/parlak nokta maskesi: yüksek V, düşük S ve düşük kenar
         spec_mask = np.clip(Vc * (1.0 - Sc) * (1.0 - grad_mag_n) * (1.0 - depth_edge_n), 0.0, 1.0)
         spec_mask = cv2.GaussianBlur(spec_mask, (3, 3), 0)
@@ -634,17 +671,25 @@ def compute_combined_anomaly_map(
         var_norm = variance / max(variance.max(), 1e-6)
 
         # Saha ayarlı katsayılar
-        alpha_shad = float(globals().get('alpha_shad', 0.65))
-        beta_illum = float(globals().get('beta_illum', 0.25))
         spec_gamma = float(globals().get('spec_gamma', 0.35))
         spec_lowvar_gamma = float(globals().get('spec_lowvar_gamma', 0.35))
         spec_var_thresh = float(globals().get('spec_var_thresh', 0.005))
         # Düşük varyans bölgeleri için ek azaltım (speküler düz alanlar)
         lowvar_mask = (var_norm < spec_var_thresh).astype(np.float32)
         lowvar_mask = cv2.GaussianBlur(lowvar_mask, (3, 3), 0)
+        combined = apply_fp_suppression(
+            combined,
+            shadow_like=shadow_like,
+            rover_body=rover_body,
+            cast_shadow=cast_shadow,
+            horizon=horizon,
+            alpha_shad=alpha_shad,
+            alpha_rover=alpha_rover,
+            alpha_cast=alpha_cast,
+            alpha_horizon=alpha_horizon,
+        )
         combined = np.clip(
-            combined * (1.0 - alpha_shad * shadow_like)
-            - beta_illum * illumination_edge
+            combined - beta_illum * illumination_edge
             - spec_gamma * spec_mask
             - spec_lowvar_gamma * lowvar_mask,
             0.0,
@@ -717,9 +762,12 @@ def compute_combined_anomaly_map(
         x1, x2 = x1c, x2c
         region = combined[y1:y2, x1:x2]
         region_edges = grad_mag_n[y1:y2, x1:x2]
-        region_shadow = shadow_like[y1:y2, x1:x2] if 'shadow_like' in locals() else None
-        region_illum = illumination_edge[y1:y2, x1:x2] if 'illumination_edge' in locals() else None
-        region_spec = spec_mask[y1:y2, x1:x2] if 'spec_mask' in locals() else None
+        region_shadow = shadow_like[y1:y2, x1:x2] if shadow_like is not None else None
+        region_rover = rover_body[y1:y2, x1:x2] if rover_body is not None else None
+        region_cast = cast_shadow[y1:y2, x1:x2] if cast_shadow is not None else None
+        region_horizon = horizon[y1:y2, x1:x2] if horizon is not None else None
+        region_illum = illumination_edge[y1:y2, x1:x2] if illumination_edge is not None else None
+        region_spec = spec_mask[y1:y2, x1:x2] if spec_mask is not None else None
         region_prox = proximity_w[y1:y2, x1:x2]
         # Yakınlık ortalaması
         prox_mean = float(np.mean(region_prox)) if region_prox.size else 0.0
@@ -728,20 +776,41 @@ def compute_combined_anomaly_map(
         edge_mean = float(np.mean(region_edges)) if region_edges.size else 0.0
         # Gölge ve aydınlatma-kenarı azaltımları
         shadow_pen = float(np.mean(region_shadow)) if (region_shadow is not None and region_shadow.size) else 0.0
+        rover_pen = float(np.mean(region_rover)) if (region_rover is not None and region_rover.size) else 0.0
+        cast_pen = float(np.mean(region_cast)) if (region_cast is not None and region_cast.size) else 0.0
+        horizon_pen = float(np.mean(region_horizon)) if (region_horizon is not None and region_horizon.size) else 0.0
         illum_pen = float(np.mean(region_illum)) if (region_illum is not None and region_illum.size) else 0.0
         spec_pen = float(np.mean(region_spec)) if (region_spec is not None and region_spec.size) else 0.0
-        lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if 'lowvar_mask' in locals() else 0.0
+        lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if lowvar_mask is not None else 0.0
         # Uzak alanlar için küçük ayrıntıları daha iyi puanlamak adına fine_detail katkısını ekle
         fine_local = float(np.mean(fine_detail[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
-        score = 0.5 * comb_mean + 0.25 * edge_mean + 0.2 * prox_mean + 0.05 * fine_local - 0.35 * shadow_pen - 0.20 * illum_pen - 0.30 * spec_pen - 0.25 * lowvar_pen
+        score = (
+            0.5 * comb_mean
+            + 0.25 * edge_mean
+            + 0.2 * prox_mean
+            + 0.05 * fine_local
+            - 0.35 * shadow_pen
+            - 0.40 * rover_pen
+            - 0.30 * cast_pen
+            - 0.25 * horizon_pen
+            - 0.20 * illum_pen
+            - 0.30 * spec_pen
+            - 0.25 * lowvar_pen
+        )
         score = float(max(0.0, score))
 
         # Saf gölge veya speküler bölgeleri ele: saha ayarlı eşikler
-        sh_cut = float(globals().get('shadow_cut', 0.45))
-        im_edge_min = float(globals().get('img_edge_min', 0.10))
-        dp_edge_min = float(globals().get('depth_edge_min', 0.08))
+        sh_cut = float(shadow_cut)
+        im_edge_min = float(img_edge_min)
+        dp_edge_min = float(depth_edge_min)
         sp_cut = float(globals().get('spec_cut', 0.50))
         if shadow_pen > sh_cut and edge_mean < im_edge_min and float(np.mean(depth_edge_n[y1:y2, x1:x2])) < dp_edge_min:
+            continue
+        if rover_pen > 0.55:
+            continue
+        if cast_pen > 0.50 and edge_mean < im_edge_min:
+            continue
+        if horizon_pen > 0.60 and edge_mean < im_edge_min:
             continue
         if spec_pen > sp_cut and edge_mean < im_edge_min and float(np.mean(depth_edge_n[y1:y2, x1:x2])) < dp_edge_min:
             continue
@@ -757,9 +826,12 @@ def compute_combined_anomaly_map(
             "edge_mean": float(edge_mean),
             "prox_mean": float(prox_mean),
             "shadow_pen": float(shadow_pen),
+            "rover_pen": float(rover_pen),
+            "cast_pen": float(cast_pen),
+            "horizon_pen": float(horizon_pen),
             "illum_pen": float(illum_pen),
             "spec_pen": float(spec_pen),
-            "lowvar_pen": float(lowvar_pen) if 'lowvar_pen' in locals() else 0.0,
+            "lowvar_pen": float(lowvar_pen),
         })
 
     # Non-Maximum Suppression (IoU tabanlı) ile kutuları rafine et
@@ -824,13 +896,6 @@ def compute_combined_anomaly_map(
         detections = merged
     except Exception:
         pass
-
-    # Ufuk maskesi: derin ve düşük gradyan alanları (genelde üst kısım)
-    try:
-        horizon_mask = ((depth > 0.8) & (depth_edge_n < 0.05)).astype(np.uint8)
-        # Ufuk bilgisi raporlama için; kombinasyondan çıkarmıyoruz ama metrik olabilir
-    except Exception:
-        horizon_mask = None
 
     return combined.astype(np.float32), detections
 
@@ -947,11 +1012,27 @@ def analyze_mars_image(models, image):
         cfg_wd = float(globals().get('w_depth', 0.30))
         cfg_wt = float(globals().get('w_texture', 0.20))
         cfg_er = float(globals().get('edge_reinf', 0.35))
+        fp_kwargs = {
+            "alpha_shad": float(globals().get("alpha_shad", 0.65)),
+            "beta_illum": float(globals().get("beta_illum", 0.25)),
+            "shadow_cut": float(globals().get("shadow_cut", 0.45)),
+            "img_edge_min": float(globals().get("img_edge_min", 0.10)),
+            "depth_edge_min": float(globals().get("depth_edge_min", 0.08)),
+            "alpha_rover": float(globals().get("alpha_rover", 0.85)),
+            "alpha_cast": float(globals().get("alpha_cast", 0.75)),
+            "alpha_horizon": float(globals().get("alpha_horizon", 0.55)),
+            "rover_bottom_frac": float(globals().get("rover_bottom_frac", 0.28)),
+            "rover_near_thresh": float(globals().get("rover_near_thresh", 0.45)),
+            "horizon_depth_thresh": float(globals().get("horizon_depth_thresh", 0.80)),
+            "enable_rover_mask": bool(globals().get("enable_rover_mask", True)),
+            "enable_horizon_mask": bool(globals().get("enable_horizon_mask", True)),
+        }
 
         combined_map, detections = compute_combined_anomaly_map(
             results['original'], results['reconstructed'], depth_map_for_fusion,
             hyst_high_pct=cfg_hh, hyst_low_pct=cfg_hl, nms_iou=cfg_nms, top_k=cfg_topk,
-            w_recon=cfg_wr, w_depth=cfg_wd, w_texture=cfg_wt, edge_reinforce=cfg_er
+            w_recon=cfg_wr, w_depth=cfg_wd, w_texture=cfg_wt, edge_reinforce=cfg_er,
+            **fp_kwargs,
         )
         # PaDiM/PatchCore mevcutsa, haritaları yumuşak birleştir
         try:
@@ -1264,6 +1345,16 @@ def main():
             spec_cut = st.slider(t("params.detection.spec_cut"), 0.0, 1.0, 0.50, 0.05)
             spec_lowvar_gamma = st.slider(t("params.detection.spec_lowvar_gamma"), 0.0, 1.0, 0.35, 0.05, help=t("params.detection.spec_lowvar_help"))
             spec_var_thresh = st.slider(t("params.detection.spec_var_thresh"), 0.0005, 0.02, 0.005, 0.0005)
+        st.markdown(f"**{t('params.detection.rover_header')}**")
+        with st.container(border=True):
+            enable_rover_mask = st.checkbox(t("params.detection.enable_rover_mask"), value=True)
+            alpha_rover = st.slider(t("params.detection.alpha_rover"), 0.0, 1.0, 0.85, 0.05)
+            alpha_cast = st.slider(t("params.detection.alpha_cast"), 0.0, 1.0, 0.75, 0.05)
+            rover_bottom_frac = st.slider(t("params.detection.rover_bottom_frac"), 0.10, 0.50, 0.28, 0.01)
+            rover_near_thresh = st.slider(t("params.detection.rover_near_thresh"), 0.10, 0.90, 0.45, 0.05)
+            enable_horizon_mask = st.checkbox(t("params.detection.enable_horizon_mask"), value=True)
+            alpha_horizon = st.slider(t("params.detection.alpha_horizon"), 0.0, 1.0, 0.55, 0.05)
+            horizon_depth_thresh = st.slider(t("params.detection.horizon_depth_thresh"), 0.50, 0.99, 0.80, 0.01)
 
         st.markdown(f"**{t('params.detection.focus_header')}**")
         with st.container(border=True):
@@ -1273,6 +1364,40 @@ def main():
             focus_hide_empty_depth = st.checkbox(t("params.detection.focus_hide_empty_depth"), value=True)
             focus_interp = st.selectbox(t("params.detection.focus_interp"), ["INTER_LANCZOS4", "INTER_CUBIC", "INTER_AREA"], index=0)
             st.caption(t("params.detection.focus_caption"))
+
+    globals().update({
+        "unified_threshold": float(unified_threshold),
+        "hyst_high": int(hyst_high),
+        "hyst_low": int(hyst_low),
+        "nms_iou": float(nms_iou),
+        "top_k": int(top_k),
+        "w_recon": float(w_recon),
+        "w_depth": float(w_depth),
+        "w_texture": float(w_texture),
+        "edge_reinf": float(edge_reinf),
+        "alpha_shad": float(alpha_shad),
+        "beta_illum": float(beta_illum),
+        "shadow_cut": float(shadow_cut),
+        "img_edge_min": float(img_edge_min),
+        "depth_edge_min": float(depth_edge_min),
+        "spec_gamma": float(spec_gamma),
+        "spec_cut": float(spec_cut),
+        "spec_lowvar_gamma": float(spec_lowvar_gamma),
+        "spec_var_thresh": float(spec_var_thresh),
+        "alpha_rover": float(alpha_rover),
+        "alpha_cast": float(alpha_cast),
+        "alpha_horizon": float(alpha_horizon),
+        "rover_bottom_frac": float(rover_bottom_frac),
+        "rover_near_thresh": float(rover_near_thresh),
+        "horizon_depth_thresh": float(horizon_depth_thresh),
+        "enable_rover_mask": bool(enable_rover_mask),
+        "enable_horizon_mask": bool(enable_horizon_mask),
+        "focus_h": int(focus_h),
+        "focus_overlay": bool(focus_overlay),
+        "focus_sharpen": bool(focus_sharpen),
+        "focus_hide_empty_depth": bool(focus_hide_empty_depth),
+        "focus_interp": str(focus_interp),
+    })
 
     # Curiosity ağırlıkları yönetimi (bozmadan opsiyonel)
     with st.sidebar.expander(t("params.curiosity.expander"), expanded=False):
@@ -1528,6 +1653,9 @@ def main():
                                             "buf": bool(buf),
                                             "e": round(float(det.get('edge_mean', 0.0)), 3),
                                             "s": round(float(det.get('shadow_pen', 0.0)), 3),
+                                            "r": round(float(det.get('rover_pen', 0.0)), 3),
+                                            "c": round(float(det.get('cast_pen', 0.0)), 3),
+                                            "h": round(float(det.get('horizon_pen', 0.0)), 3),
                                             "sp": round(float(det.get('spec_pen', 0.0)), 3),
                                             "lv": round(float(det.get('lowvar_pen', 0.0)), 3),
                                         })
@@ -1615,6 +1743,9 @@ def main():
                                     f"buf:{'Y' if det.get('in_priority_buffer', False) else 'N'} "
                                     f"e:{det.get('edge_mean',0):.2f} "
                                     f"s:{det.get('shadow_pen',0):.2f} "
+                                    f"r:{det.get('rover_pen',0):.2f} "
+                                    f"c:{det.get('cast_pen',0):.2f} "
+                                    f"h:{det.get('horizon_pen',0):.2f} "
                                     f"sp:{det.get('spec_pen',0):.2f} "
                                     f"lv:{det.get('lowvar_pen',0):.2f}"
                                 )
@@ -1739,6 +1870,9 @@ def main():
                                         "sc": round(float(det.get('score', 0.0)), 3),
                                         "e": round(float(det.get('edge_mean', 0.0)), 3),
                                         "s": round(float(det.get('shadow_pen', 0.0)), 3),
+                                        "r": round(float(det.get('rover_pen', 0.0)), 3),
+                                        "c": round(float(det.get('cast_pen', 0.0)), 3),
+                                        "h": round(float(det.get('horizon_pen', 0.0)), 3),
                                         "sp": round(float(det.get('spec_pen', 0.0)), 3),
                                         "lv": round(float(det.get('lowvar_pen', 0.0)), 3),
                                     })
@@ -1797,7 +1931,12 @@ def main():
                         bx2, by2 = xs + tw + 6, by1 + th + 4
                         cv2.rectangle(disp, (bx1, by1), (bx2, by2), box_color, -1)
                         cv2.putText(disp, label, (xs + 3, by2 - 4), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), text_thickness, cv2.LINE_AA)
-                        diag = f"#{idx_num} sc:{det.get('score',0):.2f} e:{det.get('edge_mean',0):.2f} s:{det.get('shadow_pen',0):.2f} sp:{det.get('spec_pen',0):.2f} lv:{det.get('lowvar_pen',0):.2f}"
+                        diag = (
+                            f"#{idx_num} sc:{det.get('score',0):.2f} e:{det.get('edge_mean',0):.2f} "
+                            f"s:{det.get('shadow_pen',0):.2f} r:{det.get('rover_pen',0):.2f} "
+                            f"c:{det.get('cast_pen',0):.2f} h:{det.get('horizon_pen',0):.2f} "
+                            f"sp:{det.get('spec_pen',0):.2f} lv:{det.get('lowvar_pen',0):.2f}"
+                        )
                         diag_lines.append(diag)
 
                     disp_to_show = disp

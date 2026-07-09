@@ -123,6 +123,15 @@ MESSAGES: dict[str, str] = {
     "params.detection.shadow_cut_help": "Saf gölge bölgeleri eleme için alt sınır",
     "params.detection.img_edge_min": "Min Görüntü Kenarı",
     "params.detection.depth_edge_min": "Min Derinlik Kenarı",
+    "params.detection.rover_header": "Rover / Ufuk Filtreleme",
+    "params.detection.enable_rover_mask": "Rover gövde maskesi",
+    "params.detection.alpha_rover": "Rover bastırma",
+    "params.detection.alpha_cast": "Araç gölgesi bastırma",
+    "params.detection.enable_horizon_mask": "Ufuk maskesi",
+    "params.detection.alpha_horizon": "Ufuk bastırma",
+    "params.detection.rover_bottom_frac": "Alt FOV oranı",
+    "params.detection.rover_near_thresh": "Rover yakınlık eşiği",
+    "params.detection.horizon_depth_thresh": "Ufuk derinlik eşiği",
     "params.detection.spec_gamma": "Speküler Bastırma Gücü",
     "params.detection.spec_gamma_help": "Yüksek parlaklık + düşük satürasyon bölgeleri bastırma",
     "params.detection.spec_cut": "Speküler Eleme Eşiği",
@@ -201,6 +210,9 @@ MESSAGES: dict[str, str] = {
         "- **sc**: Birleşik anomali skoru\n"
         "- **e**: Kenar yoğunluğu göstergesi\n"
         "- **s**: Gölge/karanlık etkisi (azaltım)\n"
+        "- **r**: Rover gövdesi cezası\n"
+        "- **c**: Araç gölgesi cezası\n"
+        "- **h**: Ufuk/uzak alan cezası\n"
         "- **sp**: Parlama (speküler) etkisi (azaltım)\n"
         "- **lv**: Düşük doku/varians etkisi (azaltım)"
     ),

@@ -123,6 +123,15 @@ MESSAGES: dict[str, str] = {
     "params.detection.shadow_cut_help": "Lower bound for rejecting pure shadow regions",
     "params.detection.img_edge_min": "Min Image Edge",
     "params.detection.depth_edge_min": "Min Depth Edge",
+    "params.detection.rover_header": "Rover / Horizon Filtering",
+    "params.detection.enable_rover_mask": "Rover body mask",
+    "params.detection.alpha_rover": "Rover suppression",
+    "params.detection.alpha_cast": "Cast-shadow suppression",
+    "params.detection.enable_horizon_mask": "Horizon mask",
+    "params.detection.alpha_horizon": "Horizon suppression",
+    "params.detection.rover_bottom_frac": "Bottom FOV fraction",
+    "params.detection.rover_near_thresh": "Rover near threshold",
+    "params.detection.horizon_depth_thresh": "Horizon depth threshold",
     "params.detection.spec_gamma": "Specular Suppression Strength",
     "params.detection.spec_gamma_help": "Suppress regions with high brightness and low saturation",
     "params.detection.spec_cut": "Specular Rejection Threshold",
@@ -201,6 +210,9 @@ MESSAGES: dict[str, str] = {
         "- **sc**: Combined anomaly score\n"
         "- **e**: Edge density indicator\n"
         "- **s**: Shadow/darkness effect (reduction)\n"
+        "- **r**: Rover body penalty\n"
+        "- **c**: Cast-shadow penalty\n"
+        "- **h**: Horizon/far-field penalty\n"
         "- **sp**: Specular glare effect (reduction)\n"
         "- **lv**: Low texture/variance effect (reduction)"
     ),
