@@ -188,6 +188,15 @@ def calculate_anomaly_score(autoencoder, image, device):
         st.error(f"❌ Anomali hesaplama hatası: {e}")
         return None, None, None, None
 
+
+def _resize_rgb_float(image: np.ndarray, target_hw: tuple[int, int], interpolation: int) -> np.ndarray:
+    """RGB float görüntüyü güvenli biçimde yeniden boyutlandır."""
+    target_h, target_w = target_hw
+    if image.shape[:2] == (target_h, target_w):
+        return image.astype(np.float32, copy=False)
+    resized = cv2.resize(image.astype(np.float32), (target_w, target_h), interpolation=interpolation)
+    return np.clip(resized, 0.0, 1.0)
+
 def _normalize_map(values: np.ndarray) -> np.ndarray:
     """Harita/yoğunluk matrisini yüzde 2-98 aralığına göre normalize eder (0-1)."""
     arr = values.astype(np.float32)
@@ -270,9 +279,10 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
         if comb_map is None or len(detections) == 0:
             return tiles
         H, W = comb_map.shape[:2]
-        base = (results['original'] * 255).astype(np.uint8)
+        display_base = results.get('original_display', results['original'])
+        base = (display_base * 255).astype(np.uint8)
         if base.shape[:2] != (H, W):
-            base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LINEAR)
+            base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LANCZOS4)
         if base.ndim == 2:
             base = cv2.cvtColor(base, cv2.COLOR_GRAY2RGB)
         heat_full = (plt.cm.inferno(comb_map)[..., :3] * 255).astype(np.uint8)
@@ -298,7 +308,7 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
                     tiles.append(None)
                     continue
                 # Orijinal kırpım
-                raw_crop = cv2.cvtColor(base[y1:y2, x1:x2].copy(), cv2.COLOR_BGR2RGB)
+                raw_crop = base[y1:y2, x1:x2].copy()
                 raw_crop = _auto_enhance_focus(raw_crop, scale=1.0, interp_code=interp, amount=0.6)
                 # Isı kapağı
                 heat_u8 = heat_full[y1:y2, x1:x2].copy()
@@ -368,8 +378,8 @@ def compute_combined_anomaly_map(
     """
     # Hedef çözünürlüğü derinlik haritası boyutu
     H, W = depth_map.shape[:2]
-    orig = cv2.resize(original_rgb.astype(np.float32), (W, H), interpolation=cv2.INTER_AREA)
-    recon = cv2.resize(reconstructed_rgb.astype(np.float32), (W, H), interpolation=cv2.INTER_AREA)
+    orig = cv2.resize(original_rgb.astype(np.float32), (W, H), interpolation=cv2.INTER_LANCZOS4)
+    recon = cv2.resize(reconstructed_rgb.astype(np.float32), (W, H), interpolation=cv2.INTER_LANCZOS4)
 
     # Rekonstrüksiyon farkı (MSE kanal başına)
     recon_diff = ((orig - recon) ** 2).mean(axis=2)
@@ -725,6 +735,7 @@ def analyze_mars_image(models, image):
     # Son analiz sonuçlarını yeniden çalıştırmada kaybetmemek için session_state'ten çek
     results = st.session_state.get("results", {})
     device = models.get('device', torch.device('cpu'))
+    original_display = np.array(image, dtype=np.float32) / 255.0
     
     # 1. Anomali skoru hesapla
     mse, original, reconstructed, latent = calculate_anomaly_score(models['autoencoder'], image, device)
@@ -732,6 +743,19 @@ def analyze_mars_image(models, image):
     results['original'] = original
     results['reconstructed'] = reconstructed
     results['latent'] = latent
+    results['original_model'] = original
+    results['original_display'] = original_display
+    if reconstructed is not None:
+        results['reconstructed_display'] = _resize_rgb_float(
+            reconstructed,
+            original_display.shape[:2],
+            cv2.INTER_LANCZOS4,
+        )
+        diff_display = np.abs(original_display - results['reconstructed_display'])
+        results['diff_display'] = np.clip(diff_display, 0.0, 1.0)
+    else:
+        results['reconstructed_display'] = None
+        results['diff_display'] = None
     
     # 2. Bilinen değer skoru hesapla (hibrit model varsa)
     if 'classifier' in models and 'depth_estimator' in models:
@@ -771,7 +795,7 @@ def analyze_mars_image(models, image):
 
         # Derinlik başarısız olursa, gradient tabanlı sentetik derinlik üret (fallback)
         if depth_map_for_fusion is None:
-            img_u8 = (results['original'] * 255.0).astype(np.uint8)
+            img_u8 = (results['original_model'] * 255.0).astype(np.uint8)
             gray = cv2.cvtColor(img_u8, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
             sx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
             sy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
@@ -799,7 +823,7 @@ def analyze_mars_image(models, image):
         )
         # PaDiM/PatchCore mevcutsa, haritaları yumuşak birleştir
         try:
-            base_u8 = (results['original'] * 255).astype(np.uint8)
+            base_u8 = (results['original_model'] * 255).astype(np.uint8)
             if 'padim' in models:
                 padim_map = models['padim'].predict_anomaly_map(base_u8)
                 padim_w = float(globals().get('w_padim', 0.30))
@@ -820,7 +844,7 @@ def analyze_mars_image(models, image):
             results['focus_tiles'] = []
     except Exception:
         # Son çare: yalnızca fark haritasına dayalı basit tespit
-        diff_only = ((results['original'] - results['reconstructed']) ** 2).mean(axis=2)
+        diff_only = ((results['original_model'] - results['reconstructed']) ** 2).mean(axis=2)
         diff_only = _normalize_map(diff_only)
         results['combined_anomaly_map'] = diff_only
         results['combined_anomaly_score'] = float(diff_only.mean())
@@ -1138,7 +1162,7 @@ def main():
                         with col2:
                             st.subheader("🔄 Yeniden Oluşturulan Görüntü")
                             st.image(
-                                results['reconstructed'],
+                                results.get('reconstructed_display', results['reconstructed']),
                                 caption=f"Anomali Skoru: {results['anomaly_score']:.6f}",
                                 use_container_width=True,
                             )
@@ -1183,25 +1207,29 @@ def main():
                         
                         # Fark görüntüsü + birleşik anomali haritası
                         st.subheader("🔍 Fark ve Birleşik Anomali Haritası")
-                        diff = np.abs(results['original'] - results['reconstructed'])
+                        display_original = results.get('original_display', results['original'])
+                        display_reconstructed = results.get('reconstructed_display', results['reconstructed'])
+                        diff = results.get('diff_display')
+                        if diff is None:
+                            diff = np.abs(display_original - display_reconstructed)
 
                         if results.get('combined_anomaly_map') is not None:
                             comb_map = results['combined_anomaly_map']
                             # Orijinale ısı haritası bindirme (boyutları eşitle)
                             H, W = comb_map.shape[:2]
-                            base = (results['original'] * 255).astype(np.uint8)
+                            base = (display_original * 255).astype(np.uint8)
                             if base.shape[:2] != (H, W):
-                                base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LINEAR)
+                                base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LANCZOS4)
                             if base.ndim == 2:
                                 base = cv2.cvtColor(base, cv2.COLOR_GRAY2RGB)
                             heat = (plt.cm.inferno(comb_map)[..., :3] * 255).astype(np.uint8)
                             overlay = cv2.addWeighted(base, 0.6, heat, 0.4, 0)
 
                             fig, axes = plt.subplots(1, 4, figsize=(20, 5))
-                            _safe_imshow(axes[0], results['original'])
+                            _safe_imshow(axes[0], display_original)
                             axes[0].set_title("Original")
                             axes[0].axis('off')
-                            _safe_imshow(axes[1], results['reconstructed'])
+                            _safe_imshow(axes[1], display_reconstructed)
                             axes[1].set_title("Reconstructed")
                             axes[1].axis('off')
                             _safe_imshow(axes[2], diff, cmap='hot')
@@ -1375,10 +1403,10 @@ def main():
                                     """, unsafe_allow_html=True)
                         else:
                             fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-                            _safe_imshow(axes[0], results['original'])
+                            _safe_imshow(axes[0], display_original)
                             axes[0].set_title("Original")
                             axes[0].axis('off')
-                            _safe_imshow(axes[1], results['reconstructed'])
+                            _safe_imshow(axes[1], display_reconstructed)
                             axes[1].set_title("Reconstructed")
                             axes[1].axis('off')
                             _safe_imshow(axes[2], diff, cmap='hot')
@@ -1390,23 +1418,27 @@ def main():
             persisted = st.session_state.get("results")
             if persisted and not clicked:
                 results = persisted
-                diff = np.abs(results['original'] - results['reconstructed'])
+                display_original = results.get('original_display', results['original'])
+                display_reconstructed = results.get('reconstructed_display', results['reconstructed'])
+                diff = results.get('diff_display')
+                if diff is None:
+                    diff = np.abs(display_original - display_reconstructed)
                 if results.get('combined_anomaly_map') is not None:
                     comb_map = results['combined_anomaly_map']
                     H, W = comb_map.shape[:2]
-                    base = (results['original'] * 255).astype(np.uint8)
+                    base = (display_original * 255).astype(np.uint8)
                     if base.shape[:2] != (H, W):
-                        base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LINEAR)
+                        base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LANCZOS4)
                     if base.ndim == 2:
                         base = cv2.cvtColor(base, cv2.COLOR_GRAY2RGB)
                     heat = (plt.cm.inferno(comb_map)[..., :3] * 255).astype(np.uint8)
                     overlay = cv2.addWeighted(base, 0.6, heat, 0.4, 0)
 
                     fig, axes = plt.subplots(1, 4, figsize=(20, 5))
-                    _safe_imshow(axes[0], results['original'])
+                    _safe_imshow(axes[0], display_original)
                     axes[0].set_title("Original")
                     axes[0].axis('off')
-                    _safe_imshow(axes[1], results['reconstructed'])
+                    _safe_imshow(axes[1], display_reconstructed)
                     axes[1].set_title("Reconstructed")
                     axes[1].axis('off')
                     _safe_imshow(axes[2], diff, cmap='hot')
