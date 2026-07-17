@@ -24,6 +24,7 @@ import hashlib
 from pathlib import Path
 from src.models.optimized_autoencoder import OptimizedAutoencoder
 from src.models.depth_enhanced_classifier import DepthEnhancedClassifier
+from src.models.yolo_detector import YoloDetector
 from src.models.anomaly import PaDiM, PaDiMConfig, PatchCore, PatchCoreConfig
 from sklearn.cluster import KMeans, DBSCAN
 
@@ -96,9 +97,17 @@ def _show_load_messages(messages: list[tuple[str, str, dict]]) -> None:
 
 
 @st.cache_resource
-def load_models():
+def load_models(device_preference: str | None = None):
     """Egitilen modelleri yukle (cache'li). UI mesajlari dondurulur; main()'de t() ile gosterilir."""
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    pref = (device_preference or "").lower()
+    if pref == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA istendi ancak kullanılabilir GPU yok")
+        device = torch.device("cuda")
+    elif pref == "cpu":
+        device = torch.device("cpu")
+    else:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     messages: list[tuple[str, str, dict]] = [
         ("info", "models.device", {"device": device}),
     ]
@@ -175,6 +184,22 @@ def load_models():
     except Exception as e:
         messages.append(("error", "models.depth_load_failed", {"error": e}))
 
+    detector_path = Path("results/yolo_detector.onnx")
+    if detector_path.exists():
+        try:
+            detector = YoloDetector(detector_path, input_size=640, conf_threshold=0.25, nms_iou=0.45)
+            models["detector"] = detector
+            models["detector_info"] = {
+                "backend": "yolo_onnx",
+                "path": str(detector_path),
+                "input_size": 640,
+            }
+            messages.append(("info", "models.detector_loaded", {"path": detector_path.name}))
+        except Exception as e:
+            messages.append(("warning", "models.detector_load_failed", {"error": e}))
+    else:
+        messages.append(("info", "models.detector_missing", {}))
+
     models['curiosity_scorer'] = CuriosityScorer(CuriosityWeights())
     try:
         wpath = Path("results/curiosity_weights.json")
@@ -230,6 +255,253 @@ def _normalize_map(values: np.ndarray) -> np.ndarray:
     norm = (arr - lo) / (hi - lo)
     return np.clip(norm, 0.0, 1.0)
 
+
+def _normalize_percentile_map(values: np.ndarray, lo_pct: float = 2.0, hi_pct: float = 98.0) -> np.ndarray:
+    """Yüzdelik tabanlı stabil normalizasyon; göreli depth türevleri için kullanılır."""
+    arr = np.asarray(values, dtype=np.float32)
+    finite = arr[np.isfinite(arr)]
+    if finite.size == 0:
+        return np.zeros_like(arr, dtype=np.float32)
+    lo = float(np.percentile(finite, lo_pct))
+    hi = float(np.percentile(finite, hi_pct))
+    if hi - lo < 1e-6:
+        return np.zeros_like(arr, dtype=np.float32)
+    return np.clip((arr - lo) / (hi - lo), 0.0, 1.0).astype(np.float32)
+
+
+def _colorize_map(map_2d: np.ndarray, cmap_name: str = "viridis") -> np.ndarray:
+    cmap = getattr(plt.cm, cmap_name)
+    return (cmap(np.clip(map_2d, 0.0, 1.0))[..., :3] * 255).astype(np.uint8)
+
+
+def _compute_depth_rgb_overlay(base_rgb: np.ndarray, depth_map: np.ndarray | None, alpha: float = 0.38) -> np.ndarray | None:
+    if depth_map is None:
+        return None
+    depth_norm = _normalize_percentile_map(depth_map)
+    if depth_norm.shape[:2] != base_rgb.shape[:2]:
+        depth_norm = cv2.resize(depth_norm, (base_rgb.shape[1], base_rgb.shape[0]), interpolation=cv2.INTER_LINEAR)
+    depth_rgb = _colorize_map(depth_norm, "turbo").astype(np.float32)
+    base = base_rgb.astype(np.float32)
+    if base.max() <= 1.0:
+        base = base * 255.0
+    return np.clip((1.0 - alpha) * base + alpha * depth_rgb, 0.0, 255.0).astype(np.uint8)
+
+
+def _compute_protrusion_map(depth_map: np.ndarray | None) -> np.ndarray | None:
+    """Göreli derinlikte yerel z-artığını çıkarır; yüksek değerler yerel çıkıntıyı temsil eder."""
+    if depth_map is None:
+        return None
+    depth_norm = _normalize_percentile_map(depth_map)
+    h, w = depth_norm.shape[:2]
+    kernel = max(9, ((min(h, w) // 12) | 1))
+    local_ground = cv2.GaussianBlur(depth_norm, (kernel, kernel), 0)
+    residual = depth_norm - local_ground
+    return _normalize_percentile_map(np.clip(residual, 0.0, None), 5.0, 99.0)
+
+
+def _compute_depth_edge_overlay(base_rgb: np.ndarray, depth_map: np.ndarray | None, alpha: float = 0.45) -> np.ndarray | None:
+    """Depth Sobel kenarını RGB üzerine bindirir (UI + QC görselleri)."""
+    if depth_map is None or not isinstance(base_rgb, np.ndarray) or base_rgb.size == 0:
+        return None
+    depth_f = depth_map.astype(np.float32)
+    if depth_f.shape[:2] != base_rgb.shape[:2]:
+        depth_f = cv2.resize(depth_f, (base_rgb.shape[1], base_rgb.shape[0]), interpolation=cv2.INTER_LINEAR)
+    gx = cv2.Sobel(depth_f, cv2.CV_32F, 1, 0, ksize=3)
+    gy = cv2.Sobel(depth_f, cv2.CV_32F, 0, 1, ksize=3)
+    mag = np.sqrt(gx * gx + gy * gy)
+    mag_n = _normalize_percentile_map(mag, 2.0, 98.0)
+    edge_col = _colorize_map(mag_n, "cividis").astype(np.float32)
+    base = base_rgb.astype(np.float32)
+    if base.max() <= 1.0:
+        base = base * 255.0
+    return np.clip((1.0 - alpha) * base + alpha * edge_col, 0.0, 255.0).astype(np.uint8)
+
+
+def _blend_heat_on_rgb(base_rgb: np.ndarray, heat_norm: np.ndarray, alpha: float = 0.50, cmap: str = "inferno") -> np.ndarray:
+    heat_col = _colorize_map(_normalize_percentile_map(heat_norm), cmap).astype(np.float32)
+    base = base_rgb.astype(np.float32)
+    if base.max() <= 1.0:
+        base = base * 255.0
+    if heat_col.shape[:2] != base.shape[:2]:
+        heat_col = cv2.resize(heat_col, (base.shape[1], base.shape[0]), interpolation=cv2.INTER_LINEAR)
+    return np.clip((1.0 - alpha) * base + alpha * heat_col, 0.0, 255.0).astype(np.uint8)
+
+
+def _evaluate_depth_viz_quality(results: dict) -> dict:
+    """Depth-on-RGB / protrusion / focus-tile görsellerini otomatik QC eder.
+
+    Dönüş: status (pass|warn|fail), checks, score (0..1), messages.
+    """
+    checks: dict[str, bool] = {}
+    messages: list[str] = []
+    metrics: dict[str, float] = {}
+
+    overlay = results.get("depth_rgb_overlay")
+    protrusion = results.get("depth_protrusion_map")
+    depth_full = results.get("depth_map_full")
+    tiles = results.get("focus_tiles") or []
+    detections = results.get("detections") or []
+
+    overlay_ok = isinstance(overlay, np.ndarray) and overlay.ndim == 3 and overlay.shape[2] >= 3
+    checks["depth_rgb_overlay"] = bool(overlay_ok)
+    if not overlay_ok:
+        messages.append("depth_rgb_overlay eksik veya geçersiz")
+
+    protr_ok = isinstance(protrusion, np.ndarray) and protrusion.ndim == 2 and protrusion.size > 0
+    checks["protrusion_map"] = bool(protr_ok)
+    if protr_ok:
+        p = protrusion.astype(np.float32)
+        metrics["protrusion_std"] = float(np.std(p))
+        metrics["protrusion_p95"] = float(np.percentile(p, 95))
+        metrics["protrusion_coverage"] = float(np.mean(p > 0.15))
+        contrast_ok = metrics["protrusion_std"] >= 0.04 or metrics["protrusion_p95"] >= 0.20
+        checks["protrusion_contrast"] = contrast_ok
+        if not contrast_ok:
+            messages.append("protrusion kontrastı düşük (düz sahne veya zayıf depth)")
+    else:
+        checks["protrusion_contrast"] = False
+        messages.append("depth_protrusion_map eksik")
+
+    if isinstance(depth_full, np.ndarray) and depth_full.size > 0:
+        d = depth_full.astype(np.float32)
+        metrics["depth_std"] = float(np.std(d))
+        checks["depth_map_contrast"] = metrics["depth_std"] >= 0.02
+        if not checks["depth_map_contrast"]:
+            messages.append("depth_map_full kontrastı çok düşük")
+    else:
+        checks["depth_map_contrast"] = False
+        messages.append("depth_map_full eksik")
+
+    tile_ok = True
+    if detections:
+        valid = [t for t in tiles if isinstance(t, np.ndarray) and t.ndim == 3]
+        if not valid:
+            tile_ok = False
+            messages.append("focus_tiles boş (tespit varken)")
+        else:
+            # 4 panel yan yana → genişlik yaklaşık 4× yükseklik
+            ratios = [float(t.shape[1]) / max(1.0, float(t.shape[0])) for t in valid]
+            metrics["focus_tile_avg_aspect"] = float(np.mean(ratios))
+            tile_ok = bool(np.mean([r >= 3.2 for r in ratios]) >= 0.8)
+            if not tile_ok:
+                messages.append("focus_tiles 4-panel en-boy oranını karşılamıyor")
+    checks["focus_tiles_4panel"] = tile_ok
+
+    if detections:
+        geom_keys = ("z_peak", "z_mean", "depth_span")
+        with_z = sum(1 for d in detections if any(k in d for k in geom_keys))
+        metrics["geomorph_coverage"] = float(with_z / max(1, len(detections)))
+        checks["geomorph_metrics"] = metrics["geomorph_coverage"] >= 0.8
+        if not checks["geomorph_metrics"]:
+            messages.append("detection geomorph alanları eksik (z_peak/...)")
+    else:
+        checks["geomorph_metrics"] = True
+        metrics["geomorph_coverage"] = 1.0
+
+    passed = sum(1 for v in checks.values() if v)
+    total = max(1, len(checks))
+    score = float(passed / total)
+    critical = ("depth_rgb_overlay", "protrusion_map", "focus_tiles_4panel")
+    critical_fail = any(not checks.get(k, False) for k in critical)
+    if critical_fail or score < 0.5:
+        status = "fail"
+    elif score < 0.85:
+        status = "warn"
+    else:
+        status = "pass"
+        if not messages:
+            messages.append("depth/protrusion görselleri QC geçti")
+
+    return {
+        "status": status,
+        "score": score,
+        "checks": checks,
+        "metrics": metrics,
+        "messages": messages,
+    }
+
+
+def _ensure_depth_viz_assets(results: dict) -> None:
+    """Persisted/eski sonuçlarda eksik depth overlay alanlarını doldurur (QC öncesi)."""
+    base = results.get("original")
+    if not isinstance(base, np.ndarray) or base.size == 0:
+        return
+    base_u8 = (base * 255.0).astype(np.uint8) if float(np.nanmax(base)) <= 1.0 else base.astype(np.uint8)
+    depth_full = results.get("depth_map_full")
+    if not isinstance(results.get("depth_rgb_overlay"), np.ndarray):
+        overlay = _compute_depth_rgb_overlay(base_u8, depth_full)
+        if overlay is not None:
+            results["depth_rgb_overlay"] = overlay
+    if not isinstance(results.get("depth_protrusion_map"), np.ndarray):
+        protr = _compute_protrusion_map(depth_full)
+        if protr is not None:
+            results["depth_protrusion_map"] = protr
+
+
+def _render_depth_viz_qc_panel(results: dict) -> None:
+    """Depth QC durumunu ve Depth-on-RGB / protrusion / edge galerisini gösterir."""
+    try:
+        had_overlay = isinstance(results.get("depth_rgb_overlay"), np.ndarray)
+        _ensure_depth_viz_assets(results)
+        vq = results.get("viz_quality")
+        need_eval = not isinstance(vq, dict) or "status" not in vq
+        if (
+            not need_eval
+            and not had_overlay
+            and isinstance(results.get("depth_rgb_overlay"), np.ndarray)
+        ):
+            need_eval = True
+        if need_eval:
+            vq = _evaluate_depth_viz_quality(results)
+            results["viz_quality"] = vq
+
+        st.subheader(t("analysis.viz_qc_header"))
+        vq_status = str(vq.get("status", "warn"))
+        vq_score = float(vq.get("score", 0.0) or 0.0)
+        vq_detail = "; ".join(vq.get("messages") or []) or t("analysis.viz_qc_none")
+        if vq_status == "pass":
+            st.success(t("analysis.viz_qc_pass", score=vq_score, detail=vq_detail))
+        elif vq_status == "warn":
+            st.warning(t("analysis.viz_qc_warn", score=vq_score, detail=vq_detail))
+        else:
+            st.error(t("analysis.viz_qc_fail", score=vq_score, detail=vq_detail))
+        checks = vq.get("checks") or {}
+        if checks:
+            st.caption(" · ".join(f"{k}:{'OK' if v else 'FAIL'}" for k, v in checks.items()))
+
+        base_u8 = (results["original"] * 255).astype(np.uint8)
+        depth_rgb = results.get("depth_rgb_overlay")
+        protr = results.get("depth_protrusion_map")
+        protr_rgb = (
+            _blend_heat_on_rgb(base_u8, protr, alpha=0.50, cmap="inferno")
+            if isinstance(protr, np.ndarray)
+            else None
+        )
+        edge_rgb = results.get("depth_edge_overlay")
+        if not isinstance(edge_rgb, np.ndarray):
+            edge_rgb = _compute_depth_edge_overlay(base_u8, results.get("depth_map_full"))
+            if edge_rgb is not None:
+                results["depth_edge_overlay"] = edge_rgb
+        gcols = st.columns(3)
+        with gcols[0]:
+            if isinstance(depth_rgb, np.ndarray):
+                st.image(depth_rgb, caption=t("analysis.viz_depth_rgb"), use_container_width=True)
+            else:
+                st.caption(t("analysis.viz_missing_depth_rgb"))
+        with gcols[1]:
+            if isinstance(protr_rgb, np.ndarray):
+                st.image(protr_rgb, caption=t("analysis.viz_protrusion"), use_container_width=True)
+            else:
+                st.caption(t("analysis.viz_missing_protrusion"))
+        with gcols[2]:
+            if isinstance(edge_rgb, np.ndarray):
+                st.image(edge_rgb, caption=t("analysis.viz_depth_edge"), use_container_width=True)
+            else:
+                st.caption(t("analysis.viz_missing_depth_edge"))
+    except Exception as exc:
+        st.warning(t("analysis.viz_qc_render_error", error=str(exc)))
+
+
 def _analysis_id_from_image(image_rgb_float: np.ndarray) -> str:
     """Rerun sırasında aynı analizi tekrar yazmamak için deterministik id."""
     try:
@@ -284,6 +556,717 @@ def _extract_region_latent(autoencoder: OptimizedAutoencoder, image_rgb_float: n
     except Exception:
         # Fallback: detektör çalışsın; latent yoksa sıfır vektör
         return np.zeros((1024,), dtype=np.float32)
+
+
+def _pool_region(map_2d: np.ndarray | None, det: dict) -> float:
+    if map_2d is None:
+        return 0.0
+    try:
+        x, y, w, h = int(det.get("x", 0)), int(det.get("y", 0)), int(det.get("w", 0)), int(det.get("h", 0))
+        hh, ww = map_2d.shape[:2]
+        x1 = max(0, min(x, ww - 1))
+        y1 = max(0, min(y, hh - 1))
+        x2 = max(x1 + 1, min(x + w, ww))
+        y2 = max(y1 + 1, min(y + h, hh))
+        region = map_2d[y1:y2, x1:x2]
+        if region.size == 0:
+            return 0.0
+        return float(np.mean(region))
+    except Exception:
+        return 0.0
+
+
+def _extract_region(map_2d: np.ndarray | None, det: dict) -> np.ndarray | None:
+    if map_2d is None:
+        return None
+    try:
+        x, y, w, h = int(det.get("x", 0)), int(det.get("y", 0)), int(det.get("w", 0)), int(det.get("h", 0))
+        hh, ww = map_2d.shape[:2]
+        x1 = max(0, min(x, ww - 1))
+        y1 = max(0, min(y, hh - 1))
+        x2 = max(x1 + 1, min(x + w, ww))
+        y2 = max(y1 + 1, min(y + h, hh))
+        region = np.asarray(map_2d[y1:y2, x1:x2], dtype=np.float32)
+        if region.size == 0:
+            return None
+        return region
+    except Exception:
+        return None
+
+
+def _append_detection_geomorph_metrics(det: dict, depth_map: np.ndarray | None, protrusion_map: np.ndarray | None) -> None:
+    depth_region = _extract_region(depth_map, det)
+    if depth_region is not None:
+        depth_norm = _normalize_percentile_map(depth_region, 2.0, 98.0)
+        det["depth_span"] = float(np.max(depth_norm) - np.min(depth_norm))
+    protrusion_region = _extract_region(protrusion_map, det)
+    if protrusion_region is None:
+        return
+    det["z_peak"] = float(np.max(protrusion_region))
+    det["z_mean"] = float(np.mean(protrusion_region))
+    det["z_std"] = float(np.std(protrusion_region))
+
+
+def _fuse_object_scores(
+    *,
+    detector_conf: float,
+    combined_pool: float,
+    padim_pool: float,
+    patchcore_pool: float,
+    depth_pool: float,
+    global_known_value: float,
+) -> tuple[float, float, float]:
+    """Nesne puanini anomaly destegiyle kapili olarak birlestir."""
+    local_value = float(
+        np.clip(
+            0.55 * global_known_value + 0.25 * depth_pool + 0.20 * combined_pool,
+            0.0,
+            1.0,
+        )
+    )
+    anomaly_score = float(
+        np.clip(
+            0.50 * combined_pool
+            + 0.20 * padim_pool
+            + 0.15 * patchcore_pool
+            + 0.10 * detector_conf
+            + 0.05 * (1.0 - depth_pool),
+            0.0,
+            1.0,
+        )
+    )
+    # ponytail: image-level known value zayif anomaly kutularini sisirmesin.
+    final_score = float(np.clip(anomaly_score * (0.70 + 0.30 * local_value), 0.0, 1.0))
+    return local_value, anomaly_score, final_score
+
+
+def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool:
+    """Benchmark kaynakli hafif post-filter."""
+    h_img, w_img = image_shape[:2]
+    y = int(det.get("y", 0))
+    w = max(1, int(det.get("w", 1)))
+    h = max(1, int(det.get("h", 1)))
+    area_ratio = float((w * h) / max(1, h_img * w_img))
+    combined_pool = float(det.get("combined_pool", 0.0))
+    comb_mean = float(det.get("comb_mean", 0.0))
+    edge_mean = float(det.get("edge_mean", 0.0))
+    detector_conf = float(det.get("detector_conf", det.get("score", 0.0)))
+    support = max(
+        combined_pool,
+        detector_conf,
+        float(det.get("padim_pool", 0.0)),
+        float(det.get("patchcore_pool", 0.0)),
+    )
+    near_top = y <= max(12, int(0.06 * h_img))
+    very_wide = (w / max(1, h)) >= 8.0
+    src = str(det.get("proposal_source", ""))
+    if area_ratio >= 0.12 and support < 0.02:
+        return False
+    if near_top and very_wide and combined_pool < 0.18:
+        return False
+    if src == "heuristic_merged":
+        if area_ratio >= 0.18 and y < int(0.20 * h_img):
+            return False
+        if (w / max(1, h)) >= 5.0 and combined_pool < 0.04:
+            return False
+        if h >= int(0.5 * h_img) and support < 0.03:
+            return False
+    if src == "heuristic_detail_first":
+        if (w / max(1, w_img)) > 0.85 and (h / max(1, h_img)) < 0.08:
+            return False
+        if y > int(0.80 * h_img) and (w / max(1, w_img)) > 0.70:
+            return False
+        fine_proxy = edge_mean + comb_mean
+        fine_local = float(det.get("fine_local", 0.0))
+        recall_signal = max(fine_proxy, fine_local, float(det.get("score", 0.0)))
+        if recall_signal >= 0.010 or support >= 0.003:
+            return True
+        return False
+    if src == "heuristic_plateau":
+        if float(det.get("plateau_mass", 0.0)) > 0 and float(det.get("score", 0.0)) >= 0.006:
+            return True
+    if src == "heuristic":
+        if area_ratio < 0.003 and support < 0.035:
+            return False
+        if near_top and area_ratio < 0.01 and support < 0.05:
+            return False
+    if support < 0.015:
+        fine_proxy = edge_mean + comb_mean
+        if src in {"heuristic_relaxed", "heuristic_peaks", "heuristic_plateau", "heuristic_detail_first"} and (
+            support >= 0.006 or fine_proxy >= 0.035
+        ):
+            return True
+        return False
+    return True
+
+
+def _boxes_axis_overlap_ratio(a: dict, b: dict) -> tuple[float, float]:
+    ax1, ay1, ax2, ay2 = a["x"], a["y"], a["x"] + a["w"], a["y"] + a["h"]
+    bx1, by1, bx2, by2 = b["x"], b["y"], b["x"] + b["w"], b["y"] + b["h"]
+    x_overlap = max(0, min(ax2, bx2) - max(ax1, bx1))
+    y_overlap = max(0, min(ay2, by2) - max(ay1, by1))
+    x_ratio = x_overlap / max(1.0, min(a["w"], b["w"]))
+    y_ratio = y_overlap / max(1.0, min(a["h"], b["h"]))
+    return float(x_ratio), float(y_ratio)
+
+
+def _bridge_strength(combined: np.ndarray, a: dict, b: dict, pad: int = 8) -> float:
+    x1 = max(0, min(a["x"], b["x"]) - pad)
+    y1 = max(0, min(a["y"], b["y"]) - pad)
+    x2 = min(combined.shape[1], max(a["x"] + a["w"], b["x"] + b["w"]) + pad)
+    y2 = min(combined.shape[0], max(a["y"] + a["h"], b["y"] + b["h"]) + pad)
+    region = combined[y1:y2, x1:x2]
+    if region.size == 0:
+        return 0.0
+    return float(np.mean(region))
+
+
+# ponytail: recall_ablation preset — export/benchmark only
+_RECALL_ABLATION_PRESETS: dict[str, dict[str, bool]] = {
+    "full": {"boost": True, "cap": True},
+    "slim": {"boost": True, "cap": True},
+    "no_boost": {"boost": False, "cap": True},
+    "no_cap": {"boost": True, "cap": False},
+}
+
+
+def _recall_ablation_flags() -> dict[str, bool]:
+    preset = str(globals().get("recall_ablation", "slim")).lower()
+    return dict(_RECALL_ABLATION_PRESETS.get(preset, _RECALL_ABLATION_PRESETS["slim"]))
+
+
+def _recall_tier(combined: np.ndarray, fine_detail: np.ndarray) -> str:
+    """off | sparse (rocky recall) | clutter (penalty gevşetme)."""
+    try:
+        rocky_sparse = bool(
+            float(np.percentile(combined, 50)) < 0.08
+            and float(np.max(fine_detail)) > 0.12
+            and float(np.mean(fine_detail > np.percentile(fine_detail, 90))) > 0.012
+        )
+        if rocky_sparse:
+            return "sparse"
+        global_clutter = bool(
+            float(np.percentile(combined, 95)) < 0.12
+            and float(np.percentile(fine_detail, 90)) > 0.08
+        )
+        local_clutter = bool(
+            float(np.percentile(combined, 50)) < 0.08
+            and float(np.max(fine_detail)) > 0.15
+            and float(np.mean(fine_detail > np.percentile(fine_detail, 85))) > 0.02
+        )
+        if global_clutter or local_clutter:
+            return "clutter"
+        return "off"
+    except Exception:
+        return "off"
+
+
+def _is_clutter_mode(combined: np.ndarray, fine_detail: np.ndarray) -> bool:
+    """ponytail: combined zayıf ama fine_detail güçlü → rocky/clutter recall modu."""
+    return _recall_tier(combined, fine_detail) in {"sparse", "clutter"}
+
+
+def _is_rocky_recall_mode(combined: np.ndarray, fine_detail: np.ndarray) -> bool:
+    """Dar recall modu: yalnız düşük combined + seyrek fine-detail tepeleri."""
+    return _recall_tier(combined, fine_detail) == "sparse"
+
+
+def _should_run_detail_first_recall(
+    combined: np.ndarray,
+    fine_detail: np.ndarray,
+    detections: list[dict],
+) -> bool:
+    """ponytail: detail-first yalnız boş veya rocky-benzeri seyrek sahnede."""
+    if len(detections) == 0:
+        return True
+    if len(detections) >= 2:
+        return False
+    return _is_rocky_recall_mode(combined, fine_detail)
+
+
+def _hysteresis_mask(
+    seed_map: np.ndarray,
+    hi_pct: float,
+    lo_pct: float,
+    *,
+    max_iter: int = 10,
+) -> np.ndarray:
+    hi = float(np.percentile(seed_map, hi_pct))
+    lo = float(np.percentile(seed_map, lo_pct))
+    high_mask = (seed_map >= hi).astype(np.uint8)
+    low_mask = (seed_map >= lo).astype(np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
+    seeds = (high_mask * 255).astype(np.uint8)
+    low = (low_mask * 255).astype(np.uint8)
+    prev = np.zeros_like(seeds)
+    for _ in range(max_iter):
+        dil = cv2.dilate(seeds, kernel, iterations=1)
+        seeds = cv2.bitwise_and(dil, low)
+        if np.array_equal(seeds, prev):
+            break
+        prev = seeds.copy()
+    mask = cv2.morphologyEx(seeds, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    return cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
+
+
+def _nms_topk(detections: list[dict], *, nms_iou: float, top_k: int) -> list[dict]:
+    ordered = sorted(detections, key=lambda d: float(d.get("score", 0.0)), reverse=True)
+    kept: list[dict] = []
+    for det in ordered:
+        if all(_bbox_iou_xywh(det, k) < nms_iou for k in kept):
+            kept.append(det)
+    return kept[:max(1, int(top_k))]
+
+
+def _append_unique_detections(
+    detections: list[dict],
+    extra: list[dict],
+    *,
+    nms_iou: float,
+    max_add: int,
+) -> list[dict]:
+    if not extra:
+        return detections
+
+    out = list(detections)
+    added = 0
+    for det in sorted(extra, key=lambda d: float(d.get("score", 0.0)), reverse=True):
+        if added >= max_add:
+            break
+        if all(_bbox_iou_xywh(det, kept) < nms_iou for kept in out):
+            out.append(det)
+            added += 1
+    return out
+
+
+def _bbox_iou_xywh(a: dict, b: dict) -> float:
+    ax1, ay1, aw, ah = a["x"], a["y"], a["w"], a["h"]
+    bx1, by1, bw, bh = b["x"], b["y"], b["w"], b["h"]
+    ax2, ay2 = ax1 + aw, ay1 + ah
+    bx2, by2 = bx1 + bw, by1 + bh
+    inter_w = max(0, min(ax2, bx2) - max(ax1, bx1))
+    inter_h = max(0, min(ay2, by2) - max(ay1, by1))
+    inter = inter_w * inter_h
+    if inter <= 0:
+        return 0.0
+    union = aw * ah + bw * bh - inter
+    return float(inter / max(union, 1e-6))
+
+
+def _collect_plateau_detections(
+    combined: np.ndarray,
+    *,
+    area_min: float,
+    percentile: float = 91.0,
+    max_plateaus: int = 3,
+) -> list[dict]:
+    """Heatmap plato CC pass: boulder fragmentation için tek bbox / plato."""
+    H, W = combined.shape[:2]
+    img_area = float(H * W)
+    th = float(np.percentile(combined, percentile))
+    mask = (combined >= th).astype(np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    n_labels, labels = cv2.connectedComponents(mask)
+    out: list[dict] = []
+    for lab in range(1, n_labels):
+        ys, xs = np.where(labels == lab)
+        if ys.size == 0:
+            continue
+        if float(ys.size) < area_min:
+            continue
+        x1, x2 = int(xs.min()), int(xs.max()) + 1
+        y1, y2 = int(ys.min()), int(ys.max()) + 1
+        region = combined[y1:y2, x1:x2]
+        mass = float(np.sum(region))
+        score = mass / max(1.0, float(region.size))
+        out.append(
+            {
+                "x": x1,
+                "y": y1,
+                "w": x2 - x1,
+                "h": y2 - y1,
+                "score": float(score),
+                "poly": None,
+                "proposal_source": "heuristic_plateau",
+                "plateau_mass": mass,
+                "area_ratio": float((x2 - x1) * (y2 - y1) / max(1.0, img_area)),
+                "comb_mean": float(score),
+                "edge_mean": float(np.percentile(region, 90)) if region.size else float(score),
+            }
+        )
+    out = sorted(out, key=lambda d: float(d.get("plateau_mass", d.get("score", 0.0))), reverse=True)
+    return out[:max_plateaus]
+
+
+def _fuse_with_plateau_detections(
+    contour_dets: list[dict],
+    plateau_dets: list[dict],
+    *,
+    iou_replace: float = 0.35,
+    min_standalone_area_ratio: float = 0.015,
+) -> list[dict]:
+    """Plato kutuları contour fragmanlarının üzerine bindir; küçük plato FP ekleme."""
+    if not plateau_dets:
+        return contour_dets
+    kept = [d for d in contour_dets]
+    for plat in plateau_dets:
+        overlap_idx = [
+            i for i, det in enumerate(kept)
+            if _bbox_iou_xywh(det, plat) >= iou_replace
+        ]
+        if overlap_idx:
+            for i in sorted(overlap_idx, reverse=True):
+                kept.pop(i)
+            kept.append(plat)
+        elif float(plat.get("area_ratio", 0.0)) >= min_standalone_area_ratio:
+            kept.append(plat)
+    return kept
+
+
+def _region_proposal_score(region: np.ndarray) -> float:
+    if region.size == 0:
+        return 0.0
+    return float(0.65 * np.percentile(region, 75) + 0.35 * (np.sum(region) / region.size))
+
+
+def _should_merge_proposals(a: dict, b: dict, combined: np.ndarray, diag: float, merge_iou: float, merge_tol: float) -> bool:
+    axc = a["x"] + a["w"] / 2.0
+    ayc = a["y"] + a["h"] / 2.0
+    bxc = b["x"] + b["w"] / 2.0
+    byc = b["y"] + b["h"] / 2.0
+    center_dist = float(np.hypot(axc - bxc, ayc - byc))
+    x_overlap_ratio, y_overlap_ratio = _boxes_axis_overlap_ratio(a, b)
+    bridge = _bridge_strength(combined, a, b)
+    ax2 = a["x"] + a["w"]
+    ay2 = a["y"] + a["h"]
+    bx2 = b["x"] + b["w"]
+    by2 = b["y"] + b["h"]
+    gap_x = max(0.0, max(a["x"], b["x"]) - min(ax2, bx2))
+    gap_y = max(0.0, max(a["y"], b["y"]) - min(ay2, by2))
+    size_scale = max(a["w"], a["h"], b["w"], b["h"])
+    close_centers = center_dist < merge_tol * diag * 0.02
+    close_gap = max(gap_x, gap_y) < max(18.0, 1.5 * size_scale)
+    aligned = x_overlap_ratio > 0.35 or y_overlap_ratio > 0.35
+    return bool(
+        close_centers
+        or ((aligned and close_gap) and bridge > 0.02)
+        or (_bridge_strength(combined, a, b, pad=4) > 0.035 and center_dist < max(24.0, 0.45 * size_scale))
+    )
+
+
+def _collect_detection_from_contour(
+    cnt,
+    *,
+    combined: np.ndarray,
+    grad_mag_n: np.ndarray,
+    depth_edge_n: np.ndarray,
+    depth_n_for_region: np.ndarray,
+    proximity_w: np.ndarray,
+    shadow_like: np.ndarray | None,
+    illumination_edge: np.ndarray | None,
+    spec_mask: np.ndarray | None,
+    boundary_shadow: np.ndarray | None,
+    rover_body: np.ndarray | None,
+    lowvar_mask: np.ndarray | None,
+    fine_detail: np.ndarray,
+    area_min: float,
+    clutter_mode: bool = False,
+) -> dict | None:
+    H, W = combined.shape[:2]
+    x, y, w, h = cv2.boundingRect(cnt)
+    y1c, y2c = max(0, y), min(H, y + h)
+    x1c, x2c = max(0, x), min(W, x + w)
+    region_depth_mean = float(np.mean(depth_n_for_region[y1c:y2c, x1c:x2c])) if (y2c > y1c and x2c > x1c) else 0.0
+    local_area_min = area_min * (0.35 + 0.65 * (1.0 - region_depth_mean))
+    if cv2.contourArea(cnt) < local_area_min:
+        return None
+    rect = cv2.minAreaRect(cnt)
+    box_pts = cv2.boxPoints(rect).astype(np.intp)
+    y1, y2 = y1c, y2c
+    x1, x2 = x1c, x2c
+    region = combined[y1:y2, x1:x2]
+    region_edges = grad_mag_n[y1:y2, x1:x2]
+    region_shadow = shadow_like[y1:y2, x1:x2] if shadow_like is not None else None
+    region_illum = illumination_edge[y1:y2, x1:x2] if illumination_edge is not None else None
+    region_spec = spec_mask[y1:y2, x1:x2] if spec_mask is not None else None
+    region_boundary = boundary_shadow[y1:y2, x1:x2] if boundary_shadow is not None else None
+    region_rover = rover_body[y1:y2, x1:x2] if rover_body is not None else None
+    region_prox = proximity_w[y1:y2, x1:x2]
+    prox_mean = float(np.mean(region_prox)) if region_prox.size else 0.0
+    comb_mean = float(np.mean(region)) if region.size else 0.0
+    edge_mean = float(np.mean(region_edges)) if region_edges.size else 0.0
+    shadow_pen = float(np.mean(region_shadow)) if (region_shadow is not None and region_shadow.size) else 0.0
+    illum_pen = float(np.mean(region_illum)) if (region_illum is not None and region_illum.size) else 0.0
+    spec_pen = float(np.mean(region_spec)) if (region_spec is not None and region_spec.size) else 0.0
+    boundary_pen = float(np.mean(region_boundary)) if (region_boundary is not None and region_boundary.size) else 0.0
+    rover_pen = float(np.mean(region_rover)) if (region_rover is not None and region_rover.size) else 0.0
+    lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if lowvar_mask is not None else 0.0
+    fine_local = float(np.mean(fine_detail[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
+    region_far = float(np.clip(region_depth_mean, 0.0, 1.0))
+    prox_weight = 0.20 * (1.0 - 0.6 * region_far)
+    lowvar_pen *= 1.0 - 0.45 * region_far
+    penalty_scale = 0.8 if clutter_mode else 1.0
+    score = 0.5 * comb_mean + 0.25 * edge_mean + prox_weight * prox_mean + 0.05 * fine_local - penalty_scale * (0.35 * shadow_pen + 0.20 * illum_pen + 0.30 * spec_pen + 0.30 * boundary_pen + 0.45 * rover_pen + 0.25 * lowvar_pen)
+    score = float(max(0.0, score))
+    sh_cut = float(globals().get('shadow_cut', 0.45)) + 0.10 * region_far
+    im_edge_min = float(globals().get('img_edge_min', 0.10)) * (1.0 - 0.35 * region_far)
+    dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (1.0 - 0.45 * region_far)
+    sp_cut = float(globals().get('spec_cut', 0.50)) + 0.08 * region_far
+    depth_edge_local = float(np.mean(depth_edge_n[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
+    if shadow_pen > sh_cut and edge_mean < im_edge_min and depth_edge_local < dp_edge_min:
+        return None
+    if spec_pen > sp_cut and edge_mean < im_edge_min and depth_edge_local < dp_edge_min:
+        return None
+    if boundary_pen > 0.35 or rover_pen > 0.30:
+        return None
+    if lowvar_pen > 0.6 and edge_mean < im_edge_min:
+        return None
+    return {
+        "x": int(x), "y": int(y), "w": int(w), "h": int(h),
+        "score": float(score),
+        "poly": box_pts.tolist(),
+        "comb_mean": float(comb_mean),
+        "edge_mean": float(edge_mean),
+        "prox_mean": float(prox_mean),
+        "shadow_pen": float(shadow_pen),
+        "illum_pen": float(illum_pen),
+        "spec_pen": float(spec_pen),
+        "lowvar_pen": float(lowvar_pen),
+        "proposal_source": "heuristic",
+    }
+
+
+def _collect_peak_window_detections(
+    seed_map: np.ndarray,
+    *,
+    top_k: int,
+    rover_body: np.ndarray | None,
+    boundary_shadow: np.ndarray | None,
+    peak_percentile: float = 99.3,
+    window_scale: float = 0.08,
+) -> list[dict]:
+    """Bos kalan sahnelerde local peak pencereleri ile recall kurtar."""
+    H, W = seed_map.shape[:2]
+    work = seed_map.copy().astype(np.float32)
+    if rover_body is not None:
+        work *= (1.0 - 0.9 * rover_body.astype(np.float32))
+    if boundary_shadow is not None:
+        work *= (1.0 - 0.8 * boundary_shadow.astype(np.float32))
+    border = max(12, int(0.10 * min(H, W)))
+    work[:border, :] *= 0.5
+    work[-border:, :] *= 0.7
+    work[:, :border] *= 0.7
+    work[:, -border:] *= 0.7
+    peak_thresh = max(0.03, float(np.percentile(work, peak_percentile)))
+    if peak_thresh <= 0.0:
+        return []
+    dil = cv2.dilate(work, np.ones((9, 9), np.uint8), iterations=1)
+    peak_mask = (work >= peak_thresh) & (work >= dil - 1e-6)
+    ys, xs = np.where(peak_mask)
+    if len(xs) == 0:
+        return []
+    order = np.argsort(work[ys, xs])[::-1]
+    winsz = max(32, int(window_scale * min(H, W)))
+    out: list[dict] = []
+    for idx in order[: max(1, int(top_k))]:
+        xc = int(xs[idx])
+        yc = int(ys[idx])
+        x1 = max(0, xc - winsz // 2)
+        y1 = max(0, yc - winsz // 2)
+        x2 = min(W, x1 + winsz)
+        y2 = min(H, y1 + winsz)
+        region = work[y1:y2, x1:x2]
+        rover_pen = float(np.mean(rover_body[y1:y2, x1:x2])) if rover_body is not None else 0.0
+        boundary_pen = float(np.mean(boundary_shadow[y1:y2, x1:x2])) if boundary_shadow is not None else 0.0
+        if region.size == 0 or float(np.mean(region)) < 0.003:
+            continue
+        if rover_pen > 0.15 or boundary_pen > 0.20:
+            continue
+        out.append(
+            {
+                "x": int(x1),
+                "y": int(y1),
+                "w": int(x2 - x1),
+                "h": int(y2 - y1),
+                "score": float(np.mean(region)),
+                "poly": None,
+                "proposal_source": "heuristic_peaks",
+            }
+        )
+    return out
+
+
+def _collect_detail_first_detections(
+    seed_map: np.ndarray,
+    *,
+    top_k: int,
+    area_min: float,
+    rover_body: np.ndarray | None,
+    boundary_shadow: np.ndarray | None,
+) -> list[dict]:
+    """Fine-detail odaklı contour-free recall pass."""
+    H, W = seed_map.shape[:2]
+    work = seed_map.copy().astype(np.float32)
+    if rover_body is not None:
+        work *= (1.0 - 0.9 * rover_body.astype(np.float32))
+    if boundary_shadow is not None:
+        work *= (1.0 - 0.8 * boundary_shadow.astype(np.float32))
+    mask = _hysteresis_mask(work, 88.0, 82.0)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    out: list[dict] = []
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        if (w * h) < area_min:
+            continue
+        region = work[y:y + h, x:x + w]
+        if region.size == 0:
+            continue
+        out.append(
+            {
+                "x": int(x),
+                "y": int(y),
+                "w": int(w),
+                "h": int(h),
+                "score": float(np.mean(region)),
+                "detector_conf": float(np.mean(region)),
+                "comb_mean": float(np.mean(region)),
+                "edge_mean": float(np.percentile(region, 90)),
+                "fine_local": float(np.percentile(region, 85)),
+                "poly": None,
+                "proposal_source": "heuristic_detail_first",
+            }
+        )
+    out.sort(key=lambda d: float(d["score"]), reverse=True)
+    return out[:max(1, int(top_k))]
+
+
+def _merge_backend_detections(primary: list[dict], secondary: list[dict], *, iou_threshold: float) -> list[dict]:
+    merged = list(primary)
+    for cand in secondary:
+        replaced = False
+        for idx, det in enumerate(merged):
+            if _bbox_iou_xywh(det, cand) >= iou_threshold:
+                left = float(det.get("object_anomaly_score", det.get("score", 0.0)))
+                right = float(cand.get("object_anomaly_score", cand.get("score", 0.0)))
+                if right > left:
+                    merged[idx] = cand
+                replaced = True
+                break
+        if not replaced:
+            merged.append(cand)
+    return merged
+
+
+def _boost_recall_detection_pools(det: dict) -> None:
+    """Recall pass kutularinda combined_pool/detector_conf'i seed sinyaliyle destekle."""
+    src = str(det.get("proposal_source", ""))
+    if src not in {"heuristic_detail_first", "heuristic_relaxed", "heuristic_peaks", "heuristic_plateau"}:
+        return
+    seed_strength = max(
+        float(det.get("comb_mean", 0.0)),
+        float(det.get("edge_mean", 0.0)),
+        float(det.get("fine_local", 0.0)),
+        float(det.get("score", 0.0)),
+        float(det.get("detector_conf", 0.0)),
+    )
+    det["combined_pool"] = max(float(det.get("combined_pool", 0.0)), seed_strength * 0.85)
+    det["detector_conf"] = max(float(det.get("detector_conf", 0.0)), seed_strength)
+
+
+def _cap_detections_if_needed(
+    detections: list[dict],
+    combined: np.ndarray,
+    fine_detail: np.ndarray,
+    *,
+    max_default: int = 4,
+) -> list[dict]:
+    """ponytail: hills/boulder fragment spray; gerçek rocky clutter hariç üst sınır."""
+    if len(detections) <= max_default:
+        return detections
+    detail_cnt = sum(1 for d in detections if str(d.get("proposal_source")) == "heuristic_detail_first")
+    rocky_rich = float(np.percentile(combined, 90)) > 0.08
+    rocky_sparse = _is_rocky_recall_mode(combined, fine_detail) and detail_cnt >= 1
+    if rocky_sparse or rocky_rich:
+        return detections
+    return sorted(detections, key=lambda d: float(d.get("score", 0.0)), reverse=True)[:max_default]
+
+
+def _score_object_detections(
+    detections: list,
+    *,
+    original_rgb_float: np.ndarray,
+    autoencoder: OptimizedAutoencoder,
+    device: torch.device,
+    combined_map: np.ndarray,
+    depth_map: np.ndarray | None,
+    protrusion_map: np.ndarray | None,
+    padim_map: np.ndarray | None,
+    patchcore_map: np.ndarray | None,
+    global_known_value: float,
+) -> list:
+    """Detector veya heuristic proposal'lari object-level anomaly/value skoruyla yeniden puanla."""
+    if not detections:
+        return detections
+
+    depth_norm = _normalize_map(depth_map) if depth_map is not None else None
+    kept: list[dict] = []
+    for det in detections:
+        det["combined_pool"] = _pool_region(combined_map, det)
+        det["padim_pool"] = _pool_region(padim_map, det)
+        det["patchcore_pool"] = _pool_region(patchcore_map, det)
+        det["depth_pool"] = _pool_region(depth_norm, det)
+        _append_detection_geomorph_metrics(det, depth_map, protrusion_map)
+        if _recall_ablation_flags()["boost"]:
+            _boost_recall_detection_pools(det)
+        det["detector_conf"] = float(det.get("detector_conf", det.get("score", 0.0)))
+        det["latent_z"] = _extract_region_latent(autoencoder, original_rgb_float, det, device)
+        det["object_value_score"], det["object_anomaly_score"], det["score_raw"] = _fuse_object_scores(
+            detector_conf=float(det["detector_conf"]),
+            combined_pool=float(det["combined_pool"]),
+            padim_pool=float(det["padim_pool"]),
+            patchcore_pool=float(det["patchcore_pool"]),
+            depth_pool=float(det["depth_pool"]),
+            global_known_value=float(global_known_value),
+        )
+        det["score"] = det["score_raw"]
+        if _should_keep_detection(det, original_rgb_float.shape):
+            kept.append(det)
+
+    return sorted(kept, key=lambda d: float(d.get("score", 0.0)), reverse=True)
+
+
+def _run_detector_backend(
+    detector: YoloDetector,
+    image_rgb_float: np.ndarray,
+    *,
+    conf_threshold: float,
+    nms_iou: float,
+    top_k: int,
+) -> list[dict]:
+    image_u8 = (np.clip(image_rgb_float, 0.0, 1.0) * 255.0).astype(np.uint8)
+    boxes = detector.detect(
+        image_u8,
+        conf_threshold=conf_threshold,
+        nms_iou=nms_iou,
+        max_detections=top_k,
+    )
+    detections: list[dict] = []
+    for box in boxes:
+        detections.append(
+            {
+                "x": int(box.x),
+                "y": int(box.y),
+                "w": int(box.w),
+                "h": int(box.h),
+                "score": float(box.score),
+                "detector_conf": float(box.score),
+                "class_id": int(box.class_id),
+                "class_name": str(box.class_name),
+                "proposal_source": "yolo",
+                "poly": None,
+            }
+        )
+    return detections
 
 def _assign_clusters(latents: np.ndarray, method: str, k: int, eps: float, min_samples: int) -> np.ndarray:
     """Latent uzayında cluster etiketleri üret (noise'ları tekil cluster'a çevirir)."""
@@ -473,6 +1456,8 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
             base = cv2.cvtColor(base, cv2.COLOR_GRAY2RGB)
         heat_full = (plt.cm.inferno(comb_map)[..., :3] * 255).astype(np.uint8)
         depth_full = results.get('depth_map_full')
+        depth_rgb_full = results.get('depth_rgb_overlay')
+        protrusion_full = results.get('depth_protrusion_map')
 
         # Odak ayarları
         h_target = int(globals().get('focus_h', 300))
@@ -481,6 +1466,13 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
         hide_empty_depth = bool(globals().get('focus_hide_empty_depth', True))
         interp_name = str(globals().get('focus_interp', 'INTER_LANCZOS4'))
         interp = getattr(cv2, interp_name, cv2.INTER_LANCZOS4)
+
+        # `depth_rgb_overlay` mutlak çözünürlükte olmayabilir; odak tile kırpımı için comb_map'e hizala.
+        if isinstance(depth_rgb_full, np.ndarray) and depth_rgb_full.shape[:2] != (H, W):
+            try:
+                depth_rgb_full = cv2.resize(depth_rgb_full, (W, H), interpolation=cv2.INTER_LINEAR)
+            except Exception:
+                depth_rgb_full = None
 
         for det in detections:
             try:
@@ -504,19 +1496,46 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
                     heat_crop = cv2.addWeighted(raw_crop, 0.25, heat_u8, 0.75, 0)
                 else:
                     heat_crop = heat_u8
-                # Derinlik kenarı karo
+                # Panel-1: depth-on-RGB. En sık durumda `depth_rgb_overlay` kullan.
+                depth_rgb_crop = None
+                if isinstance(depth_rgb_full, np.ndarray) and depth_rgb_full.shape[:2] == (H, W):
+                    depth_rgb_crop = depth_rgb_full[y1:y2, x1:x2].copy()
+                # Eğer overlay yoksa (beklenmedik hata/şekil sapması), `depth_map_full`'dan yeniden üret.
+                if depth_rgb_crop is None and depth_full is not None and depth_full.shape[:2] == comb_map.shape[:2]:
+                    dpatch = depth_full[y1:y2, x1:x2]
+                    depth_rgb_crop = _compute_depth_rgb_overlay(raw_crop, dpatch, alpha=0.38)
+                # Hâlâ yoksa, raw_RGB'den gradient tabanlı sentetik derinlik çıkar.
+                if depth_rgb_crop is None:
+                    img_u8 = raw_crop.astype(np.uint8)
+                    gray = cv2.cvtColor(img_u8, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
+                    sx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+                    sy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+                    grad = np.sqrt(sx * sx + sy * sy)
+                    depth_proxy = _normalize_map(1.0 - grad)
+                    depth_rgb_crop = _compute_depth_rgb_overlay(raw_crop, depth_proxy, alpha=0.38)
+                if depth_rgb_crop is None:
+                    # Last-resort: sabit (0) derinlikten bile olsa "depth-on-RGB" colormap üret.
+                    depth_rgb_crop = _compute_depth_rgb_overlay(
+                        raw_crop,
+                        np.zeros(raw_crop.shape[:2], dtype=np.float32),
+                        alpha=0.38,
+                    )
+                if protrusion_full is not None and protrusion_full.shape[:2] == comb_map.shape[:2]:
+                    protrusion_crop = _colorize_map(protrusion_full[y1:y2, x1:x2], "magma")
+                else:
+                    protrusion_crop = None
+                # Derinlik kenarı karo (UI galeri ile aynı helper)
                 if depth_full is not None and depth_full.shape[:2] == comb_map.shape[:2]:
-                    dpatch = depth_full[y1:y2, x1:x2].astype(np.float32)
-                    gx = cv2.Sobel(dpatch, cv2.CV_32F, 1, 0, ksize=3)
-                    gy = cv2.Sobel(dpatch, cv2.CV_32F, 0, 1, ksize=3)
-                    mag = np.sqrt(gx * gx + gy * gy)
-                    mag = (mag - mag.min()) / (mag.ptp() + 1e-6)
-                    depth_edge_crop = (plt.cm.cividis(mag)[..., :3] * 255).astype(np.uint8)
+                    depth_edge_crop = _compute_depth_edge_overlay(
+                        raw_crop, depth_full[y1:y2, x1:x2], alpha=0.45
+                    )
                 else:
                     depth_edge_crop = None
                 # Keskinleştirme
                 if sharpen:
                     heat_crop = _unsharp_image(heat_crop, 0.6, 2)
+                    if protrusion_crop is not None:
+                        protrusion_crop = _unsharp_image(protrusion_crop, 0.6, 2)
                     if depth_edge_crop is not None:
                         depth_edge_crop = _unsharp_image(depth_edge_crop, 0.6, 2)
                 # H yüksekliğine yeniden örnekle
@@ -529,11 +1548,15 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
                     cv2.rectangle(raw_crop, (max(0, pad), max(0, pad)), (max(0, pad) + w, max(0, pad) + h), (240, 220, 0), 1)
                 except Exception:
                     pass
-                parts = [_resize_h(raw_crop), _resize_h(heat_crop)]
-                if depth_edge_crop is not None or not hide_empty_depth:
-                    if depth_edge_crop is None:
-                        depth_edge_crop = np.zeros_like(heat_crop)
-                    parts.append(_resize_h(depth_edge_crop))
+                # Panel-1: depth-on-RGB (Fig 4b benzeri).
+                # Spec: focus tile'lar her zaman 4 panel olmalı.
+                parts = [_resize_h(depth_rgb_crop), _resize_h(heat_crop)]
+                if protrusion_crop is None:
+                    protrusion_crop = np.zeros_like(heat_crop)
+                if depth_edge_crop is None:
+                    depth_edge_crop = np.zeros_like(heat_crop)
+                parts.append(_resize_h(protrusion_crop))
+                parts.append(_resize_h(depth_edge_crop))
                 tile = np.concatenate(parts, axis=1)
                 tiles.append(tile)
             except Exception:
@@ -687,126 +1710,84 @@ def compute_combined_anomaly_map(
     except Exception:
         combined = cv2.GaussianBlur(combined, (3, 3), 0.0)
 
-    # Histerezis eşikleme ile aday bölgeler (seed-grow): daha sağlam tespit
-    high_th = float(np.percentile(combined, hyst_high_pct))
-    low_th = float(np.percentile(combined, hyst_low_pct))
-    high_mask = (combined >= high_th).astype(np.uint8)
-    low_mask = (combined >= low_th).astype(np.uint8)
+    clutter_mode = _is_clutter_mode(combined, fine_detail)
+    rocky_recall_mode = _is_rocky_recall_mode(combined, fine_detail)
+    diagnostics = {
+        "clutter_mode": bool(clutter_mode),
+        "rocky_recall_mode": bool(rocky_recall_mode),
+        "pre_filter_proposal_count": 0,
+        "proposal_sources_breakdown": {},
+    }
 
-    # Seed'leri düşük eşik alanında genişlet (yaklaşık morfolojik rekonstrüksiyon)
-    kernel = np.ones((3, 3), np.uint8)
-    prev = np.zeros_like(high_mask)
-    seeds = (high_mask * 255).astype(np.uint8)
-    low = (low_mask * 255).astype(np.uint8)
-    for _ in range(10):
-        dil = cv2.dilate(seeds, kernel, iterations=1)
-        seeds = cv2.bitwise_and(dil, low)
-        if np.array_equal(seeds, prev):
-            break
-        prev = seeds.copy()
-    mask = seeds
-    # Temizleme ve doldurma
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
+    # Histerezis eşikleme ile aday bölgeler (seed-grow): daha sağlam tespit
+    mask = _hysteresis_mask(combined, float(hyst_high_pct), float(hyst_low_pct))
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     detections = []
     area_min_pct = float(globals().get('min_area_pct', 0.10)) / 100.0
     area_min = max(1.0, area_min_pct * H * W)
     for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        # Bölge sınırlarını güvenli kırp
-        y1c, y2c = max(0, y), min(H, y + h)
-        x1c, x2c = max(0, x), min(W, x + w)
-        # Uzak alanlar için daha küçük eşik: derinlik yüksekse alan eşiğini düşür
-        region_depth_mean = float(np.mean(depth_n_for_region[y1c:y2c, x1c:x2c])) if (y2c > y1c and x2c > x1c) else 0.0
-        local_area_min = area_min * (0.35 + 0.65 * (1.0 - region_depth_mean))
-        if cv2.contourArea(cnt) < local_area_min:
-            continue
-        # Döndürülmüş dikdörtgen (daha sıkı kutulama)
-        rect = cv2.minAreaRect(cnt)
-        box_pts = cv2.boxPoints(rect)
-        box_pts = box_pts.astype(np.intp)
-        # Bölge sınırlarını güvenli kırp
-        y1, y2 = y1c, y2c
-        x1, x2 = x1c, x2c
-        region = combined[y1:y2, x1:x2]
-        region_edges = grad_mag_n[y1:y2, x1:x2]
-        region_shadow = shadow_like[y1:y2, x1:x2] if 'shadow_like' in locals() else None
-        region_illum = illumination_edge[y1:y2, x1:x2] if 'illumination_edge' in locals() else None
-        region_spec = spec_mask[y1:y2, x1:x2] if 'spec_mask' in locals() else None
-        region_boundary = boundary_shadow[y1:y2, x1:x2] if 'boundary_shadow' in locals() else None
-        region_rover = rover_body[y1:y2, x1:x2] if 'rover_body' in locals() else None
-        region_prox = proximity_w[y1:y2, x1:x2]
-        # Yakınlık ortalaması
-        prox_mean = float(np.mean(region_prox)) if region_prox.size else 0.0
-        # Bölge skorları
-        comb_mean = float(np.mean(region)) if region.size else 0.0
-        edge_mean = float(np.mean(region_edges)) if region_edges.size else 0.0
-        # Gölge ve aydınlatma-kenarı azaltımları
-        shadow_pen = float(np.mean(region_shadow)) if (region_shadow is not None and region_shadow.size) else 0.0
-        illum_pen = float(np.mean(region_illum)) if (region_illum is not None and region_illum.size) else 0.0
-        spec_pen = float(np.mean(region_spec)) if (region_spec is not None and region_spec.size) else 0.0
-        boundary_pen = float(np.mean(region_boundary)) if (region_boundary is not None and region_boundary.size) else 0.0
-        rover_pen = float(np.mean(region_rover)) if (region_rover is not None and region_rover.size) else 0.0
-        lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if 'lowvar_mask' in locals() else 0.0
-        # Uzak alanlar için küçük ayrıntıları daha iyi puanlamak adına fine_detail katkısını ekle
-        fine_local = float(np.mean(fine_detail[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
-        region_far = float(np.clip(region_depth_mean, 0.0, 1.0))
-        prox_weight = 0.20 * (1.0 - 0.6 * region_far)
-        lowvar_pen *= 1.0 - 0.45 * region_far
-        score = 0.5 * comb_mean + 0.25 * edge_mean + prox_weight * prox_mean + 0.05 * fine_local - 0.35 * shadow_pen - 0.20 * illum_pen - 0.30 * spec_pen - 0.30 * boundary_pen - 0.45 * rover_pen - 0.25 * lowvar_pen
-        score = float(max(0.0, score))
+        det = _collect_detection_from_contour(
+            cnt,
+            combined=combined,
+            grad_mag_n=grad_mag_n,
+            depth_edge_n=depth_edge_n,
+            depth_n_for_region=depth_n_for_region,
+            proximity_w=proximity_w,
+            shadow_like=shadow_like if 'shadow_like' in locals() else None,
+            illumination_edge=illumination_edge if 'illumination_edge' in locals() else None,
+            spec_mask=spec_mask if 'spec_mask' in locals() else None,
+            boundary_shadow=boundary_shadow if 'boundary_shadow' in locals() else None,
+            rover_body=rover_body if 'rover_body' in locals() else None,
+            lowvar_mask=lowvar_mask if 'lowvar_mask' in locals() else None,
+            fine_detail=fine_detail,
+            area_min=area_min,
+            clutter_mode=clutter_mode,
+        )
+        if det is not None:
+            detections.append(det)
 
-        # Saf gölge veya speküler bölgeleri ele: saha ayarlı eşikler
-        sh_cut = float(globals().get('shadow_cut', 0.45)) + 0.10 * region_far
-        im_edge_min = float(globals().get('img_edge_min', 0.10)) * (1.0 - 0.35 * region_far)
-        dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (1.0 - 0.45 * region_far)
-        sp_cut = float(globals().get('spec_cut', 0.50)) + 0.08 * region_far
-        if shadow_pen > sh_cut and edge_mean < im_edge_min and float(np.mean(depth_edge_n[y1:y2, x1:x2])) < dp_edge_min:
-            continue
-        if spec_pen > sp_cut and edge_mean < im_edge_min and float(np.mean(depth_edge_n[y1:y2, x1:x2])) < dp_edge_min:
-            continue
-        if boundary_pen > 0.35 or rover_pen > 0.30:
-            continue
-        # Çok düşük doku + (düşük kenar) bölgeleri de ele (tek piksel parlamaları)
-        if lowvar_pen > 0.6 and edge_mean < im_edge_min:
-            continue
-        detections.append({
-            "x": int(x), "y": int(y), "w": int(w), "h": int(h),
-            "score": float(score),
-            "poly": box_pts.tolist(),
-            # açıklayıcı metrikler (debug/ince ayar için)
-            "comb_mean": float(comb_mean),
-            "edge_mean": float(edge_mean),
-            "prox_mean": float(prox_mean),
-            "shadow_pen": float(shadow_pen),
-            "illum_pen": float(illum_pen),
-            "spec_pen": float(spec_pen),
-            "lowvar_pen": float(lowvar_pen) if 'lowvar_pen' in locals() else 0.0,
-        })
+    detections = _nms_topk(detections, nms_iou=nms_iou, top_k=int(top_k))
 
-    # Non-Maximum Suppression (IoU tabanlı) ile kutuları rafine et
-    def _iou(a, b):
-        ax1, ay1, aw, ah = a[0], a[1], a[2], a[3]
-        bx1, by1, bw, bh = b[0], b[1], b[2], b[3]
-        ax2, ay2 = ax1 + aw, ay1 + ah
-        bx2, by2 = bx1 + bw, by1 + bh
-        inter_x1, inter_y1 = max(ax1, bx1), max(ay1, by1)
-        inter_x2, inter_y2 = min(ax2, bx2), min(ay2, by2)
-        iw, ih = max(0, inter_x2 - inter_x1), max(0, inter_y2 - inter_y1)
-        inter = iw * ih
-        union = aw * ah + bw * bh - inter + 1e-6
-        return inter / union
+    # Plato CC pass: boulder fragmentation azalt
+    try:
+        plateau_dets = _collect_plateau_detections(combined, area_min=area_min, percentile=91.0, max_plateaus=3)
+        detections = _fuse_with_plateau_detections(detections, plateau_dets)
+        detections = _nms_topk(detections, nms_iou=nms_iou, top_k=int(top_k))
+        # ponytail: aynı plato içinde >3 fragman varsa en büyük kutuyu koru
+        if len(detections) > 3 and plateau_dets:
+            dominant = plateau_dets[0]
+            inside = [d for d in detections if _bbox_iou_xywh(d, dominant) >= 0.2]
+            outside = [d for d in detections if d not in inside]
+            if len(inside) > 3:
+                inside = sorted(inside, key=lambda d: d["w"] * d["h"], reverse=True)[:2]
+            detections = outside + inside
+    except Exception:
+        pass
 
-    detections = sorted(detections, key=lambda d: d["score"], reverse=True)
-    kept = []
-    for det in detections:
-        if all(_iou((det['x'], det['y'], det['w'], det['h']), (k['x'], k['y'], k['w'], k['h'])) < nms_iou for k in kept):
-            kept.append(det)
-    detections = kept[:max(1, int(top_k))]
+    # Recall kurtarma geçişi: kaya yoğun sahnelerde first-pass zayıfsa
+    # fine-detail ağırlıklı contour-free recall dene.
+    if _should_run_detail_first_recall(combined, fine_detail, detections):
+        try:
+            detail_seed = np.clip(0.25 * combined + 0.75 * fine_detail, 0.0, 1.0)
+            detail_cap = min(int(top_k), 4 if len(detections) == 0 else 2)
+            detail_extra = _collect_detail_first_detections(
+                detail_seed,
+                top_k=detail_cap,
+                area_min=max(1.0, 0.15 * area_min),
+                rover_body=rover_body if 'rover_body' in locals() else None,
+                boundary_shadow=boundary_shadow if 'boundary_shadow' in locals() else None,
+            )
+            detections = _append_unique_detections(
+                detections,
+                detail_extra,
+                nms_iou=nms_iou,
+                max_add=detail_cap,
+            )
+        except Exception:
+            pass
 
-    # Yakın kutuları birleştir (merkez yakın ve IoU düşükse tek kutu yap)
+    # Yakın kutuları birleştir (merkez yakın + heatmap köprüsü varsa tek kutu yap)
     try:
         miou = float(globals().get('merge_iou', 0.15))
         mtol = float(globals().get('merge_tol', 0.5))
@@ -822,11 +1803,8 @@ def compute_combined_anomaly_map(
             for j, b in enumerate(detections[i + 1:], start=i + 1):
                 if used[j]:
                     continue
-                iou_ab = _iou((a['x'], a['y'], a['w'], a['h']), (b['x'], b['y'], b['w'], b['h']))
-                bxc = b['x'] + b['w'] / 2.0
-                byc = b['y'] + b['h'] / 2.0
-                center_dist = np.hypot(axc - bxc, ayc - byc)
-                if iou_ab < miou and center_dist < mtol * diag * 0.02:
+                iou_ab = _bbox_iou_xywh(a, b)
+                if iou_ab >= miou or _should_merge_proposals(a, b, combined, diag, miou, mtol):
                     group.append(j)
                     used[j] = True
             # Grupları tek kutuya birleştir
@@ -839,15 +1817,42 @@ def compute_combined_anomaly_map(
             x2 = int(max(xs[k] + ws[k] for k in range(len(xs))))
             y2 = int(max(ys[k] + hs[k] for k in range(len(ys))))
             region = combined[y1:y2, x1:x2]
+            group_area_ratio = float(((x2 - x1) * (y2 - y1)) / max(1.0, H * W))
+            if len(group) > 2 and group_area_ratio > 0.20:
+                best_idx = max(
+                    group,
+                    key=lambda g: _region_proposal_score(
+                        combined[
+                            detections[g]['y']: detections[g]['y'] + detections[g]['h'],
+                            detections[g]['x']: detections[g]['x'] + detections[g]['w'],
+                        ]
+                    ),
+                )
+                merged.append(detections[best_idx])
+                used[i] = True
+                continue
             merged.append({
                 'x': x1, 'y': y1, 'w': x2 - x1, 'h': y2 - y1,
-                'score': float(region.mean()) if region.size else a['score'],
-                'poly': None
+                'score': _region_proposal_score(region) if region.size else a['score'],
+                'poly': None,
+                'proposal_source': 'heuristic_merged' if len(group) > 1 else a.get('proposal_source', 'heuristic'),
             })
             used[i] = True
         detections = merged
     except Exception:
         pass
+
+    ablation_flags = _recall_ablation_flags()
+    if ablation_flags["cap"]:
+        detections = _cap_detections_if_needed(detections, combined, fine_detail, max_default=4)
+
+    diagnostics["pre_filter_proposal_count"] = int(len(detections))
+    src_counts: dict[str, int] = {}
+    for det in detections:
+        src = str(det.get("proposal_source", "unknown"))
+        src_counts[src] = src_counts.get(src, 0) + 1
+    diagnostics["proposal_sources_breakdown"] = src_counts
+    globals()["_last_proposal_diagnostics"] = diagnostics
 
     # Ufuk maskesi: derin ve düşük gradyan alanları (genelde üst kısım)
     try:
@@ -968,6 +1973,10 @@ def analyze_mars_image(models, image):
             results['depth_map_full'] = depth_map_for_fusion
         else:
             results['depth_map_full'] = depth_map_for_fusion
+        depth_rgb_overlay = _compute_depth_rgb_overlay((results['original'] * 255).astype(np.uint8), depth_map_for_fusion)
+        protrusion_map = _compute_protrusion_map(depth_map_for_fusion)
+        results['depth_rgb_overlay'] = depth_rgb_overlay
+        results['depth_protrusion_map'] = protrusion_map
 
         # Birleşik anomali haritası hesapla (her durumda)
         # UI'dan ayarlar mevcutsa kullan; yoksa varsayılanlar
@@ -980,12 +1989,14 @@ def analyze_mars_image(models, image):
         cfg_wt = float(globals().get('w_texture', 0.20))
         cfg_er = float(globals().get('edge_reinf', 0.35))
 
-        combined_map, detections = compute_combined_anomaly_map(
+        combined_map, heuristic_detections = compute_combined_anomaly_map(
             results['original'], results['reconstructed'], depth_map_for_fusion,
             hyst_high_pct=cfg_hh, hyst_low_pct=cfg_hl, nms_iou=cfg_nms, top_k=cfg_topk,
             w_recon=cfg_wr, w_depth=cfg_wd, w_texture=cfg_wt, edge_reinforce=cfg_er
         )
         # PaDiM/PatchCore mevcutsa, haritaları yumuşak birleştir
+        padim_map = None
+        pcore_map = None
         try:
             base_u8 = (results['original'] * 255).astype(np.uint8)
             if 'padim' in models:
@@ -1000,6 +2011,47 @@ def analyze_mars_image(models, image):
             pass
         results['combined_anomaly_map'] = combined_map
         results['combined_anomaly_score'] = float(combined_map.mean())
+        detector_backend = str(globals().get("detector_backend", "heuristic")).lower()
+        detector_conf = float(globals().get("detector_conf", 0.25))
+        used_backend = "heuristic"
+        detections = heuristic_detections
+        proposal_diagnostics = dict(globals().get("_last_proposal_diagnostics", {}) or {})
+        yolo_detections: list[dict] = []
+        if detector_backend in {"yolo", "hybrid"} and 'detector' in models:
+            try:
+                yolo_detections = _run_detector_backend(
+                    models['detector'],
+                    results['original'],
+                    conf_threshold=detector_conf,
+                    nms_iou=cfg_nms,
+                    top_k=cfg_topk,
+                )
+                if detector_backend == "yolo" and yolo_detections:
+                    detections = yolo_detections
+                    used_backend = "yolo"
+                elif detector_backend == "hybrid" and yolo_detections:
+                    detections = _merge_backend_detections(heuristic_detections, yolo_detections, iou_threshold=0.5)
+                    used_backend = "hybrid"
+            except Exception:
+                used_backend = "heuristic"
+        detections = _score_object_detections(
+            detections,
+            original_rgb_float=results["original"],
+            autoencoder=models["autoencoder"],
+            device=device,
+            combined_map=combined_map,
+            depth_map=depth_map_for_fusion,
+            protrusion_map=protrusion_map,
+            padim_map=padim_map,
+            patchcore_map=pcore_map,
+            global_known_value=float(results.get("known_value_score", 0.5) or 0.5),
+        )
+        results["detector_backend"] = used_backend
+        results["proposal_count"] = len(detections)
+        results["clutter_mode"] = bool(proposal_diagnostics.get("clutter_mode", False))
+        results["rocky_recall_mode"] = bool(proposal_diagnostics.get("rocky_recall_mode", False))
+        results["pre_filter_proposal_count"] = int(proposal_diagnostics.get("pre_filter_proposal_count", len(heuristic_detections)))
+        results["proposal_sources_breakdown"] = proposal_diagnostics.get("proposal_sources_breakdown", {})
         # 3.1 Operasyonel seçim politikası (latent clustering + priority buffer)
         try:
             if bool(globals().get("policy_enable", False)) and isinstance(detections, list) and len(detections) > 0:
@@ -1054,6 +2106,7 @@ def analyze_mars_image(models, image):
             results['focus_tiles'] = _precompute_focus_tiles(results, detections)
         except Exception:
             results['focus_tiles'] = []
+        results['viz_quality'] = _evaluate_depth_viz_quality(results)
     except Exception:
         # Son çare: yalnızca fark haritasına dayalı basit tespit
         diff_only = ((results['original'] - results['reconstructed']) ** 2).mean(axis=2)
@@ -1077,6 +2130,7 @@ def analyze_mars_image(models, image):
             results['focus_tiles'] = _precompute_focus_tiles(results, detections)
         except Exception:
             results['focus_tiles'] = []
+        results['viz_quality'] = _evaluate_depth_viz_quality(results)
     
     # 4. Curiosity skoru: tek yerden, seçilebilir bileşenlerle hesapla
     try:
@@ -1161,6 +2215,8 @@ def main():
         model_status.append(t("sidebar.model.padim"))
     if 'patchcore' in models:
         model_status.append(t("sidebar.model.patchcore"))
+    if 'detector' in models:
+        model_status.append(t("sidebar.model.detector"))
     # Derinlik modeli durumunu detaylı göster
     if 'depth_model_info' in models:
         info = models['depth_model_info']
@@ -1175,6 +2231,9 @@ def main():
             "sidebar.depth_semantics",
             load_source=info.get('load_source', 'unknown'),
         ))
+    if 'detector_info' in models:
+        det_info = models['detector_info']
+        st.sidebar.caption(t("sidebar.detector_active", backend=det_info.get("backend", "unknown")))
     
     st.sidebar.success(t("sidebar.models_loaded_prefix") + "\n".join(model_status))
     
@@ -1266,6 +2325,20 @@ def main():
 
     with st.sidebar.expander(t("params.detection.expander"), expanded=False):
         unified_threshold = st.slider(t("params.detection.unified_threshold"), 0.0, 1.0, 0.60, 0.01)
+        detector_backend = st.selectbox(
+            t("params.detection.backend"),
+            ["heuristic", "yolo", "hybrid"],
+            index=0,
+            help=t("params.detection.backend_help"),
+        )
+        detector_conf = st.slider(
+            t("params.detection.detector_conf"),
+            0.05,
+            0.95,
+            0.25,
+            0.05,
+            help=t("params.detection.detector_conf_help"),
+        )
         col_adv1, col_adv2 = st.columns(2)
         with col_adv1:
             hyst_high = st.slider(t("params.detection.hyst_high"), 90, 99, 96, 1)
@@ -1424,6 +2497,8 @@ def main():
                     # Gelişmiş tespit ayarlarını global değişken olarak geçir
                     globals().update({
                         'unified_threshold': unified_threshold,
+                        'detector_backend': detector_backend,
+                        'detector_conf': detector_conf,
                         'hyst_high': hyst_high,
                         'hyst_low': hyst_low,
                         'nms_iou': nms_iou,
@@ -1725,6 +2800,18 @@ def main():
                             axes[2].axis('off')
                             st.pyplot(fig)
 
+                        _render_depth_viz_qc_panel(results)
+                        # İlk analizde de önerileri göster
+                        st.subheader(t("analysis.recommendations_header"))
+                        if is_anomaly and results['known_value_score'] > 0.6:
+                            st.success(t("analysis.reco.high"))
+                        elif is_anomaly:
+                            st.warning(t("analysis.reco.medium"))
+                        elif results['known_value_score'] > 0.7:
+                            st.info(t("analysis.reco.low_known"))
+                        else:
+                            st.info(t("analysis.reco.low_normal"))
+
             # Eğer sonuç daha önce üretildiyse (ör. seçim değişince rerun), tekrar göster
             persisted = st.session_state.get("results")
             if persisted and not clicked:
@@ -1870,36 +2957,38 @@ def main():
                             tile = tiles[selected_idx_view - 1] if (selected_idx_view - 1) < len(tiles) else None
                             if tile is not None:
                                 st.image(tile, caption=t("analysis.focus_tile", idx=selected_idx_view))
-                        
-                        # is_anomaly'yi (persisted sonuçlar için) yeniden hesapla
+
+                    _render_depth_viz_qc_panel(results)
+
+                    # is_anomaly'yi (persisted sonuçlar için) yeniden hesapla
+                    try:
+                        unified_anomaly = results.get('combined_anomaly_score')
+                    except Exception:
+                        unified_anomaly = None
+                    if unified_anomaly is None and results.get('combined_anomaly_map') is not None:
                         try:
-                            unified_anomaly = results.get('combined_anomaly_score')
+                            unified_anomaly = float(np.mean(results['combined_anomaly_map']))
                         except Exception:
                             unified_anomaly = None
-                        if unified_anomaly is None and results.get('combined_anomaly_map') is not None:
-                            try:
-                                unified_anomaly = float(np.mean(results['combined_anomaly_map']))
-                            except Exception:
-                                unified_anomaly = None
-                        if unified_anomaly is not None:
-                            is_anomaly = bool(unified_anomaly > unified_threshold)
-                        else:
-                            try:
-                                is_anomaly = bool(results.get('anomaly_score', 0.0) > anomaly_threshold)
-                            except Exception:
-                                is_anomaly = False
+                    if unified_anomaly is not None:
+                        is_anomaly = bool(unified_anomaly > unified_threshold)
+                    else:
+                        try:
+                            is_anomaly = bool(results.get('anomaly_score', 0.0) > anomaly_threshold)
+                        except Exception:
+                            is_anomaly = False
 
-                        # Öneriler
-                        st.subheader(t("analysis.recommendations_header"))
-                        
-                        if is_anomaly and results['known_value_score'] > 0.6:
-                            st.success(t("analysis.reco.high"))
-                        elif is_anomaly:
-                            st.warning(t("analysis.reco.medium"))
-                        elif results['known_value_score'] > 0.7:
-                            st.info(t("analysis.reco.low_known"))
-                        else:
-                            st.info(t("analysis.reco.low_normal"))
+                    # Öneriler
+                    st.subheader(t("analysis.recommendations_header"))
+                    
+                    if is_anomaly and results['known_value_score'] > 0.6:
+                        st.success(t("analysis.reco.high"))
+                    elif is_anomaly:
+                        st.warning(t("analysis.reco.medium"))
+                    elif results['known_value_score'] > 0.7:
+                        st.info(t("analysis.reco.low_known"))
+                    else:
+                        st.info(t("analysis.reco.low_normal"))
     
     with tab2:
         section_header(t("section.depth"))
