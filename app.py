@@ -40,7 +40,6 @@ from src.core.false_positive_masks import (
     compute_rover_body_mask,
     compute_shadow_like,
 )
-from src.utils.image_enhancement import enhance_image_auto
 from src.ui import (
     inject_theme,
     render_hero,
@@ -53,6 +52,7 @@ from src.ui import (
     category_label,
     class_label,
 )
+from src.ui.enhance_panel import render_enhance_panel
 import plotly.express as px
 import plotly.graph_objects as go
 import cv2
@@ -2438,62 +2438,8 @@ def main():
             # Görüntüyü yükle
             image = Image.open(uploaded_file).convert('RGB')
 
-            # Otomatik görüntü iyileştirme (Mars-safe: hibrit analizi bozmayacak varsayılanlar)
-            st.subheader(t("analysis.enhance_header"))
-            st.caption(t("analysis.enhance_mars_note"))
-            enh_cols = st.columns(6)
-            with enh_cols[0]:
-                opt_upscale = st.checkbox(t("analysis.opt_upscale"), value=True, help=t("analysis.opt_upscale_help"))
-            with enh_cols[1]:
-                opt_denoise = st.checkbox(t("analysis.opt_denoise"), value=True, help=t("analysis.opt_denoise_help"))
-            with enh_cols[2]:
-                opt_clahe = st.checkbox(t("analysis.opt_clahe"), value=True, help=t("analysis.opt_clahe_help"))
-            with enh_cols[3]:
-                opt_gamma = st.checkbox(t("analysis.opt_gamma"), value=True, help=t("analysis.opt_gamma_help"))
-            with enh_cols[4]:
-                opt_sharp = st.checkbox(t("analysis.opt_sharp"), value=True, help=t("analysis.opt_sharp_help"))
-            with enh_cols[5]:
-                opt_realesrgan = st.checkbox(
-                    t("analysis.opt_realesrgan"),
-                    value=False,
-                    help=t("analysis.opt_realesrgan_help"),
-                )
-            if opt_realesrgan:
-                st.caption(t("analysis.opt_realesrgan_risk"))
-
-            # İyileştirme uygula butonu
-            if st.button(t("analysis.enhance_btn")):
-                # Mars profili: AWB kapalı, yumuşak CLAHE/keskinleştirme, detailEnhance yok
-                cfg = dict(
-                    enable_upscale=opt_upscale,
-                    enable_denoise=opt_denoise,
-                    enable_awb=False,
-                    enable_clahe=opt_clahe,
-                    enable_gamma=opt_gamma,
-                    enable_sharpen=opt_sharp,
-                    enable_realesrgan=opt_realesrgan,
-                    target_long_side=1024,
-                    denoise_h=5,
-                    clahe_clip=1.5,
-                    target_mean=115.0,
-                    sharpen_strength=0.35,
-                    sharpen_radius=2,
-                    detail_enhance=False,
-                )
-                enhanced, before_m, after_m, steps = enhance_image_auto(image, cfg, profile="mars")
-                st.success(t("analysis.steps_applied", steps=", ".join(steps)))
-                if opt_realesrgan and "realesrgan(" not in ",".join(steps):
-                    st.caption(t("analysis.realesrgan_fallback"))
-                c1, c2 = st.columns(2)
-                with c1:
-                    st.image(image, caption=t("analysis.before"), use_container_width=True)
-                    st.json({t("analysis.before"): before_m})
-                with c2:
-                    st.image(enhanced, caption=t("analysis.after"), use_container_width=True)
-                    st.json({t("analysis.after"): after_m})
-                # Analizde iyileştirilmiş görüntüyü kullan
-                image = enhanced
-                st.session_state["enhanced_image_for_analysis"] = image
+            # Otomatik görüntü iyileştirme (Mars-safe panel)
+            image = render_enhance_panel(image)
             
             # İki sütunlu layout
             col1, col2 = st.columns(2)
