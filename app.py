@@ -36,7 +36,9 @@ from src.models.depth_estimation import MiDaSDepthEstimator
 from src.core import CuriosityScorer, CuriosityWeights
 from src.core.false_positive_masks import (
     apply_fp_suppression,
+    apply_gated_shadow_suppression,
     compute_boundary_shadow_mask,
+    compute_object_in_shadow,
     compute_rover_body_mask,
     compute_shadow_like,
 )
@@ -1665,6 +1667,7 @@ def compute_combined_anomaly_map(
 
         # Saha ayarlı katsayılar
         alpha_shad = float(globals().get('alpha_shad', 0.65))
+        beta_shadow_obj = float(globals().get('beta_shadow_obj', 0.5))
         beta_illum = float(globals().get('beta_illum', 0.25))
         spec_gamma = float(globals().get('spec_gamma', 0.35))
         spec_lowvar_gamma = float(globals().get('spec_lowvar_gamma', 0.35))
@@ -1672,8 +1675,17 @@ def compute_combined_anomaly_map(
         # Düşük varyans bölgeleri için ek azaltım (speküler düz alanlar)
         lowvar_mask = (var_norm < spec_var_thresh).astype(np.float32)
         lowvar_mask = cv2.GaussianBlur(lowvar_mask, (3, 3), 0)
+        object_gate = compute_object_in_shadow(orig, depth)
+        combined = apply_gated_shadow_suppression(
+            combined,
+            shadow_like,
+            object_gate,
+            alpha_shad=alpha_shad,
+            beta=beta_shadow_obj,
+            gamma_recall=0.08,
+        )
         combined = np.clip(
-            combined * (1.0 - alpha_shad * shadow_like)
+            combined
             - beta_illum * illumination_edge
             - spec_gamma * spec_mask
             - spec_lowvar_gamma * lowvar_mask,
@@ -2365,6 +2377,14 @@ def main():
         st.markdown(f"**{t('params.detection.shadow_header')}**")
         with st.container(border=True):
             alpha_shad = st.slider(t("params.detection.alpha_shad"), 0.0, 1.0, 0.65, 0.05, help=t("params.detection.alpha_shad_help"))
+            beta_shadow_obj = st.slider(
+                t("params.detection.beta_shadow_obj"),
+                0.0,
+                1.0,
+                0.5,
+                0.05,
+                help=t("params.detection.beta_shadow_obj_help"),
+            )
             beta_illum = st.slider(t("params.detection.beta_illum"), 0.0, 1.0, 0.25, 0.05, help=t("params.detection.beta_illum_help"))
             shadow_cut = st.slider(t("params.detection.shadow_cut"), 0.0, 1.0, 0.45, 0.05, help=t("params.detection.shadow_cut_help"))
             img_edge_min = st.slider(t("params.detection.img_edge_min"), 0.0, 0.5, 0.10, 0.01)
@@ -2469,6 +2489,7 @@ def main():
                         'w_texture': w_texture,
                         'edge_reinf': edge_reinf,
                         'alpha_shad': alpha_shad,
+                        'beta_shadow_obj': beta_shadow_obj,
                         'beta_illum': beta_illum,
                         'shadow_cut': shadow_cut,
                         'img_edge_min': img_edge_min,
@@ -2488,6 +2509,8 @@ def main():
                     results = analyze_mars_image(models, image_to_use)
                     # Sonuçları yeniden çalıştırmalarda koru
                     st.session_state["results"] = results
+                    if results.get("depth_map_full") is not None:
+                        st.session_state["last_depth_map"] = results["depth_map_full"]
                     
                     if results['anomaly_score'] is not None:
                         # Sonuçları göster

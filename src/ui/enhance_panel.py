@@ -1,11 +1,14 @@
 """Mars-safe görüntü iyileştirme paneli (Streamlit)."""
 from __future__ import annotations
 
+import cv2
+import numpy as np
 import streamlit as st
 from PIL import Image
 
 from src.ui.i18n import t
 from src.utils.image_enhancement import enhance_image_auto
+from src.utils.shadow_visibility import lift_shadow_visibility
 
 
 def render_enhance_panel(image: Image.Image) -> Image.Image:
@@ -31,6 +34,17 @@ def render_enhance_panel(image: Image.Image) -> Image.Image:
         )
     if opt_realesrgan:
         st.caption(t("analysis.opt_realesrgan_risk"))
+
+    opt_shadow_preview = st.checkbox(
+        t("analysis.opt_shadow_preview"),
+        value=True,
+        help=t("analysis.opt_shadow_preview_help"),
+    )
+    opt_depth_gate = st.checkbox(
+        t("analysis.opt_shadow_depth_gate"),
+        value=False,
+        help=t("analysis.opt_shadow_depth_gate_help"),
+    )
 
     if not st.button(t("analysis.enhance_btn")):
         return image
@@ -58,5 +72,35 @@ def render_enhance_panel(image: Image.Image) -> Image.Image:
     with c2:
         st.image(result.image, caption=t("analysis.after"), use_container_width=True)
         st.json({t("analysis.after"): result.metrics_after})
+
+    # Track A: preview only — never overwrite analysis RGB
+    if opt_shadow_preview:
+        shared_u8 = np.asarray(result.image.convert("RGB"), dtype=np.uint8)
+        depth = st.session_state.get("last_depth_map")
+        if opt_depth_gate and depth is None:
+            st.caption(t("analysis.shadow_depth_gate_skip"))
+        depth_arr = None
+        if opt_depth_gate and depth is not None:
+            depth_arr = np.asarray(depth, dtype=np.float32)
+            if depth_arr.shape[:2] != shared_u8.shape[:2]:
+                depth_arr = cv2.resize(
+                    depth_arr,
+                    (shared_u8.shape[1], shared_u8.shape[0]),
+                    interpolation=cv2.INTER_LINEAR,
+                )
+        lifted, mask = lift_shadow_visibility(
+            shared_u8,
+            depth_arr,
+            use_depth_gate=bool(opt_depth_gate and depth_arr is not None),
+        )
+        mask_vis = (np.clip(mask, 0, 1) * 255).astype(np.uint8)
+        p1, p2, p3 = st.columns(3)
+        with p1:
+            st.image(result.image, caption=t("analysis.shadow_shared"), use_container_width=True)
+        with p2:
+            st.image(lifted, caption=t("analysis.shadow_lifted"), use_container_width=True)
+        with p3:
+            st.image(mask_vis, caption=t("analysis.shadow_mask"), use_container_width=True)
+
     st.session_state["enhanced_image_for_analysis"] = result.image
     return result.image
