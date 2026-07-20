@@ -109,6 +109,15 @@ def _upscale(rgb_u8: np.ndarray, target_long_side: int = 1024, detail_enhance: b
     return up
 
 
+def _cuda_available() -> bool:
+    try:
+        import torch
+
+        return bool(torch.cuda.is_available())
+    except Exception:
+        return False
+
+
 def _get_realesrgan_upsampler(tile: int = 400):
     """Lazy-load RealESRGANer once per process; None if unavailable."""
     global _realesrgan_upsampler
@@ -138,7 +147,7 @@ def _get_realesrgan_upsampler(tile: int = 400):
             tile=int(tile),
             tile_pad=10,
             pre_pad=0,
-            half=False,
+            half=_cuda_available(),
         )
         return _realesrgan_upsampler
     except Exception:
@@ -158,6 +167,11 @@ def _upscale_realesrgan(rgb_u8: np.ndarray, *, outscale: int = 2, tile: int = 40
             return None
         return cv2.cvtColor(out_bgr, cv2.COLOR_BGR2RGB)
     except Exception:
+        # OOM / runtime: one retry with smaller tiles, then give up
+        if int(tile) > 200:
+            global _realesrgan_upsampler
+            _realesrgan_upsampler = None
+            return _upscale_realesrgan(rgb_u8, outscale=outscale, tile=200)
         return None
 
 
@@ -230,7 +244,12 @@ def enhance_image_auto(
     realesrgan_used = False
     realesrgan_fallback = False
 
-    # 1) Upscale: optional SR x2, then always finish to target_long_side via CUBIC if still short
+    # 1) Denoise first so SR does not amplify noise in deep shadows
+    if enable_denoise and _estimate_noise_sigma(rgb) > 6.0:
+        rgb = _denoise(rgb, denoise_h)
+        steps.append(f"denoise(h={denoise_h})")
+
+    # 2) Upscale: optional SR x2, then CUBIC to target_long_side if still short
     if enable_upscale and max(rgb.shape[:2]) < target_long_side:
         if enable_realesrgan:
             sr = _upscale_realesrgan(rgb, outscale=2, tile=400)
@@ -243,10 +262,6 @@ def enhance_image_auto(
         if max(rgb.shape[:2]) < target_long_side:
             rgb = _upscale(rgb, target_long_side, detail_enhance=detail_enhance)
             steps.append(f"upscale({target_long_side},detail={detail_enhance})")
-
-    if enable_denoise and _estimate_noise_sigma(rgb) > 6.0:
-        rgb = _denoise(rgb, denoise_h)
-        steps.append(f"denoise(h={denoise_h})")
 
     if enable_awb:
         rgb = _auto_white_balance_grayworld(rgb)
