@@ -238,7 +238,7 @@ MESSAGES: dict[str, str] = {
     "analysis.detections_none_suffix": " — tespit bulunamadı",
     "analysis.detections_small_objects": " (küçük cisimler dahil edilir)",
     "analysis.no_detections": "Tespit bulunamadı veya tanılama verisi yok.",
-    "analysis.focus_tile": "Odak: #{idx}",
+    "analysis.focus_tile": "Odak: #{idx} — RGB | ısı | derinlik | derinlik-kenar (küçük tespitlerde otomatik zoom/SR)",
     "analysis.viz_qc_header": "Derinlik görsel kalite kontrolü",
     "analysis.viz_qc_pass": "QC geçti (skor {score:.0%}): {detail}",
     "analysis.viz_qc_warn": "QC uyarı (skor {score:.0%}): {detail}",
