@@ -55,6 +55,7 @@ from src.ui import (
     class_label,
 )
 from src.ui.enhance_panel import render_enhance_panel
+from src.utils.image_enhancement import _upscale_realesrgan
 import plotly.express as px
 import plotly.graph_objects as go
 import cv2
@@ -1437,15 +1438,76 @@ def _safe_imshow(ax, img: np.ndarray, **kwargs) -> None:
         # Son çare: gri göster
         ax.imshow(np.zeros((10, 10), dtype=np.float32), cmap='gray')
 
-def _auto_enhance_focus(img_rgb: np.ndarray, scale: float, interp_code: int, amount: float) -> np.ndarray:
-    """Odak kırpım için otomatik kalite artırma: CLAHE + hafif bilateral + (isteğe bağlı) upsample + unsharp.
+def _fit_to_guide(
+    img: np.ndarray,
+    guide_hw: tuple[int, int],
+    interp: int = cv2.INTER_CUBIC,
+) -> np.ndarray:
+    """Resize img to guide (h, w)."""
+    gh, gw = int(guide_hw[0]), int(guide_hw[1])
+    if img is None or img.size == 0:
+        return img
+    if img.shape[:2] != (gh, gw):
+        return cv2.resize(img, (gw, gh), interpolation=interp)
+    return img
+
+
+def _focus_crop_bounds(
+    x: int,
+    y: int,
+    w: int,
+    h: int,
+    H: int,
+    W: int,
+) -> tuple[int, int, int, int, int, int]:
+    """Adaptive pad so small bboxes still get readable context.
+
+    Returns x1,y1,x2,y2, pad_x, pad_y (pad relative to det origin inside crop).
+    """
+    min_side = max(64, int(0.08 * min(H, W)))
+    pad = max(int(0.20 * max(w, h)), (min_side - max(w, h)) // 2)
+    pad = max(0, int(pad))
+    x1 = max(0, int(x) - pad)
+    y1 = max(0, int(y) - pad)
+    x2 = min(W, int(x) + int(w) + pad)
+    y2 = min(H, int(y) + int(h) + pad)
+    # Center-expand if clamp left crop too small
+    cw, ch = x2 - x1, y2 - y1
+    if cw < min_side or ch < min_side:
+        cx = int(x) + int(w) // 2
+        cy = int(y) + int(h) // 2
+        half_w = max(min_side // 2, int(w) // 2 + pad)
+        half_h = max(min_side // 2, int(h) // 2 + pad)
+        x1 = max(0, cx - half_w)
+        y1 = max(0, cy - half_h)
+        x2 = min(W, cx + half_w)
+        y2 = min(H, cy + half_h)
+    pad_x = int(x) - x1
+    pad_y = int(y) - y1
+    return x1, y1, x2, y2, pad_x, pad_y
+
+
+def _auto_enhance_focus(
+    img_rgb: np.ndarray,
+    scale: float,
+    interp_code: int,
+    amount: float,
+    *,
+    try_realesrgan: bool = False,
+) -> np.ndarray:
+    """Odak kırpım kalite: opsiyonel SR → CLAHE + bilateral → Lanczos scale → unsharp.
 
     img_rgb: uint8 RGB
-    scale: 1.0, 1.5, 2.0 ...
-    interp_code: cv2.INTER_*
-    amount: unsharp miktarı
+    try_realesrgan: small crops only; GAN on RGB guide, never on false-color maps
     """
     try:
+        if try_realesrgan and max(img_rgb.shape[:2]) < 96:
+            sr = _upscale_realesrgan(img_rgb, outscale=2, tile=200)
+            if sr is not None:
+                img_rgb = sr
+                scale = 1.0  # already ~2x
+            elif float(scale) <= 1.0:
+                scale = max(2.0, 96.0 / float(max(img_rgb.shape[:2])))
         # Kontrast: LAB'ta CLAHE (L kanalı)
         lab = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2LAB)
         L, A, B = cv2.split(lab)
@@ -1453,20 +1515,25 @@ def _auto_enhance_focus(img_rgb: np.ndarray, scale: float, interp_code: int, amo
         L2 = clahe.apply(L)
         lab2 = cv2.merge([L2, A, B])
         img_rgb = cv2.cvtColor(lab2, cv2.COLOR_LAB2RGB)
-        # Gürültü azaltım: hafif bilateral (detayı koru)
         img_rgb = cv2.bilateralFilter(img_rgb, d=3, sigmaColor=25, sigmaSpace=25)
-        # İsteğe bağlı upsample (keskinleştirme ÖNDEN değil, SONRADAN uygulanır)
         if float(scale) > 1.0:
             ih, iw = img_rgb.shape[:2]
-            img_rgb = cv2.resize(img_rgb, (int(iw * scale), int(ih * scale)), interpolation=interp_code)
-        # Keskinleştirme (son adım)
+            img_rgb = cv2.resize(
+                img_rgb,
+                (int(iw * scale), int(ih * scale)),
+                interpolation=interp_code,
+            )
         img_rgb = _unsharp_image(img_rgb, amount=max(0.0, float(amount)), radius=1.6)
     except Exception:
         pass
     return img_rgb
 
+
 def _precompute_focus_tiles(results: dict, detections: list) -> list:
-    """Seçim gecikmesini azaltmak için odak karolarını önceden üretir."""
+    """Seçim gecikmesini azaltmak için odak karolarını önceden üretir.
+
+    4 panel: RGB zoom | heat-on-RGB | depth-on-RGB | depth-edge
+    """
     try:
         tiles = []
         comb_map = results.get('combined_anomaly_map')
@@ -1478,109 +1545,119 @@ def _precompute_focus_tiles(results: dict, detections: list) -> list:
             base = cv2.resize(base, (W, H), interpolation=cv2.INTER_LINEAR)
         if base.ndim == 2:
             base = cv2.cvtColor(base, cv2.COLOR_GRAY2RGB)
+        # original is RGB float→uint8; do not BGR2RGB
         heat_full = (plt.cm.inferno(comb_map)[..., :3] * 255).astype(np.uint8)
         depth_full = results.get('depth_map_full')
         depth_rgb_full = results.get('depth_rgb_overlay')
-        protrusion_full = results.get('depth_protrusion_map')
 
-        # Odak ayarları
         h_target = int(globals().get('focus_h', 300))
         overlay_mode = bool(globals().get('focus_overlay', True))
         sharpen = bool(globals().get('focus_sharpen', True))
-        hide_empty_depth = bool(globals().get('focus_hide_empty_depth', True))
         interp_name = str(globals().get('focus_interp', 'INTER_LANCZOS4'))
         interp = getattr(cv2, interp_name, cv2.INTER_LANCZOS4)
 
-        # `depth_rgb_overlay` mutlak çözünürlükte olmayabilir; odak tile kırpımı için comb_map'e hizala.
         if isinstance(depth_rgb_full, np.ndarray) and depth_rgb_full.shape[:2] != (H, W):
             try:
                 depth_rgb_full = cv2.resize(depth_rgb_full, (W, H), interpolation=cv2.INTER_LINEAR)
             except Exception:
                 depth_rgb_full = None
 
+        def _resize_h(img: np.ndarray) -> np.ndarray:
+            ih, iw = img.shape[:2]
+            nw = int(iw * (h_target / max(1, ih)))
+            return cv2.resize(img, (nw, h_target), interpolation=interp)
+
         for det in detections:
             try:
-                x, y, w, h = det['x'], det['y'], det['w'], det['h']
-                pad = int(0.15 * max(w, h))
-                x1 = max(0, x - pad)
-                y1 = max(0, y - pad)
-                x2 = min(W, x + w + pad)
-                y2 = min(H, y + h + pad)
+                x, y, w, h = int(det['x']), int(det['y']), int(det['w']), int(det['h'])
+                x1, y1, x2, y2, pad_x, pad_y = _focus_crop_bounds(x, y, w, h, H, W)
                 if (y2 - y1) <= 5 or (x2 - x1) <= 5:
                     tiles.append(None)
                     continue
-                # Orijinal kırpım
-                raw_crop = cv2.cvtColor(base[y1:y2, x1:x2].copy(), cv2.COLOR_BGR2RGB)
-                raw_crop = _auto_enhance_focus(raw_crop, scale=1.0, interp_code=interp, amount=0.6)
-                # Isı kapağı
-                heat_u8 = heat_full[y1:y2, x1:x2].copy()
-                if overlay_mode:
-                    if heat_u8.shape[:2] != raw_crop.shape[:2]:
-                        heat_u8 = cv2.resize(heat_u8, (raw_crop.shape[1], raw_crop.shape[0]), interpolation=interp)
-                    heat_crop = cv2.addWeighted(raw_crop, 0.25, heat_u8, 0.75, 0)
-                else:
-                    heat_crop = heat_u8
-                # Panel-1: depth-on-RGB. En sık durumda `depth_rgb_overlay` kullan.
-                depth_rgb_crop = None
-                if isinstance(depth_rgb_full, np.ndarray) and depth_rgb_full.shape[:2] == (H, W):
-                    depth_rgb_crop = depth_rgb_full[y1:y2, x1:x2].copy()
-                # Eğer overlay yoksa (beklenmedik hata/şekil sapması), `depth_map_full`'dan yeniden üret.
-                if depth_rgb_crop is None and depth_full is not None and depth_full.shape[:2] == comb_map.shape[:2]:
-                    dpatch = depth_full[y1:y2, x1:x2]
-                    depth_rgb_crop = _compute_depth_rgb_overlay(raw_crop, dpatch, alpha=0.38)
-                # Hâlâ yoksa, raw_RGB'den gradient tabanlı sentetik derinlik çıkar.
-                if depth_rgb_crop is None:
-                    img_u8 = raw_crop.astype(np.uint8)
-                    gray = cv2.cvtColor(img_u8, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
-                    sx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
-                    sy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
-                    grad = np.sqrt(sx * sx + sy * sy)
-                    depth_proxy = _normalize_map(1.0 - grad)
-                    depth_rgb_crop = _compute_depth_rgb_overlay(raw_crop, depth_proxy, alpha=0.38)
-                if depth_rgb_crop is None:
-                    # Last-resort: sabit (0) derinlikten bile olsa "depth-on-RGB" colormap üret.
-                    depth_rgb_crop = _compute_depth_rgb_overlay(
-                        raw_crop,
-                        np.zeros(raw_crop.shape[:2], dtype=np.float32),
-                        alpha=0.38,
-                    )
-                if protrusion_full is not None and protrusion_full.shape[:2] == comb_map.shape[:2]:
-                    protrusion_crop = _colorize_map(protrusion_full[y1:y2, x1:x2], "magma")
-                else:
-                    protrusion_crop = None
-                # Derinlik kenarı karo (UI galeri ile aynı helper)
-                if depth_full is not None and depth_full.shape[:2] == comb_map.shape[:2]:
-                    depth_edge_crop = _compute_depth_edge_overlay(
-                        raw_crop, depth_full[y1:y2, x1:x2], alpha=0.45
-                    )
-                else:
-                    depth_edge_crop = None
-                # Keskinleştirme
-                if sharpen:
-                    heat_crop = _unsharp_image(heat_crop, 0.6, 2)
-                    if protrusion_crop is not None:
-                        protrusion_crop = _unsharp_image(protrusion_crop, 0.6, 2)
-                    if depth_edge_crop is not None:
-                        depth_edge_crop = _unsharp_image(depth_edge_crop, 0.6, 2)
-                # H yüksekliğine yeniden örnekle
-                def _resize_h(img):
-                    ih, iw = img.shape[:2]
-                    nw = int(iw * (h_target / max(1, ih)))
-                    return cv2.resize(img, (nw, h_target), interpolation=interp)
-                # Tespit kutusunu işaretle
+
+                raw_crop = base[y1:y2, x1:x2].copy()
+                if raw_crop.ndim == 2:
+                    raw_crop = cv2.cvtColor(raw_crop, cv2.COLOR_GRAY2RGB)
+                small = max(raw_crop.shape[:2]) < 96
+                scale = 1.0
+                if small:
+                    scale = max(2.0, 96.0 / float(max(raw_crop.shape[:2])))
+                rgb_zoom = _auto_enhance_focus(
+                    raw_crop,
+                    scale=scale,
+                    interp_code=interp,
+                    amount=0.6,
+                    try_realesrgan=small,
+                )
+                gh, gw = rgb_zoom.shape[:2]
+                # Scale bbox pad into guide space
+                sx = gw / max(1.0, float(x2 - x1))
+                sy = gh / max(1.0, float(y2 - y1))
+                bx1 = int(round(pad_x * sx))
+                by1 = int(round(pad_y * sy))
+                bx2 = int(round((pad_x + w) * sx))
+                by2 = int(round((pad_y + h) * sy))
                 try:
-                    cv2.rectangle(raw_crop, (max(0, pad), max(0, pad)), (max(0, pad) + w, max(0, pad) + h), (240, 220, 0), 1)
+                    cv2.rectangle(
+                        rgb_zoom,
+                        (max(0, bx1), max(0, by1)),
+                        (min(gw - 1, bx2), min(gh - 1, by2)),
+                        (240, 220, 0),
+                        1,
+                    )
                 except Exception:
                     pass
-                # Panel-1: depth-on-RGB (Fig 4b benzeri).
-                # Spec: focus tile'lar her zaman 4 panel olmalı.
-                parts = [_resize_h(depth_rgb_crop), _resize_h(heat_crop)]
-                if protrusion_crop is None:
-                    protrusion_crop = np.zeros_like(heat_crop)
-                if depth_edge_crop is None:
-                    depth_edge_crop = np.zeros_like(heat_crop)
-                parts.append(_resize_h(protrusion_crop))
-                parts.append(_resize_h(depth_edge_crop))
+
+                # Heat on enhanced RGB
+                heat_u8 = heat_full[y1:y2, x1:x2].copy()
+                heat_u8 = _fit_to_guide(heat_u8, (gh, gw), interp=cv2.INTER_CUBIC)
+                if overlay_mode:
+                    heat_crop = cv2.addWeighted(rgb_zoom, 0.35, heat_u8, 0.65, 0)
+                else:
+                    heat_crop = heat_u8
+                if sharpen:
+                    heat_crop = _unsharp_image(heat_crop, 0.5, 2)
+
+                # Depth-on-RGB at guide size
+                depth_patch = None
+                if depth_full is not None and depth_full.shape[:2] == (H, W):
+                    depth_patch = depth_full[y1:y2, x1:x2].astype(np.float32)
+                    depth_patch = _fit_to_guide(depth_patch, (gh, gw), interp=cv2.INTER_LINEAR)
+
+                depth_rgb_crop = None
+                if isinstance(depth_rgb_full, np.ndarray) and depth_rgb_full.shape[:2] == (H, W):
+                    depth_rgb_crop = _fit_to_guide(
+                        depth_rgb_full[y1:y2, x1:x2].copy(),
+                        (gh, gw),
+                        interp=cv2.INTER_CUBIC,
+                    )
+                if depth_rgb_crop is None and depth_patch is not None:
+                    depth_rgb_crop = _compute_depth_rgb_overlay(rgb_zoom, depth_patch, alpha=0.38)
+                if depth_rgb_crop is None:
+                    gray = cv2.cvtColor(rgb_zoom, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
+                    sx_g = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+                    sy_g = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+                    depth_proxy = _normalize_map(1.0 - np.sqrt(sx_g * sx_g + sy_g * sy_g))
+                    depth_rgb_crop = _compute_depth_rgb_overlay(rgb_zoom, depth_proxy, alpha=0.38)
+                depth_rgb_crop = _fit_to_guide(depth_rgb_crop, (gh, gw), interp=cv2.INTER_CUBIC)
+                if sharpen:
+                    depth_rgb_crop = _unsharp_image(depth_rgb_crop, 0.4, 2)
+
+                # Depth-edge on guide
+                if depth_patch is not None:
+                    depth_edge_crop = _compute_depth_edge_overlay(rgb_zoom, depth_patch, alpha=0.45)
+                else:
+                    depth_edge_crop = np.zeros_like(rgb_zoom)
+                depth_edge_crop = _fit_to_guide(depth_edge_crop, (gh, gw), interp=cv2.INTER_CUBIC)
+                if sharpen:
+                    depth_edge_crop = _unsharp_image(depth_edge_crop, 0.5, 2)
+
+                parts = [
+                    _resize_h(rgb_zoom),
+                    _resize_h(heat_crop),
+                    _resize_h(depth_rgb_crop),
+                    _resize_h(depth_edge_crop),
+                ]
                 tile = np.concatenate(parts, axis=1)
                 tiles.append(tile)
             except Exception:

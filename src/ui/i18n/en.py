@@ -238,7 +238,7 @@ MESSAGES: dict[str, str] = {
     "analysis.detections_none_suffix": " — no detections found",
     "analysis.detections_small_objects": " (small objects included)",
     "analysis.no_detections": "No detections found or no diagnostic data available.",
-    "analysis.focus_tile": "Focus: #{idx}",
+    "analysis.focus_tile": "Focus: #{idx} — RGB | heat | depth | depth-edge (auto zoom/SR for small detections)",
     "analysis.viz_qc_header": "Depth visual quality check",
     "analysis.viz_qc_pass": "QC passed (score {score:.0%}): {detail}",
     "analysis.viz_qc_warn": "QC warning (score {score:.0%}): {detail}",
