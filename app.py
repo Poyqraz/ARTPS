@@ -667,6 +667,8 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
     if near_top and very_wide and combined_pool < 0.18:
         return False
     if src == "heuristic_merged":
+        if area_ratio >= 0.10:
+            return False
         if area_ratio >= 0.18 and y < int(0.20 * h_img):
             return False
         if (w / max(1, h)) >= 5.0 and combined_pool < 0.04:
@@ -685,6 +687,9 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
             return True
         return False
     if src == "heuristic_plateau":
+        fill_ratio = float(det.get("fill_ratio", 1.0))
+        if area_ratio >= 0.12 and fill_ratio < 0.70:
+            return False
         if float(det.get("plateau_mass", 0.0)) > 0 and float(det.get("score", 0.0)) >= 0.006:
             return True
     if src == "heuristic":
@@ -861,13 +866,20 @@ def _collect_plateau_detections(
     area_min: float,
     percentile: float = 91.0,
     max_plateaus: int = 3,
+    min_fill_ratio: float = 0.40,
+    max_area_ratio: float = 0.12,
 ) -> list[dict]:
-    """Heatmap plato CC pass: boulder fragmentation için tek bbox / plato."""
+    """Heatmap plato CC pass: boulder fragmentation için tek bbox / plato.
+
+    Seyrek rocky field'ları (MORPH_CLOSE ile birleşen küçük tepeler) alan-ölçekli
+    kutuya çevirmemek için fill_ratio + max_area_ratio kapısı uygular.
+    """
     H, W = combined.shape[:2]
     img_area = float(H * W)
     th = float(np.percentile(combined, percentile))
     mask = (combined >= th).astype(np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    # ponytail: 5x5 CLOSE ayrı kayaları tek CC yapıyordu; 3x3 yeterli
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
     n_labels, labels = cv2.connectedComponents(mask)
     out: list[dict] = []
     for lab in range(1, n_labels):
@@ -878,6 +890,14 @@ def _collect_plateau_detections(
             continue
         x1, x2 = int(xs.min()), int(xs.max()) + 1
         y1, y2 = int(ys.min()), int(ys.max()) + 1
+        bbox_area = float(max(1, (x2 - x1) * (y2 - y1)))
+        fill_ratio = float(ys.size) / bbox_area
+        area_ratio = float(bbox_area / max(1.0, img_area))
+        # Seyrek / alan-ölçekli plato = rocky clutter, nesne değil
+        if fill_ratio < float(min_fill_ratio):
+            continue
+        if area_ratio > float(max_area_ratio) and fill_ratio < 0.70:
+            continue
         region = combined[y1:y2, x1:x2]
         mass = float(np.sum(region))
         score = mass / max(1.0, float(region.size))
@@ -891,7 +911,8 @@ def _collect_plateau_detections(
                 "poly": None,
                 "proposal_source": "heuristic_plateau",
                 "plateau_mass": mass,
-                "area_ratio": float((x2 - x1) * (y2 - y1) / max(1.0, img_area)),
+                "area_ratio": area_ratio,
+                "fill_ratio": fill_ratio,
                 "comb_mean": float(score),
                 "edge_mean": float(np.percentile(region, 90)) if region.size else float(score),
             }
@@ -947,12 +968,13 @@ def _should_merge_proposals(a: dict, b: dict, combined: np.ndarray, diag: float,
     gap_y = max(0.0, max(a["y"], b["y"]) - min(ay2, by2))
     size_scale = max(a["w"], a["h"], b["w"], b["h"])
     close_centers = center_dist < merge_tol * diag * 0.02
-    close_gap = max(gap_x, gap_y) < max(18.0, 1.5 * size_scale)
+    # ponytail: 1.5*size_scale rocky field'da zincir merge → tek dev kutu
+    close_gap = max(gap_x, gap_y) < max(16.0, 0.8 * size_scale)
     aligned = x_overlap_ratio > 0.35 or y_overlap_ratio > 0.35
     return bool(
         close_centers
-        or ((aligned and close_gap) and bridge > 0.02)
-        or (_bridge_strength(combined, a, b, pad=4) > 0.035 and center_dist < max(24.0, 0.45 * size_scale))
+        or ((aligned and close_gap) and bridge > 0.05)
+        or (_bridge_strength(combined, a, b, pad=4) > 0.06 and center_dist < max(22.0, 0.40 * size_scale))
     )
 
 
@@ -1830,7 +1852,8 @@ def compute_combined_anomaly_map(
             y2 = int(max(ys[k] + hs[k] for k in range(len(ys))))
             region = combined[y1:y2, x1:x2]
             group_area_ratio = float(((x2 - x1) * (y2 - y1)) / max(1.0, H * W))
-            if len(group) > 2 and group_area_ratio > 0.20:
+            # Geniş birleşik kutu yerine en güçlü fragmanı tut (nokta atışı)
+            if len(group) > 1 and group_area_ratio > 0.08:
                 best_idx = max(
                     group,
                     key=lambda g: _region_proposal_score(
