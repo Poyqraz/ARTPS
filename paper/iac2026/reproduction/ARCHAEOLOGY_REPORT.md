@@ -55,6 +55,16 @@ Manuscript numbers 1247 (Curiosity), 892 (Perseverance), and 708 (test/validatio
 
 **Stop rule:** harness may compute metrics from synthetic or future pinned prediction tables; do **not** start real NASA inference claiming C05/C06 closure until blockers above are evidence-backed.
 
+## Follow-up audit (definitions branch)
+
+Deeper salt-okunur scan + author questionnaire (no invented splits/labels):
+
+- [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md)
+- [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md)
+- [AUTHOR_QUESTIONNAIRE_C05_C06.md](AUTHOR_QUESTIONNAIRE_C05_C06.md)
+- [`reproduction/iac2026/C05_C06_DEFINITIONS.yaml`](../../../reproduction/iac2026/C05_C06_DEFINITIONS.yaml)
+- Readiness: `python scripts/iac2026/check_c05_c06_definition_readiness.py` → expect `real_run_allowed=false` until P0 closed.
+
 ## Related HEAD assets (not sufficient for closure)
 
 - Proxy evals: `scripts/run_iac_shadow_proxy_eval.py`, `run_iac_size_distance_proxy_eval.py` — **not** C05/C06 evidence.

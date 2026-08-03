@@ -6,6 +6,17 @@ Evidence software for claims **C05–C07**. Manuscript: `paper/iac2026/`. Accept
 
 Only after archaeology closes task_level, labels, score definition, split, threshold policy, baseline identity (C06), and a real run is registered in `evidence_registry.json` with durable URI+SHA. Until then ledger stays `accepted_abstract_reproduction_pending`.
 
+### C05/C06 definitions-only audit (no runs)
+
+- Audit table: `paper/iac2026/reproduction/C05_C06_DEFINITION_AUDIT.md`
+- Manifest gaps: `paper/iac2026/reproduction/DATASET_MANIFEST_GAPS.md`
+- Author questionnaire: `paper/iac2026/reproduction/AUTHOR_QUESTIONNAIRE_C05_C06.md`
+- Machine-readable defs: `reproduction/iac2026/C05_C06_DEFINITIONS.yaml`
+- Manifest **template** (header only): `reproduction/iac2026/manifests/c05_c06_manifest.template.csv`
+- Readiness gate: `python scripts/iac2026/check_c05_c06_definition_readiness.py` (must report `real_run_allowed: false` until P0 evidence exists)
+
+Do **not** invent split rows from aggregate counts (2847 / 1247 / 892 / 708).
+
 ## Commands
 
 ### Software-verification audit
