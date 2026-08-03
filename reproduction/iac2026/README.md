@@ -1,25 +1,76 @@
 # IAC 2026 reproduction harness
 
-Evidence software for claims **C05–C07**. Manuscript stays under `paper/iac2026/`. This tree does **not** promote accepted-abstract numbers to measured results.
-
-## Workflow
-
-1. **Archaeology** — read `paper/iac2026/reproduction/ARCHAEOLOGY_REPORT.md` and `REPRODUCTION_STATUS.md`.
-2. **Manifest** — pin a dataset CSV matching `schemas/dataset_manifest.schema.json`.
-3. **Audit** — `python scripts/iac2026/audit_reproduction_inputs.py --config ...` (fail closed).
-4. **Metrics** — `python scripts/iac2026/reproduce_detection_metrics.py --config ...` from a **prediction table** (no test-set threshold search).
-5. **Baselines** — adapters under `scripts/iac2026/baselines/` (fail-loud until contracts known).
-6. **Speed (C07)** — `python scripts/benchmark_cv_core_speed.py --config ...` (core-only; report actual FPS).
+Evidence software for claims **C05–C07**. Manuscript: `paper/iac2026/`. Accepted-abstract numbers are never pass/fail targets. Synthetic runs are **software verification only**.
 
 ## When `measured` is allowed
 
-Only after archaeology closes: `task_level`, positive label, score definition, train/val/test file list (or seed), threshold policy, and (for C06) baseline identity. Until then ledger stays `accepted_abstract_reproduction_pending`. Synthetic fixtures = **software verification only**.
+Only after archaeology closes task_level, labels, score definition, split, threshold policy, baseline identity (C06), and a real run is registered in `evidence_registry.json` with durable URI+SHA. Until then ledger stays `accepted_abstract_reproduction_pending`.
 
-## Example configs
+## Commands
 
-- `configs/detection_reproduction.example.yaml` — ships with `task_level: TASK_LEVEL_TBD` and `threshold_policy: unknown` so real C05/C06 inference stays blocked.
-- `configs/core_speed_256.example.yaml` — C07 workstation core-only timing.
+### Software-verification audit
 
-## Fixtures
+```text
+python scripts/iac2026/audit_reproduction_inputs.py --config reproduction/iac2026/configs/detection_reproduction.synthetic.yaml --software-verification --run-id sw_audit
+```
 
-Synthetic CSV only. No NASA images or model weights in this tree.
+### Real-evidence audit (requires dataset root env + pinned files)
+
+```text
+set ARTPS_DATASET_ROOT=C:\path\to\dataset_root
+python scripts/iac2026/audit_reproduction_inputs.py --config path\to\real_detection.yaml --run-id real_audit
+```
+
+### Software-verification metrics
+
+```text
+python scripts/iac2026/reproduce_detection_metrics.py --config reproduction/iac2026/configs/detection_reproduction.synthetic.yaml --software-verification --run-id sw_metrics
+```
+
+### Real metrics with passing audit
+
+```text
+python scripts/iac2026/audit_reproduction_inputs.py --config path\to\real_detection.yaml --run-id real_audit
+python scripts/iac2026/reproduce_detection_metrics.py --config path\to\real_detection.yaml --audit-json results/iac2026/reproduction/real_audit/input_audit.json --run-id real_metrics
+```
+
+### Historical exact C07 (real images; no synthetic fallback)
+
+```text
+python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_historical_exact.example.yaml --run-id c07_hist
+```
+
+### Current production C07 profile
+
+```text
+python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_current_production.example.yaml --run-id c07_prod
+```
+
+### Software-verification C07
+
+```text
+python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_software_verification.example.yaml --software-verification --run-id c07_sw
+```
+
+### Output schema validation
+
+```text
+python -c "import json,jsonschema; from pathlib import Path; m=json.loads(Path('results/iac2026/reproduction/sw_metrics/detection_metrics.json').read_text()); s=json.loads(Path('reproduction/iac2026/schemas/detection_metrics.schema.json').read_text()); jsonschema.Draft202012Validator(s).validate(m); print('ok')"
+```
+
+### Evidence registry update
+
+After uploading a real run archive to GitHub Releases, Zenodo, or another durable store, append an entry to `reproduction/iac2026/evidence_registry.json` matching `evidence_registry.schema.json` (URI + archive SHA256 + config/manifest/prediction-or-timing SHAs + commit + verification metadata). This PR ships an empty registry.
+
+### Claim `measured` conditions
+
+All of: archaeology blockers closed; real_evidence audit passed; hash-matched metrics or timing bundle; registry entry `author_verified: true`; ledger support column updated in a dedicated PR. This harness alone never promotes claims.
+
+## Layout
+
+- Schemas: `schemas/`
+- Configs: `configs/`
+- Fixtures: `fixtures/` (synthetic CSV only)
+- Scripts: `scripts/iac2026/`, `scripts/benchmark_cv_core_speed.py`
+- Run bundles: `results/iac2026/reproduction/<run_id>/` (gitignored)
+- Policy: `ENVIRONMENT_POLICY.md`

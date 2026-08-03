@@ -54,7 +54,13 @@ Proxy studies are **preliminary** on a curated `n=21` set. They must not be pres
 
 Accepted abstract: 28.1 FPS at 256×256 in a lightweight configuration **excluding learned depth and AE inference** (`accepted_abstract_reproduction_pending`).
 
-Harness: `scripts/benchmark_cv_core_speed.py` (OpenCV core via `scripts/iac2026/cv_core_pipeline.py`). Example config: `reproduction/iac2026/configs/core_speed_256.example.yaml`. Requires depth off, AE off, 256×256, batch 1, warm-up ≥30, timed ≥300; headline = `core_processing` FPS. Pin whatever the machine produces — do **not** claim match to 28.1 until a closed measured run is ledgered.
+Harness: `scripts/benchmark_cv_core_speed.py`.
+
+- **historical_exact** — `reproduction/iac2026/configs/c07_historical_exact.example.yaml`; `pipeline_id: historical_opencv_surrogate_8f7e3ff`; headline `historical_exact_fps` (total historical process_frame). Closest path to the accepted claim; do not assert equality with 28.1 until measured+registered.
+- **current_production** — `c07_current_production.example.yaml`; uses `src/utils/image_enhancement.py`; headline `current_pipeline_fps`. Never present as the 28.1 reproduction.
+- **software_verification** — `c07_software_verification.example.yaml` + `--software-verification` only; `input_source=synthetic`; `eligible_for_claim_closure=false`.
+
+No silent synthetic fallback in real_evidence mode.
 
 ## Jetson benchmark protocol (C14) — planned, not executed
 

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidence_registry.schema.json",
+  "title": "IAC2026EvidenceRegistry",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "run_id",
+          "claim_ids",
+          "evidence_class",
+          "artifact_uri",
+          "archive_sha256",
+          "config_sha256",
+          "manifest_sha256",
+          "commit_sha",
+          "author_verified",
+          "verification_date",
+          "notes"
+        ],
+        "properties": {
+          "run_id": { "type": "string" },
+          "claim_ids": { "type": "array", "items": { "type": "string" } },
+          "evidence_class": { "type": "string" },
+          "artifact_uri": { "type": "string" },
+          "archive_sha256": { "type": "string" },
+          "config_sha256": { "type": "string" },
+          "manifest_sha256": { "type": "string" },
+          "predictions_sha256": { "type": ["string", "null"] },
+          "timing_raw_sha256": { "type": ["string", "null"] },
+          "checkpoint_sha256": { "type": ["string", "null"] },
+          "commit_sha": { "type": "string" },
+          "author_verified": { "type": "boolean" },
+          "verification_date": { "type": "string" },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
