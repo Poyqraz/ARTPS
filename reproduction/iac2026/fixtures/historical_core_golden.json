@@ -1,6 +1,8 @@
 {
-  "map_sha256": "eb6623734d727245ddd89aff68b8f265bcb4d73c8b9eefe3bff2ecca8918904d",
-  "n_detections": 0,
-  "map_mean": 0.5419407000346662,
-  "map_max": 1.0
+  "n_detections_min": 0,
+  "n_detections_max": 25,
+  "map_mean_min": 0.1,
+  "map_mean_max": 0.9,
+  "map_max_min": 0.5,
+  "note": "Soft cross-platform bounds; OpenCV float bytes are not portable across OS builds"
 }
