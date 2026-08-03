@@ -1,0 +1,109 @@
+name: IAC reproduction harness
+
+on:
+  pull_request:
+    paths:
+      - "reproduction/iac2026/**"
+      - "scripts/iac2026/**"
+      - "scripts/benchmark_cv_core_speed.py"
+      - "tests/iac2026/**"
+      - "paper/iac2026/reproduction/**"
+      - "paper/iac2026/CLAIM_EVIDENCE_LEDGER.md"
+      - "paper/iac2026/EXPERIMENT_PROTOCOL.md"
+      - ".github/workflows/iac-reproduction.yml"
+  push:
+    branches:
+      - main
+      - experiments/iac2026-reproduction
+    paths:
+      - "reproduction/iac2026/**"
+      - "scripts/iac2026/**"
+      - "scripts/benchmark_cv_core_speed.py"
+      - "tests/iac2026/**"
+      - "paper/iac2026/reproduction/**"
+      - ".github/workflows/iac-reproduction.yml"
+
+concurrency:
+  group: iac-repro-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy opencv-python-headless pillow pyyaml jsonschema pytest
+
+      - name: Validate JSON schemas parse
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("reproduction/iac2026/schemas")
+          for p in sorted(root.glob("*.json")):
+              json.loads(p.read_text(encoding="utf-8"))
+              print("ok", p)
+          PY
+
+      - name: Unit tests (synthetic only)
+        run: pytest -q tests/iac2026
+
+      - name: CLI dry-run — audit fail-closed on example config
+        run: |
+          set +e
+          python scripts/iac2026/audit_reproduction_inputs.py \
+            --config reproduction/iac2026/configs/detection_reproduction.example.yaml \
+            --run-id ci_audit_example
+          rc=$?
+          set -e
+          test "$rc" -eq 2
+
+      - name: CLI dry-run — metrics from synthetic fixtures
+        run: |
+          python scripts/iac2026/reproduce_detection_metrics.py \
+            --config reproduction/iac2026/configs/detection_reproduction.synthetic.yaml \
+            --run-id ci_metrics_synth
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m = json.loads(Path("results/iac2026/reproduction/ci_metrics_synth/detection_metrics.json").read_text())
+          assert "0.894" not in json.dumps(m)
+          assert m["reproduction_status"].startswith("reproduction_incomplete") or m["auroc"] is not None
+          print("metrics dry-run ok", m["reproduction_status"], m["auroc"])
+          PY
+
+      - name: CLI dry-run — C07 core speed (synthetic frames)
+        run: |
+          python scripts/benchmark_cv_core_speed.py \
+            --config reproduction/iac2026/configs/core_speed_256.example.yaml \
+            --run-id ci_c07_core
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s = json.loads(Path("results/iac2026/reproduction/ci_c07_core/timing_summary.json").read_text())
+          assert s["learned_depth_enabled"] is False
+          assert s["autoencoder_enabled"] is False
+          assert s["input_resolution"] == 256
+          assert s["timed_iteration_count"] >= 300
+          assert "fps_from_mean_core" in s
+          print("c07 dry-run fps", round(s["fps_from_mean_core"], 2))
+          PY
+
+      - name: Guard — no NASA download hooks in harness paths
+        run: |
+          set -e
+          if grep -RIn -E "download.*nasa|CUDA_VISIBLE_DEVICES|nvidia-smi" \
+            reproduction/iac2026 scripts/iac2026 scripts/benchmark_cv_core_speed.py \
+            .github/workflows/iac-reproduction.yml; then
+            echo "ERROR: forbidden download/GPU hook in harness"
+            exit 1
+          fi
+          echo "OK"

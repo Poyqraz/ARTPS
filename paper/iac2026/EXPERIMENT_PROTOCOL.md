@@ -21,14 +21,19 @@ Authoritative for `sections/experiments.tex`. Bind claims via [`CLAIM_EVIDENCE_L
 
 Document the exact image list and seed when closing C05–C07 (`accepted_abstract_reproduction_pending`). Current proxy runs used curated benchmark subsets (e.g. round3 + rover samples, `n=21` in shadow/size-distance proxy summaries). Pin paths in the ledger when re-run.
 
+Manifest / prediction contracts: `reproduction/iac2026/schemas/`. Archaeology blockers: [`reproduction/ARCHAEOLOGY_REPORT.md`](reproduction/ARCHAEOLOGY_REPORT.md). Status table: [`reproduction/REPRODUCTION_STATUS.md`](reproduction/REPRODUCTION_STATUS.md).
+
 ## Baselines
 
 - PaDiM / PatchCore-style anomaly maps (cite Defard, Roth).
+- Harness adapters (fail-loud until contract known): `scripts/iac2026/baselines/padim_adapter.py`, `patchcore_adapter.py`. Do **not** average into a fake 0.856; do **not** use anomalib for the C06 column.
 - Heuristic contour + fusion axes listed in `results/paper_figs/paper_report.md` are **exploratory only** (sample count = 5; not a quantitative manuscript result).
 
 ## Metrics (names only in manuscript)
 
 AUROC, AUPRC, F1, FPS, latency, peak memory; proxy FPR / recall / avg detections; self-IoU for merge stability. **No textbook formula expansions.**
+
+Prediction-table runner (software verification / future pinned preds): `scripts/iac2026/reproduce_detection_metrics.py`. Input audit (fail closed): `scripts/iac2026/audit_reproduction_inputs.py`. Artifacts under `results/iac2026/reproduction/<run_id>/`. Never pass/fail against accepted-abstract targets.
 
 ## Ablation protocol
 
@@ -49,7 +54,7 @@ Proxy studies are **preliminary** on a curated `n=21` set. They must not be pres
 
 Accepted abstract: 28.1 FPS at 256×256 in a lightweight configuration **excluding learned depth and AE inference** (`accepted_abstract_reproduction_pending`).
 
-Candidate re-run: `scripts/benchmark_cv_core_speed.py`. Pin resolution (256 / 384 / 768), device, commit SHA, config file.
+Harness: `scripts/benchmark_cv_core_speed.py` (OpenCV core via `scripts/iac2026/cv_core_pipeline.py`). Example config: `reproduction/iac2026/configs/core_speed_256.example.yaml`. Requires depth off, AE off, 256×256, batch 1, warm-up ≥30, timed ≥300; headline = `core_processing` FPS. Pin whatever the machine produces — do **not** claim match to 28.1 until a closed measured run is ledgered.
 
 ## Jetson benchmark protocol (C14) — planned, not executed
 
