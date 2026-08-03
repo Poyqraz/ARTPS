@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "timing_result.schema.json",
+  "title": "IAC2026TimingSummary",
+  "type": "object",
+  "required": [
+    "claim_ids",
+    "input_resolution",
+    "learned_depth_enabled",
+    "autoencoder_enabled",
+    "warmup_count",
+    "timed_iteration_count",
+    "mean_core_latency_s",
+    "fps_from_mean_core",
+    "stages"
+  ],
+  "properties": {
+    "claim_ids": { "type": "array", "items": { "type": "string" } },
+    "input_resolution": { "type": "integer" },
+    "learned_depth_enabled": { "type": "boolean" },
+    "autoencoder_enabled": { "type": "boolean" },
+    "warmup_count": { "type": "integer" },
+    "timed_iteration_count": { "type": "integer" },
+    "mean_core_latency_s": { "type": "number" },
+    "median_core_latency_s": { "type": "number" },
+    "p95_core_latency_s": { "type": "number" },
+    "p99_core_latency_s": { "type": "number" },
+    "min_core_latency_s": { "type": "number" },
+    "max_core_latency_s": { "type": "number" },
+    "std_core_latency_s": { "type": "number" },
+    "fps_from_mean_core": { "type": "number" },
+    "stages": { "type": "object" }
+  },
+  "additionalProperties": true
+}

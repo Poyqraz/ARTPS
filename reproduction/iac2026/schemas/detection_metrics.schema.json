@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "detection_metrics.schema.json",
+  "title": "IAC2026DetectionMetrics",
+  "type": "object",
+  "required": [
+    "claim_ids",
+    "test_sample_count",
+    "positive_count",
+    "negative_count",
+    "auroc",
+    "auprc",
+    "f1",
+    "precision",
+    "recall",
+    "selected_threshold",
+    "threshold_source",
+    "confusion_matrix",
+    "reproduction_status"
+  ],
+  "properties": {
+    "claim_ids": { "type": "array", "items": { "type": "string" } },
+    "test_sample_count": { "type": "integer", "minimum": 0 },
+    "positive_count": { "type": "integer", "minimum": 0 },
+    "negative_count": { "type": "integer", "minimum": 0 },
+    "auroc": { "type": ["number", "null"] },
+    "auprc": { "type": ["number", "null"] },
+    "f1": { "type": ["number", "null"] },
+    "precision": { "type": ["number", "null"] },
+    "recall": { "type": ["number", "null"] },
+    "selected_threshold": { "type": ["number", "null"] },
+    "threshold_source": { "type": "string" },
+    "confusion_matrix": {
+      "type": "object",
+      "required": ["tn", "fp", "fn", "tp"],
+      "properties": {
+        "tn": { "type": "integer" },
+        "fp": { "type": "integer" },
+        "fn": { "type": "integer" },
+        "tp": { "type": "integer" }
+      }
+    },
+    "bootstrap_ci": { "type": ["object", "null"] },
+    "reproduction_status": { "type": "string" },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": true
+}
