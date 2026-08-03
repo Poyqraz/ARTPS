@@ -1,0 +1,309 @@
+# C05/C06 historical definitions — evidence pin only
+# status values: LOCATED | PARTIALLY_LOCATED | MANUSCRIPT_CLAIM_ONLY |
+#                PATH_REFERENCE_ONLY | UNKNOWN_EVIDENCE_NOT_LOCATED
+# Never treat MANUSCRIPT_CLAIM_ONLY metrics as measured experiment outputs.
+
+schema_version: 1
+claim_ids: ["C05", "C06"]
+support_level_locked: accepted_abstract_reproduction_pending
+audit_doc: paper/iac2026/reproduction/C05_C06_DEFINITION_AUDIT.md
+manifest_template: reproduction/iac2026/manifests/c05_c06_manifest.template.csv
+real_manifest_path: null
+
+task_level:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+positive_class:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+negative_class:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+anomaly_score_definition:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+score_orientation:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+sample_unit:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+dataset_sources:
+  value:
+    missions_named: ["Curiosity Mastcam", "Perseverance Mastcam-Z"]
+    archive: "NASA PDS (narrative)"
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/Full_Baydemir_ARTPS.pdf
+      page_or_section: "p.18 §4.1 Dataset"
+      quote: "The dataset contains 2,847 images..."
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Experimental setup / Dataset"
+
+exact_sample_count:
+  value:
+    total_stated: 2847
+    curiosity_mastcam_stated: 1247
+    perseverance_mastcam_z_stated: 892
+    test_validation_bullet_stated: 708
+    partition_semantics: null
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/Full_Baydemir_ARTPS.pdf
+      page_or_section: "p.18 §4.1"
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Dataset and preprocessing"
+  notes: "1247+892+708=2847 arithmetic observed; source-count vs disjoint-split membership UNKNOWN."
+
+train_split:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+validation_split:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+test_split:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+scene_grouping:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+duplicate_policy:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+annotation_source:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+label_semantics:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+threshold_policy:
+  value: validation_selected
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Protocol"
+      quote: "Decision thresholds are selected on validation data; results are reported on the test set."
+  notes: "Policy class only; selection metric / tie-break / numeric threshold UNKNOWN."
+
+fixed_threshold:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: false
+  sources: []
+
+threshold_selection_split:
+  value: validation
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Protocol"
+
+threshold_selection_metric:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+pr_metric_method:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/Full_Baydemir_ARTPS.pdf
+      page_or_section: "§4.3.1"
+      quote: "AUPRC (Area Under PRC): area under the Precision–Recall curve"
+  notes: "Manuscript says AUPRC only; average_precision vs trapezoidal_pr_auc not located."
+
+random_seed:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Protocol"
+      quote: "consistent random seeds"
+  notes: "Existence claimed; numeric seed not located."
+
+preprocessing:
+  value:
+    narrative: ["resolution equalization", "denoising", "CLAHE", "gamma correction"]
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Dataset and preprocessing"
+
+input_resolution:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Dataset"
+      quote: "640×480 to 1920×1080"
+  notes: "Span stated; eval resize/crop for published metrics UNKNOWN."
+
+model_checkpoint_c05:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+c06_baseline_identity:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Table tab:anomaly-performance"
+      quote: "PaDiM/PatchCore (WRN-50-2)"
+  notes: "Single combined column; PaDiM-only / PatchCore-only / average / best UNKNOWN."
+
+padim_configuration:
+  value:
+    backbone_named: wide_resnet50_2
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Baselines / Protocol"
+  notes: "layers, image_size, bank recipe, weights_sha256 UNKNOWN."
+
+patchcore_configuration:
+  value:
+    backbone_named: wide_resnet50_2
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Baselines / Protocol"
+  notes: "coreset, layers, image_size, bank recipe, weights_sha256 UNKNOWN."
+
+baseline_dataset_linkage:
+  value: null
+  status: PARTIALLY_LOCATED
+  required_for_real_run: true
+  sources:
+    - file: docs/paper.tex
+      commit: 8f7e3ff
+      page_or_section: "Protocol"
+      quote: "identical train/validation/test splits"
+  notes: "Manuscript claim only; per-file proof not located."
+
+weight_paths_local:
+  padim_stats:
+    path: results/padim_stats.pth
+    status: PATH_REFERENCE_ONLY
+    required_for_real_run: true
+    notes: "File present locally on author machine at audit time; provenance/SHA unverified in git."
+  patchcore_bank:
+    path: results/patchcore_bank.pth
+    status: PATH_REFERENCE_ONLY
+    required_for_real_run: true
+    notes: "File present locally; provenance/SHA unverified in git."
+
+raw_predictions:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+
+re_inference_path_documented:
+  value: null
+  status: UNKNOWN_EVIDENCE_NOT_LOCATED
+  required_for_real_run: true
+  sources: []
+  notes: "Need either pinned predictions CSV or fully specified re-inference recipe."
+
+reported_metrics:
+  auroc:
+    value: 0.894
+    status: MANUSCRIPT_CLAIM_ONLY
+    required_for_real_run: false
+    sources:
+      - file: paper/iac2026/main.tex
+        page_or_section: "abstract"
+      - file: docs/Full_Baydemir_ARTPS.pdf
+        page_or_section: "Table 2 / p.22"
+      - file: docs/IAC2026_Portal_Abstract_ARTPS.pdf
+        page_or_section: "p.1"
+  auprc:
+    value: 0.847
+    status: MANUSCRIPT_CLAIM_ONLY
+    required_for_real_run: false
+    sources:
+      - file: paper/iac2026/main.tex
+        page_or_section: "abstract"
+      - file: docs/Full_Baydemir_ARTPS.pdf
+        page_or_section: "Table 2 / p.22"
+  f1:
+    value: 0.823
+    status: MANUSCRIPT_CLAIM_ONLY
+    required_for_real_run: false
+    sources:
+      - file: paper/iac2026/main.tex
+        page_or_section: "abstract"
+      - file: docs/Full_Baydemir_ARTPS.pdf
+        page_or_section: "Table 2 / p.22"
+  baseline_auroc:
+    value: 0.856
+    status: MANUSCRIPT_CLAIM_ONLY
+    required_for_real_run: false
+    sources:
+      - file: paper/iac2026/main.tex
+        page_or_section: "abstract"
+      - file: docs/Full_Baydemir_ARTPS.pdf
+        page_or_section: "Table 2 column PaDiM/PatchCore (WRN-50-2)"
