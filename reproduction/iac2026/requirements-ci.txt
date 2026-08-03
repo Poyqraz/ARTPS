@@ -1,0 +1,9 @@
+# Pinned deps for IAC reproduction harness CI / software-verification only.
+# Not a full scientific environment export — see ENVIRONMENT_POLICY.md.
+numpy==2.1.3
+opencv-python-headless==4.10.0.84
+Pillow==11.0.0
+PyYAML==6.0.2
+jsonschema==4.23.0
+pytest==8.3.4
+scikit-learn==1.6.1
