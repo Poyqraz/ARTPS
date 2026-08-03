@@ -73,7 +73,12 @@
     "model_version": { "type": "string" },
     "config_id": { "type": "string" },
     "pr_metric_method": { "type": "string" },
-    "higher_score_means_more_anomalous": { "type": "boolean" }
+    "higher_score_means_more_anomalous": { "type": "boolean" },
+    "raw_score_orientation": { "type": "string" },
+    "canonical_score_transform": { "type": "string" },
+    "raw_fixed_threshold": { "type": ["number", "null"] },
+    "canonical_selected_threshold": { "type": ["number", "null"] },
+    "decision_operator": { "type": "string", "enum": ["ge", "le"] }
   },
   "additionalProperties": false
 }

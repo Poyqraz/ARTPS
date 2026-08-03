@@ -23,22 +23,83 @@
           "notes"
         ],
         "properties": {
-          "run_id": { "type": "string" },
-          "claim_ids": { "type": "array", "items": { "type": "string" } },
-          "evidence_class": { "type": "string" },
-          "artifact_uri": { "type": "string" },
-          "archive_sha256": { "type": "string" },
-          "config_sha256": { "type": "string" },
-          "manifest_sha256": { "type": "string" },
-          "predictions_sha256": { "type": ["string", "null"] },
-          "timing_raw_sha256": { "type": ["string", "null"] },
-          "checkpoint_sha256": { "type": ["string", "null"] },
-          "commit_sha": { "type": "string" },
+          "run_id": { "type": "string", "minLength": 1 },
+          "claim_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "evidence_class": {
+            "type": "string",
+            "enum": ["candidate_real_evidence"]
+          },
+          "artifact_uri": { "type": "string", "minLength": 1 },
+          "archive_sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$"
+          },
+          "config_sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$"
+          },
+          "predictions_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^([a-fA-F0-9]{64})?$"
+          },
+          "timing_raw_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^([a-fA-F0-9]{64})?$"
+          },
+          "checkpoint_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^([a-fA-F0-9]{64})?$"
+          },
+          "commit_sha": { "type": "string", "minLength": 7 },
           "author_verified": { "type": "boolean" },
-          "verification_date": { "type": "string" },
+          "verification_date": { "type": "string", "format": "date-time" },
           "notes": { "type": "string" }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "claim_ids": {
+                  "contains": { "enum": ["C05", "C06"] }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "predictions_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-fA-F0-9]{64}$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "claim_ids": {
+                  "contains": { "const": "C07" }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "timing_raw_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-fA-F0-9]{64}$"
+                }
+              }
+            }
+          }
+        ]
       }
     }
   },

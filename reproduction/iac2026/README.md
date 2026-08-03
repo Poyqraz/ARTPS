@@ -34,16 +34,25 @@ python scripts/iac2026/audit_reproduction_inputs.py --config path\to\real_detect
 python scripts/iac2026/reproduce_detection_metrics.py --config path\to\real_detection.yaml --audit-json results/iac2026/reproduction/real_audit/input_audit.json --run-id real_metrics
 ```
 
-### Historical exact C07 (real images; no synthetic fallback)
+### Real metrics: image_binary only
+
+The scalar metrics runner accepts **`image_binary` only**. `pixel_binary` / `region_binary` are rejected with an explicit contract error (dedicated spatial/region prediction support is out of scope). Prior `--audit-json` is compare-only; a fresh `audit_inputs` always runs and must pass.
+
+### Historical exact C07 (manifest-pinned real inputs)
+
+Real C07 requires `input_manifest` + `dataset_root_env` (SHA/path/order pinned). `images_dir`-only is rejected.
 
 ```text
+set ARTPS_DATASET_ROOT=C:\path\to\dataset_root
 python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_historical_exact.example.yaml --run-id c07_hist
 ```
 
-### Current production C07 profile
+### Current enhancement surrogate (supplementary; not accepted C07 claim)
+
+Profile `current_enhancement_historical_surrogate` times current enhancement + historical recon/depth/fusion. It does **not** close the accepted-abstract 28.1 FPS claim.
 
 ```text
-python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_current_production.example.yaml --run-id c07_prod
+python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_current_production.example.yaml --run-id c07_surrogate
 ```
 
 ### Software-verification C07
@@ -51,6 +60,10 @@ python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/
 ```text
 python scripts/benchmark_cv_core_speed.py --config reproduction/iac2026/configs/c07_software_verification.example.yaml --software-verification --run-id c07_sw
 ```
+
+### C07 timed stage scope
+
+Headline latency is `process_frame_*` total: **resize + enhance + recon surrogate + fallback depth + `fusion_localization_combined`**. Disk enumeration is outside timed scope. Decode is outside unless measured as `frame_fetch` (not in the headline total). There is **no** fabricated 70/30 split of fusion vs localization — one measured stage only.
 
 ### Output schema validation
 

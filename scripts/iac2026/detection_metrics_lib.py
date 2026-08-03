@@ -1,7 +1,7 @@
 """Pure detection metrics (AUROC, AP, trapezoidal PR-AUC, F1) with tie-safe ranking."""
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -16,6 +16,28 @@ def orient_scores(scores: np.ndarray, higher_means_anomalous: bool) -> np.ndarra
     if higher_means_anomalous:
         return s
     return -s
+
+
+def canonical_threshold(raw_threshold: float, higher_means_anomalous: bool) -> float:
+    """Map a raw fixed threshold into canonical higher-is-positive score space."""
+    t = float(raw_threshold)
+    if higher_means_anomalous:
+        return t
+    return -t
+
+
+def score_orientation_meta(higher_means_anomalous: bool) -> Dict[str, str]:
+    if higher_means_anomalous:
+        return {
+            "raw_score_orientation": "higher_is_more_anomalous",
+            "canonical_score_transform": "identity",
+            "decision_operator": "ge",
+        }
+    return {
+        "raw_score_orientation": "lower_is_more_anomalous",
+        "canonical_score_transform": "negate",
+        "decision_operator": "ge",
+    }
 
 
 def _require_finite(scores: np.ndarray, y: np.ndarray) -> Optional[str]:

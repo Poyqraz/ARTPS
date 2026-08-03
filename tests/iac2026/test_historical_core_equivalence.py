@@ -1,4 +1,4 @@
-"""Historical core golden equivalence (software verification)."""
+"""Historical core regression smoke (not independently verified vs 8f7e3ff tree)."""
 from __future__ import annotations
 
 import json
@@ -17,6 +17,9 @@ from cv_core_pipeline import (  # noqa: E402
     process_frame_historical,
 )
 
+EQUIVALENCE_TEST_STATUS = "not_independently_verified"
+EQUIVALENCE_CLASS = "regression_smoke"
+
 
 def _fixed_frame() -> np.ndarray:
     rng = np.random.default_rng(42)
@@ -29,9 +32,11 @@ def _fixed_frame() -> np.ndarray:
 def test_pipeline_metadata():
     assert PIPELINE_ID == "historical_opencv_surrogate_8f7e3ff"
     assert SOURCE_COMMIT == "8f7e3ff"
+    assert EQUIVALENCE_TEST_STATUS == "not_independently_verified"
+    assert EQUIVALENCE_CLASS == "regression_smoke"
 
 
-def test_historical_golden_equivalence():
+def test_historical_golden_regression_smoke():
     rgb = _fixed_frame()
     combined_a, dets_a = core_process_rgb_u8(rgb)
     combined_b, dets_b, stages = process_frame_historical(rgb, target_res=256)
@@ -49,6 +54,7 @@ def test_historical_golden_equivalence():
     assert expected["map_mean_min"] <= mean <= expected["map_mean_max"]
     assert mx >= expected["map_max_min"]
     assert "total_pipeline" in stages
+    assert "fusion_localization_combined" in stages
     # Same process should be numerically stable on one host (OpenCV may nudge ulps)
     combined_c, dets_c = core_process_rgb_u8(rgb)
     np.testing.assert_allclose(combined_a, combined_c, rtol=0, atol=1e-5)

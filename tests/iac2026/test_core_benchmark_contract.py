@@ -44,6 +44,7 @@ def test_missing_images_dir_real_rejected(tmp_path):
     )
     raw["images_dir"] = str(tmp_path / "nope")
     raw["output_directory"] = str(tmp_path)
+    raw["allow_dirty_git"] = True
     cfg = tmp_path / "cfg.yaml"
     cfg.write_text(yaml.safe_dump(raw), encoding="utf-8")
     proc = subprocess.run(
@@ -58,7 +59,6 @@ def test_missing_images_dir_real_rejected(tmp_path):
         text=True,
     )
     assert proc.returncode != 0
-    assert "synthetic" in (proc.stderr + proc.stdout).lower() or proc.returncode != 0
 
 
 def test_synthetic_mode_evidence_class(tmp_path):
@@ -91,3 +91,9 @@ def test_synthetic_mode_evidence_class(tmp_path):
     assert summary["eligible_for_claim_closure"] is False
     assert summary["input_source"] == "synthetic"
     assert summary["pipeline_id"] == "historical_opencv_surrogate_8f7e3ff"
+    assert summary["equivalence_test_status"] == "not_independently_verified"
+    assert summary["profile"] == "historical_software_verification"
+    assert "fusion_localization_combined" in summary["stages"]
+    assert "image_decode" not in summary["stages"]
+    for k in summary["stages"]:
+        assert "0.7" not in k and "0.3" not in k

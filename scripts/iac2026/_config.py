@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping
 
-from _common import REPO_ROOT, load_json_schema, load_yaml, resolve_repo_path, sha256_file
+from _common import load_json_schema, load_yaml, resolve_repo_path, sha256_file
 
 
 class ConfigValidationError(ValueError):
@@ -54,13 +54,24 @@ def validate_instance(instance: Mapping[str, Any], schema_name: str) -> List[str
     return [e.message for e in sorted(validator.iter_errors(instance), key=lambda e: list(e.path))]
 
 
+PIXEL_REGION_MSG = (
+    "pixel_binary/region_binary requires a dedicated spatial/region prediction "
+    "contract; current runner is image_binary only"
+)
+
+
 def apply_real_evidence_policy(cfg: Mapping[str, Any]) -> List[str]:
     """Extra real_evidence constraints beyond JSON Schema enums."""
     errors: List[str] = []
     if cfg.get("evidence_mode") != "real_evidence":
         return errors
-    if cfg.get("task_level") == "TASK_LEVEL_TBD":
+    task = cfg.get("task_level")
+    if task == "TASK_LEVEL_TBD":
         errors.append("real_evidence forbids task_level=TASK_LEVEL_TBD")
+    elif task in ("pixel_binary", "region_binary"):
+        errors.append(PIXEL_REGION_MSG)
+    elif task != "image_binary":
+        errors.append("real_evidence requires task_level=image_binary")
     for key in ("model_name", "model_version", "checkpoint_sha256", "preprocessing", "normalization"):
         if _is_tbd(cfg.get(key)):
             errors.append(f"real_evidence forbids TBD/unknown {key}")
@@ -105,23 +116,12 @@ def load_and_validate_config(path: Path | str) -> LoadedConfig:
 
 
 def load_timing_config(path: Path | str) -> Dict[str, Any]:
-    """Timing configs are lighter; validate required keys in code."""
+    """Load and schema-validate C07 timing config."""
     config_path = resolve_repo_path(str(path)) if not isinstance(path, Path) else path
     data = load_yaml(config_path)
-    required = [
-        "claim_ids",
-        "evidence_mode",
-        "profile",
-        "input_resolution",
-        "batch_size",
-        "learned_depth_enabled",
-        "autoencoder_enabled",
-        "warmup_count",
-        "timed_iteration_count",
-        "output_directory",
-        "allow_dirty_git",
-    ]
-    missing = [k for k in required if k not in data]
-    if missing:
-        raise ConfigValidationError(f"timing config missing keys: {missing}")
+    schema_errors = validate_instance(data, "c07_timing_config.schema.json")
+    if schema_errors:
+        raise ConfigValidationError(
+            "timing config schema validation failed:\n- " + "\n- ".join(schema_errors)
+        )
     return data

@@ -181,7 +181,11 @@ def compute_combined_map_and_detections(
 def process_frame_historical(
     rgb_u8: np.ndarray, *, target_res: int = 256
 ) -> Tuple[np.ndarray, List[dict], Dict[str, float]]:
-    """Historical process_frame scope with per-stage timings (seconds)."""
+    """Historical process_frame scope with per-stage timings (seconds).
+
+    Timed scope includes resize + enhance + recon surrogate + fallback depth +
+    fusion_localization_combined. Disk decode is outside this function.
+    """
     import time
 
     stages: Dict[str, float] = {}
@@ -213,15 +217,12 @@ def process_frame_historical(
     t0 = time.perf_counter_ns()
     combined, dets = compute_combined_map_and_detections(orig_f, recon_f, depth_f)
     t1 = time.perf_counter_ns()
-    # fusion + localization are inside compute_*; attribute to both for CSV
-    stages["fusion"] = (t1 - t0) / 1e9 * 0.7
-    stages["localization_postprocess"] = (t1 - t0) / 1e9 * 0.3
+    stages["fusion_localization_combined"] = (t1 - t0) / 1e9
     stages["core_processing"] = (
         stages["enhancement"]
         + stages["reconstruction_surrogate"]
         + stages["fallback_depth"]
-        + stages["fusion"]
-        + stages["localization_postprocess"]
+        + stages["fusion_localization_combined"]
     )
     stages["total_pipeline"] = stages["resize_preprocess"] + stages["core_processing"]
     return combined, dets, stages
@@ -237,10 +238,16 @@ def implementation_hash() -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def process_frame_current_production(
+CURRENT_SURROGATE_PIPELINE_ID = "current_enhancement_historical_surrogate"
+
+
+def process_frame_current_enhancement_historical_surrogate(
     rgb_u8: np.ndarray, *, target_res: int = 256
 ) -> Tuple[np.ndarray, List[dict], Dict[str, float]]:
-    """Current production enhancement + historical fusion surrogate (no Torch AE/depth)."""
+    """Supplementary profile: current enhancement + historical recon/depth/fusion.
+
+    Not the accepted C07 claim path. Not a full current-production pipeline.
+    """
     import sys
     import time
 
@@ -261,7 +268,6 @@ def process_frame_current_production(
     stages["resize_preprocess"] = (t1 - t0) / 1e9
 
     t0 = time.perf_counter_ns()
-    # Lightweight profile: no Real-ESRGAN (C07 excludes learned upscalers for this path)
     result = enhance_image_auto(
         Image.fromarray(resized),
         config={
@@ -295,14 +301,16 @@ def process_frame_current_production(
     t0 = time.perf_counter_ns()
     combined, dets = compute_combined_map_and_detections(orig_f, recon_f, depth_f)
     t1 = time.perf_counter_ns()
-    stages["fusion"] = (t1 - t0) / 1e9 * 0.7
-    stages["localization_postprocess"] = (t1 - t0) / 1e9 * 0.3
+    stages["fusion_localization_combined"] = (t1 - t0) / 1e9
     stages["core_processing"] = (
         stages["enhancement"]
         + stages["reconstruction_surrogate"]
         + stages["fallback_depth"]
-        + stages["fusion"]
-        + stages["localization_postprocess"]
+        + stages["fusion_localization_combined"]
     )
     stages["total_pipeline"] = stages["resize_preprocess"] + stages["core_processing"]
     return combined, dets, stages
+
+
+# Back-compat alias (deprecated name)
+process_frame_current_production = process_frame_current_enhancement_historical_surrogate

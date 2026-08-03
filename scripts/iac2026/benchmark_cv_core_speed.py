@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""C07 workstation speed harness — historical_exact vs current_production profiles."""
+"""C07 workstation speed harness — historical_exact vs enhancement surrogate profiles."""
 from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import os
 import platform
 import statistics
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -22,19 +23,22 @@ from _common import (  # noqa: E402
     environment_snapshot,
     git_dirty,
     git_head,
-    load_yaml,
+    load_json_schema,
     make_run_id,
+    read_csv_dicts,
     resolve_repo_path,
+    resolve_under_dataset_root,
     sha256_file,
     write_json,
     write_run_bundle,
 )
-from _config import ConfigValidationError, load_timing_config  # noqa: E402
+from _config import ConfigValidationError, load_timing_config, require_jsonschema  # noqa: E402
 from cv_core_pipeline import (  # noqa: E402
+    CURRENT_SURROGATE_PIPELINE_ID,
     PIPELINE_ID,
     SOURCE_COMMIT,
     implementation_hash,
-    process_frame_current_production,
+    process_frame_current_enhancement_historical_surrogate,
     process_frame_historical,
 )
 
@@ -81,20 +85,61 @@ def _extended_env() -> Dict[str, Any]:
 
 def _collect_synthetic(resolution: int, n: int) -> List[np.ndarray]:
     rng = np.random.default_rng(0)
-    return [
-        rng.integers(0, 256, size=(resolution, resolution, 3), dtype=np.uint8)
-        for _ in range(max(1, n))
-    ]
-
-
-def _collect_from_dir(images_dir: Path, resolution: int) -> List[np.ndarray]:
-    exts = {".jpg", ".jpeg", ".png", ".bmp"}
-    paths = sorted(p for p in images_dir.iterdir() if p.suffix.lower() in exts)
-    frames: List[np.ndarray] = []
-    for p in paths:
-        img = Image.open(p).convert("RGB").resize((resolution, resolution), Image.LANCZOS)
-        frames.append(np.asarray(img, dtype=np.uint8))
+    # Varied sizes so timed resize inside process_frame is non-trivial
+    frames = []
+    for i in range(max(1, n)):
+        side = resolution if i % 2 == 0 else resolution + 64
+        frames.append(rng.integers(0, 256, size=(side, side, 3), dtype=np.uint8))
     return frames
+
+
+def _load_manifest_frames(
+    *,
+    manifest_path: Path,
+    dataset_root: Path,
+) -> Tuple[List[np.ndarray], str, str, int]:
+    rows = read_csv_dicts(manifest_path)
+    required = {
+        "sample_id",
+        "relative_path",
+        "sha256",
+        "source_id",
+        "mission",
+        "instrument",
+        "sol",
+        "order_index",
+    }
+    if not rows:
+        raise ValueError("input manifest is empty")
+    missing_cols = required - set(rows[0].keys())
+    if missing_cols:
+        raise ValueError(f"input manifest missing columns: {sorted(missing_cols)}")
+
+    sample_ids = [r["sample_id"] for r in rows]
+    if len(sample_ids) != len(set(sample_ids)):
+        raise ValueError("duplicate sample_id in input manifest")
+    order_indices = [int(r["order_index"]) for r in rows]
+    if len(order_indices) != len(set(order_indices)):
+        raise ValueError("duplicate order_index in input manifest")
+
+    ordered = sorted(rows, key=lambda r: int(r["order_index"]))
+    frames: List[np.ndarray] = []
+    path_digests: List[str] = []
+    for r in ordered:
+        path = resolve_under_dataset_root(dataset_root, r["relative_path"])
+        if not path.is_file():
+            raise ValueError(f"missing input file: {path}")
+        digest = sha256_file(path)
+        if digest.lower() != str(r["sha256"]).lower():
+            raise ValueError(f"sha256 mismatch for {path.name}")
+        # Preload original resolution — resize happens inside timed process_frame
+        img = Image.open(path).convert("RGB")
+        frames.append(np.asarray(img, dtype=np.uint8))
+        path_digests.append(f"{r['sample_id']}:{digest}:{r['order_index']}")
+
+    manifest_sha = sha256_file(manifest_path)
+    ordered_set_sha = hashlib.sha256("\n".join(path_digests).encode("utf-8")).hexdigest()
+    return frames, manifest_sha, ordered_set_sha, len(frames)
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -102,7 +147,6 @@ def main(argv: List[str] | None = None) -> int:
     ap.add_argument("--config", required=True)
     ap.add_argument("--run-id", default=None)
     ap.add_argument("--software-verification", action="store_true")
-    ap.add_argument("--images_dir", default=None)
     args = ap.parse_args(argv)
 
     try:
@@ -118,8 +162,6 @@ def main(argv: List[str] | None = None) -> int:
     warmup = int(cfg["warmup_count"])
     timed_n = int(cfg["timed_iteration_count"])
     batch_size = int(cfg["batch_size"])
-    learned_depth = bool(cfg["learned_depth_enabled"])
-    ae = bool(cfg["autoencoder_enabled"])
     allow_dirty = bool(cfg.get("allow_dirty_git", False))
 
     if evidence_mode == "real_evidence" and args.software_verification:
@@ -128,52 +170,51 @@ def main(argv: List[str] | None = None) -> int:
     if evidence_mode == "software_verification" and not args.software_verification:
         print("software_verification requires --software-verification", file=sys.stderr)
         return 2
+    if git_dirty() and not allow_dirty:
+        print("dirty git rejected", file=sys.stderr)
+        return 2
 
-    if resolution != 256:
-        print("C07 requires input_resolution=256", file=sys.stderr)
+    PROFILE_MAP = {
+        "historical_exact": process_frame_historical,
+        "historical_software_verification": process_frame_historical,
+        "current_enhancement_historical_surrogate": process_frame_current_enhancement_historical_surrogate,
+    }
+    if profile not in PROFILE_MAP:
+        print(f"unknown profile {profile!r}", file=sys.stderr)
         return 2
-    if batch_size != 1:
-        print("C07 requires batch_size=1", file=sys.stderr)
-        return 2
-    if learned_depth or ae:
-        print("C07 forbids learned depth / autoencoder", file=sys.stderr)
-        return 2
-    if warmup < 30 or timed_n < 300:
-        print("C07 requires warmup>=30 and timed>=300", file=sys.stderr)
-        return 2
-    if evidence_mode == "real_evidence":
-        if git_dirty() and not allow_dirty:
-            print("real_evidence: dirty git rejected", file=sys.stderr)
-            return 2
-        if allow_dirty:
-            print("real_evidence should set allow_dirty_git=false", file=sys.stderr)
-            return 2
+    process = PROFILE_MAP[profile]
 
-    images_dir = None
-    if args.images_dir or cfg.get("images_dir"):
-        images_dir = resolve_repo_path(str(args.images_dir or cfg.get("images_dir")))
+    input_manifest_sha: Optional[str] = None
+    ordered_input_set_sha: Optional[str] = None
+    input_file_count = 0
 
-    input_source = "synthetic"
-    frames: List[np.ndarray] = []
     if evidence_mode == "software_verification":
         frames = _collect_synthetic(resolution, int(cfg.get("synthetic_frames", 8)))
         input_source = "synthetic"
+        input_file_count = len(frames)
     else:
-        if images_dir is None or not images_dir.is_dir():
-            print("real_evidence requires images_dir with images (no synthetic fallback)", file=sys.stderr)
+        if cfg.get("images_dir") and not cfg.get("input_manifest"):
+            print("real_evidence rejects images_dir-only; provide input_manifest", file=sys.stderr)
             return 2
-        frames = _collect_from_dir(images_dir, resolution)
-        if not frames:
-            print(f"no images in {images_dir}", file=sys.stderr)
+        manifest_path = resolve_repo_path(str(cfg["input_manifest"]))
+        root_env = str(cfg["dataset_root_env"])
+        root_val = os.environ.get(root_env)
+        if not root_val:
+            print(f"dataset_root_env {root_env!r} is not set", file=sys.stderr)
             return 2
-        input_source = "images_dir"
+        try:
+            frames, input_manifest_sha, ordered_input_set_sha, input_file_count = _load_manifest_frames(
+                manifest_path=manifest_path,
+                dataset_root=Path(root_val),
+            )
+        except (ValueError, OSError) as exc:
+            print(f"manifest load failed: {exc}", file=sys.stderr)
+            return 2
+        input_source = "manifest"
 
-    process = (
-        process_frame_historical
-        if profile in ("historical_exact", "software_verification_historical")
-        else process_frame_current_production
+    pipeline_id = (
+        PIPELINE_ID if process is process_frame_historical else CURRENT_SURROGATE_PIPELINE_ID
     )
-    pipeline_id = PIPELINE_ID if process is process_frame_historical else "current_production_enhancement_fusion"
     source_commit = SOURCE_COMMIT if process is process_frame_historical else git_head()
 
     for i in range(warmup):
@@ -185,13 +226,13 @@ def main(argv: List[str] | None = None) -> int:
     stage_sums: Dict[str, List[float]] = {}
 
     for i in range(timed_n):
-        t_decode0 = time.perf_counter_ns()
+        t_fetch0 = time.perf_counter_ns()
         rgb = frames[i % len(frames)]
-        t_decode1 = time.perf_counter_ns()
+        t_fetch1 = time.perf_counter_ns()
         combined, dets, stages = process(rgb, target_res=resolution)
         stages = dict(stages)
-        stages["image_decode"] = (t_decode1 - t_decode0) / 1e9
-        stages["total_pipeline"] = stages.get("total_pipeline", 0.0) + stages["image_decode"]
+        stages["frame_fetch"] = (t_fetch1 - t_fetch0) / 1e9
+        # Headline total_pipeline is process_frame scope (excludes frame_fetch / disk decode)
         totals.append(float(stages["total_pipeline"]))
         cores.append(float(stages["core_processing"]))
         for k, v in stages.items():
@@ -202,29 +243,34 @@ def main(argv: List[str] | None = None) -> int:
 
     mean_total = float(statistics.fmean(totals))
     mean_core = float(statistics.fmean(cores))
-    if profile in ("historical_exact", "software_verification_historical"):
+    if profile in ("historical_exact", "historical_software_verification"):
         headline_name = "historical_exact_fps"
         headline_fps = 1.0 / mean_total
         historical_fps = headline_fps
         current_fps = None
     else:
-        headline_name = "current_pipeline_fps"
+        headline_name = "current_enhancement_historical_surrogate_fps"
         headline_fps = 1.0 / mean_total
         historical_fps = None
         current_fps = headline_fps
 
     sw = evidence_mode == "software_verification"
+    cfg_sha = sha256_file(config_path)
+    impl_hash = implementation_hash()
     summary: Dict[str, Any] = {
         "claim_ids": cfg.get("claim_ids", ["C07"]),
         "evidence_class": "software_verification" if sw else "candidate_real_evidence",
         "eligible_for_claim_closure": False,
         "input_source": input_source,
         "pipeline_id": pipeline_id,
+        "profile": profile,
         "source_commit": source_commit,
-        "implementation_hash": implementation_hash(),
-        "equivalence_test_status": "see_tests",
-        "input_manifest_sha256": None,
-        "config_sha256": sha256_file(config_path),
+        "implementation_hash": impl_hash,
+        "equivalence_test_status": "not_independently_verified",
+        "input_manifest_sha256": input_manifest_sha if not sw else None,
+        "input_file_count": input_file_count,
+        "ordered_input_set_sha256": ordered_input_set_sha if not sw else None,
+        "config_sha256": cfg_sha,
         "git_head": git_head(),
         "git_dirty": git_dirty(),
         "input_resolution": resolution,
@@ -242,12 +288,23 @@ def main(argv: List[str] | None = None) -> int:
         "current_pipeline_fps": current_fps,
         "stages": {k: float(statistics.fmean(v)) for k, v in stage_sums.items()},
         "environment_extended": _extended_env(),
-        "profile": profile,
         "notes": (
             "Does not claim equality with accepted-abstract 28.1 FPS. "
-            f"Headline={headline_name}."
+            f"Headline={headline_name}. "
+            "Disk enumeration/decode excluded from headline; resize is inside timed process_frame. "
+            "Stage fusion_localization_combined is measured as one block (no fabricated 70/30)."
         ),
     }
+
+    require_jsonschema()
+    import jsonschema
+
+    # Soften SW timing schema: input_manifest_sha256 may be null
+    try:
+        jsonschema.Draft202012Validator(load_json_schema("timing_result.schema.json")).validate(summary)
+    except jsonschema.ValidationError as exc:
+        print(f"timing summary schema validation failed: {exc.message}", file=sys.stderr)
+        return 2
 
     run_id = args.run_id or make_run_id("c07")
     out_dir = resolve_repo_path(str(cfg["output_directory"])) / run_id

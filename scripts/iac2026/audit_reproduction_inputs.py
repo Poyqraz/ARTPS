@@ -45,12 +45,28 @@ class AuditResult:
     git_head: Optional[str] = None
     git_dirty: Optional[bool] = None
     evidence_mode: Optional[str] = None
+    claim_ids: List[str] = field(default_factory=list)
+    config_id: Optional[str] = None
     class_balance_manifest: Dict[str, Any] = field(default_factory=dict)
     class_balance_predictions: Dict[str, Any] = field(default_factory=dict)
     details: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+    def compare_keys(self) -> Dict[str, Any]:
+        return {
+            "passed": self.passed,
+            "evidence_mode": self.evidence_mode,
+            "claim_ids": list(self.claim_ids),
+            "config_id": self.config_id,
+            "config_sha256": self.config_sha256,
+            "manifest_sha256": self.manifest_sha256,
+            "predictions_sha256": self.predictions_sha256,
+            "checkpoint_sha256": self.checkpoint_sha256,
+            "git_head": self.git_head,
+            "git_dirty": self.git_dirty,
+        }
 
 
 def _balance(rows: List[Dict[str, str]], label_key: str) -> Dict[str, Any]:
@@ -97,6 +113,8 @@ def audit_inputs(
         git_head=git_head(),
         git_dirty=git_dirty(),
         evidence_mode=str(data.get("evidence_mode")),
+        claim_ids=list(data.get("claim_ids") or []),
+        config_id=str(data.get("config_id") or ""),
     )
     real = data.get("evidence_mode") == "real_evidence"
     errors = result.errors
@@ -261,13 +279,12 @@ def audit_inputs(
         expected_model = (
             str(data.get("model_name")),
             str(data.get("model_version")),
-            str(data.get("config_id", data.get("model_name"))),
+            str(data.get("config_id")),
         )
-        # config_id optional in older fixtures — compare name/version when present
-        for name, ver, _cid in model_set:
-            if name != expected_model[0] or ver != expected_model[1]:
+        for triple in model_set:
+            if triple != expected_model:
                 errors.append(
-                    f"prediction model_name/version {(name, ver)} != config {(expected_model[0], expected_model[1])}"
+                    f"prediction model_name/model_version/config_id {triple} != config {expected_model}"
                 )
 
     if manifest_rows and pred_rows:
