@@ -1,0 +1,97 @@
+% iac2026.sty — informal IAC 2026 layout helper (NOT an official IAF class).
+% Visual reference: repo-root "IAC 2026_manuscript_template.doc" + IAF PDF guidelines.
+% US Letter, ~25 mm margins, Times 10 pt, ~6 mm column gutter, congress header, paper-code footer.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{iac2026}[2026/08/03 Informal IAC 2026 manuscript style]
+
+\RequirePackage[
+  letterpaper,
+  left=25mm,
+  right=25mm,
+  top=25mm,
+  bottom=25mm,
+  includehead,
+  includefoot,
+  headheight=40pt,
+  headsep=5mm,
+  footskip=10mm
+]{geometry}
+\RequirePackage{mathptmx}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{microtype}
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{tabularx}
+\RequirePackage{amsmath}
+\RequirePackage{url}
+\RequirePackage[numbers,sort&compress]{natbib}
+\RequirePackage[hidelinks]{hyperref}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{caption}
+\RequirePackage{setspace}
+\RequirePackage{titlesec}
+
+\hypersetup{
+  pdftitle={ARTPS: Operationally Safe Target Prioritization via Depth-Enhanced Hybrid Anomaly Detection},
+  pdfauthor={Poyraz Baydemir},
+  pdfsubject={IAC 2026 manuscript},
+  pdfkeywords={Mars rover, autonomous exploration, anomaly detection, relative depth, target prioritization, operational safety}
+}
+
+\setlength{\columnsep}{6mm}
+\captionsetup{font=small,labelfont=bf,skip=4pt}
+
+\newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 October 2026.}
+\newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
+% Canonical paper code is set in main.tex via \renewcommand{\IACpapercode}{...}.
+\newcommand{\IACpapercode}{}%
+
+\newcommand{\IACapplypagestyle}{%
+  \fancyhf{}%
+  \fancyhead[C]{%
+    \parbox{\textwidth}{%
+      \centering\footnotesize
+      \IACcongress\\
+      \IACcopyright
+    }%
+  }%
+  \fancyfoot[L]{\footnotesize\IACpapercode}%
+  \fancyfoot[R]{\footnotesize Page~\thepage\ of~\pageref{LastPage}}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.4pt}%
+}
+
+\pagestyle{fancy}
+\IACapplypagestyle
+% First page of \twocolumn[...] often uses plain; keep the same header/footer.
+\fancypagestyle{plain}{\IACapplypagestyle}
+
+\newcommand{\IACmaketitle}[5]{%
+  \twocolumn[{%
+    \begin{center}
+      {\Large\bfseries #1\par}
+      \vspace{0.6em}
+      {\normalsize #2\par}
+      \vspace{0.35em}
+      {\small\itshape #3\par}
+    \end{center}
+    \vspace{0.8em}
+    \noindent\textbf{Abstract}\\[0.35em]
+    #4\par
+    \vspace{0.6em}
+    \noindent\textbf{Keywords:} #5\par
+    \vspace{1.0em}
+  }]%
+}
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{1em}
+% IAC Word template: section bold; subsection/subsubsection italic; no forced uppercase.
+\titleformat{\section}{\normalsize\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\itshape}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\titlespacing*{\subsection}{0pt}{0.85em}{0.35em}
+\titlespacing*{\subsubsection}{0pt}{0.7em}{0.3em}
