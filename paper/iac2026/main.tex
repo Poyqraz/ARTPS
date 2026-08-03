@@ -1,0 +1,48 @@
+% IAC 2026 manuscript stub — claim/evidence plan lives in PLAN.md + CLAIM_EVIDENCE_LEDGER.md.
+% Do not rewrite Results numbers here until ledger support levels are closed.
+% Official IAF: Word template only; this uses article + iac2026.sty.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage{iac2026}
+
+\renewcommand{\IACpapercode}{IAC-26,A3,IP,xxx,xXXXXX}
+
+\begin{document}
+
+\IACmaketitle
+{ARTPS: Operationally Safe Target Prioritization via Depth-Enhanced Hybrid Anomaly Detection}
+{Poyraz Baydemir}
+{Sel\c{c}uk University, Konya, T\"urkiye}
+{%
+Planetary rovers operate under strict bandwidth and energy constraints with delayed ground
+feedback, which motivates reliable onboard prioritization of scientific targets. Visual-only
+autonomy is brittle in field imagery: illumination changes, cast shadows, and low-texture
+regions can trigger false positives, while diversity heuristics can suppress high-value
+anomalies that appear similar to previously selected targets.
+This paper presents ARTPS, an edge-oriented framework that couples monocular relative-depth
+estimation with multi-cue anomaly detection and robust localization.
+ARTPS fuses image and depth cues via entropy-weighted dynamic fusion, ranks candidates with
+a curiosity score and soft similarity penalty, and uses a Priority Buffer for second-chance
+re-evaluation of high-anomaly targets down-weighted by diversity policy.
+Operational gates address rover-body and boundary-shadow false positives, protect objects
+inside shadows, and apply an image-relative size--distance policy based on apparent size
+(not metric distance).
+On NASA Mars rover imagery, ARTPS reports 0.894 AUROC, 0.847 AUPRC, and 0.823 F1 versus a
+PaDiM/PatchCore baseline (0.856 AUROC).
+In a lightweight configuration excluding learned depth and autoencoder inference, the core
+pipeline sustains 28.1~FPS at $256{\times}256$ on a development workstation.
+Proxy ablations (not human bounding-box ground truth) indicate reduced shadow-dense false
+positives and lower field-scale false-positive rate under the size--distance policy.
+}%
+{Mars rover; autonomous exploration; anomaly detection; relative depth; target prioritization; operational safety}
+
+\input{sections/introduction}
+\input{sections/methods}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

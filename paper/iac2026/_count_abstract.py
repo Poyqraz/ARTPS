@@ -2,11 +2,8 @@ import re
 from pathlib import Path
 
 t = Path("main.tex").read_text(encoding="utf-8")
-# Abstract is 4th brace-group after \IACmaketitle (title, authors, affil, abstract)
+rest = t[t.index("\\IACmaketitle") :]
 parts = []
-i = t.index("\\IACmaketitle")
-rest = t[i:]
-# find five top-level {...} groups; abstract may contain nested braces via \% only
 depth = 0
 start = None
 for idx, ch in enumerate(rest):

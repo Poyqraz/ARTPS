@@ -1,0 +1,33 @@
+\section{Material and Methods}
+% Stub — keep original equations in a later prose PR (see PLAN.md keep-list).
+% Architecture: RGB → relative depth → enhance → cues → entropy fusion → localize/merge
+% → curiosity + diversity → Priority Buffer.
+
+\subsection{System architecture}
+ARTPS processes an RGB frame through relative-depth estimation, optional enhancement,
+multi-cue anomaly extraction, entropy-weighted fusion, localization with tightened merge,
+and ranked selection with a Priority Buffer.
+
+\subsection{Depth-guided enhancement}
+% KEEP equation: depth-guided enhancement.
+% Real-ESRGAN: one paragraph only; no Results claim (unsupported without ablation).
+Depth-guided enhancement modulates local contrast using the relative-depth map.
+Optional Real-ESRGAN may appear as a profile-aware enhance path; it is not an ablation claim.
+
+\subsection{Anomaly cues and entropy-weighted fusion}
+% KEEP: entropy-weighted fusion.
+Image, depth, and optional learned anomaly maps are combined with entropy-weighted fusion
+that adapts component weights at runtime~\citep{defard2020padim,roth2022patchcore}.
+
+\subsection{Localization, false-positive gates, and size--distance policy}
+% KEEP: size--distance policy; tight merge; rover/shadow FP; object-in-shadow gate.
+Localization uses tightened box merge.
+Rover-body and boundary-shadow masks suppress common false positives; an object-in-shadow
+gate protects shadowed rock-like support.
+Size--distance policy uses image-relative relative-far and apparent size (not metric size).
+
+\subsection{Curiosity score, diversity, and Priority Buffer}
+% KEEP: curiosity score; soft similarity; uncertainty/disagreement; Priority Buffer rule.
+Candidates are ranked by a curiosity score with a soft similarity penalty.
+The Priority Buffer retains high raw-anomaly candidates down-weighted by diversity policy
+for second-chance review when resources allow.

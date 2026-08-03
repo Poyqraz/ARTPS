@@ -24,10 +24,9 @@
 \setlength{\columnsep}{6mm}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
 
-% Header / footer (edit macros in the .tex preamble or after \begin{document})
 \newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Sydney, Australia}
 \newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
-\newcommand{\IACpapercode}{IAC-26,A3,IP,xxx,xXXXXX}% replace after acceptance / allocation
+\newcommand{\IACpapercode}{IAC-26,A3,IP,xxx,xXXXXX}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -38,8 +37,6 @@
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
-% Title block: single-column title + abstract + keywords, then two-column body.
-% Usage: \IACmaketitle{Title}{Author list}{Affiliation}{abstract text}{kw1; kw2; ...}
 \newcommand{\IACmaketitle}[5]{%
   \twocolumn[{%
     \begin{center}
@@ -58,7 +55,6 @@
   }]%
 }
 
-% Section heading spacing (compact conference look)
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{1em}
 \titleformat{\section}{\normalsize\bfseries\uppercase}{\thesection.}{0.5em}{}
