@@ -4,7 +4,18 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{iac2026}[2026/08/03 Informal IAC 2026 manuscript style]
 
-\RequirePackage[letterpaper,margin=25mm]{geometry}
+\RequirePackage[
+  letterpaper,
+  left=25mm,
+  right=25mm,
+  top=25mm,
+  bottom=25mm,
+  includehead,
+  includefoot,
+  headheight=40pt,
+  headsep=5mm,
+  footskip=10mm
+]{geometry}
 \RequirePackage{mathptmx}
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
@@ -15,20 +26,24 @@
 \RequirePackage{amsmath}
 \RequirePackage{url}
 \RequirePackage[numbers,sort&compress]{natbib}
+\RequirePackage[hidelinks]{hyperref}
 \RequirePackage{fancyhdr}
 \RequirePackage{lastpage}
 \RequirePackage{caption}
 \RequirePackage{setspace}
 \RequirePackage{titlesec}
 
+\hypersetup{
+  pdftitle={ARTPS: Operationally Safe Target Prioritization via Depth-Enhanced Hybrid Anomaly Detection},
+  pdfauthor={Poyraz Baydemir},
+  pdfsubject={IAC 2026 manuscript},
+  pdfkeywords={Mars rover, autonomous exploration, anomaly detection, relative depth, target prioritization, operational safety}
+}
+
 \setlength{\columnsep}{6mm}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
 
-% Two-line centered header (congress + copyright).
-\setlength{\headheight}{40pt}
-\addtolength{\topmargin}{-12pt}
-
-\newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 Oct 2026.}
+\newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 October 2026.}
 \newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
 % Canonical paper code is set in main.tex via \renewcommand{\IACpapercode}{...}.
 \newcommand{\IACpapercode}{}%

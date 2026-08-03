@@ -12,6 +12,10 @@ on:
       - "paper/iac2026/**"
       - ".github/workflows/iac-paper.yml"
 
+concurrency:
+  group: iac-paper-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,7 +35,8 @@ jobs:
             texlive-fonts-recommended \
             texlive-science \
             lmodern \
-            python3
+            python3 \
+            poppler-utils
 
       - name: Forbid strings in paper/iac2026
         working-directory: ${{ github.workspace }}
@@ -46,6 +51,23 @@ jobs:
           done
           exit $fail
 
+      - name: No tracked LaTeX build artifacts
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -e
+          tracked=$(git ls-files 'paper/iac2026/*.aux' 'paper/iac2026/*.bbl' 'paper/iac2026/*.blg' \
+            'paper/iac2026/*.log' 'paper/iac2026/*.out' 'paper/iac2026/*.toc' 'paper/iac2026/*.pdf' || true)
+          if [ -n "$tracked" ]; then
+            echo "ERROR: tracked build artifacts must not be committed:"
+            echo "$tracked"
+            exit 1
+          fi
+          echo "OK: no tracked LaTeX build artifacts"
+
+      - name: Whitespace check
+        working-directory: ${{ github.workspace }}
+        run: git diff --check
+
       - name: Build PDF
         run: |
           pdflatex -interaction=nonstopmode -halt-on-error main.tex
@@ -55,6 +77,19 @@ jobs:
 
       - name: Abstract limits
         run: python3 _count_abstract.py
+
+      - name: Submission readiness (planning)
+        run: python3 _check_submission_ready.py --allow-email-placeholder
+
+      - name: US Letter page size
+        run: |
+          set -e
+          info=$(pdfinfo main.pdf)
+          echo "$info"
+          size=$(echo "$info" | awk -F: '/^Page size:/ {print $2}' | xargs)
+          echo "Parsed page size: $size"
+          echo "$size" | grep -E -q '61[0-4](\.[0-9]+)?[[:space:]]*x[[:space:]]*79[0-4](\.[0-9]+)?'
+          echo "OK: US Letter (~612 x 792 pts)"
 
       - name: Check LaTeX log
         run: |
@@ -66,4 +101,19 @@ jobs:
               fail=1
             fi
           done
+          overfull=$(grep -c 'Overfull \\hbox' main.log || true)
+          echo "Overfull \\hbox count (warn-only): $overfull"
+          if [ "$overfull" -gt 0 ]; then
+            grep -n 'Overfull \\hbox' main.log | head -n 20 || true
+          fi
           exit $fail
+
+      - name: Upload manuscript preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: iac2026-manuscript-preview
+          path: |
+            paper/iac2026/main.pdf
+            paper/iac2026/main.log
+          retention-days: 14
+          if-no-files-found: error

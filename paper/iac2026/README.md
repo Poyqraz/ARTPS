@@ -2,7 +2,7 @@
 
 This folder is the **sole canonical manuscript workspace** for IAC 2026 (paper code **IAC-26,A3,IP,109,x109221**). It is **not** a full prose rewrite of `docs/Full_Baydemir_ARTPS.pdf`. Do not recreate `docs/iac2026/`.
 
-Congress: 77th International Astronautical Congress (IAC 2026), Antalya, Türkiye, 5–9 Oct 2026.
+Congress: 77th International Astronautical Congress (IAC 2026), Antalya, Türkiye, 5–9 October 2026.
 
 | File | Role |
 |------|------|
@@ -15,15 +15,22 @@ Congress: 77th International Astronautical Congress (IAC 2026), Antalya, Türkiy
 | [main.tex](main.tex) + [sections/](sections/) | Compilable stubs (+ AI disclosure) |
 | [iac2026.sty](iac2026.sty) | Informal layout (`article`); Word template = visual ref |
 | [references.bib](references.bib) | **Minimal skeleton bib for builds only** (not camera-ready) |
+| [`_count_abstract.py`](_count_abstract.py) | Abstract ≤400 words / ≤6 keywords |
+| [`_check_submission_ready.py`](_check_submission_ready.py) | Submission-readiness validator |
 
 Official IAF publishes Word + PDF guidelines — **no official LaTeX class**. Do not invent `IAC.cls`.
 
 ## Submission disclosures (check before camera-ready)
 
-- **Generative AI:** used only for language verification, grammar, and readability support. Scientific content, methods, code, experiments, results, and conclusions are author-produced and author-verified. See `sections/declaration.tex`. If the official IAC Word template requires a different declaration slot, move the text there (TODO).
-- **Corresponding author email:** replace `CORRESPONDING_EMAIL_TBD` in `main.tex` before submission.
-- **Header:** visually compare the two-line centered PDF header against the official IAC Word manuscript template.
-- **CI:** GitHub Actions (`.github/workflows/iac-paper.yml`) validates LaTeX compilation, abstract limits, and formatting forbid-strings.
+- **Generative AI (author-defined official boundary):** tools were used **only** for language verification, grammar checking, and readability improvement. Scientific content, methods, code, experiments, results, interpretations, and conclusions are author-produced and author-verified. See `sections/declaration.tex` (do not expand that wording casually). If the official IAC Word template requires a different declaration slot, move the text there (TODO).
+- **Corresponding author email:**
+  - `CORRESPONDING_EMAIL_TBD` is **temporarily allowed** for this planning milestone.
+  - A submission-ready / camera-ready PDF **must not** ship with this placeholder.
+  - Strict check: `python _check_submission_ready.py` (fails while placeholder remains).
+  - Planning CI: `python _check_submission_ready.py --allow-email-placeholder`.
+  - Do **not** invent an address or guess from a GitHub profile; the author supplies the real email manually.
+- **Header:** visually compare the two-line centered PDF header against the official IAC Word manuscript template (CI uploads `main.pdf` + `main.log` as artifact `iac2026-manuscript-preview`).
+- **CI:** `.github/workflows/iac-paper.yml` validates LaTeX build, US Letter page size (~612×792 pts), abstract limits, planning submission-ready checks, and formatting forbid-strings.
 
 ## Support levels (short)
 
@@ -40,9 +47,10 @@ bibtex main
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
 pdflatex -interaction=nonstopmode -halt-on-error main.tex
 python _count_abstract.py
+python _check_submission_ready.py --allow-email-placeholder
 ```
 
-(`_count_abstract.py` also works from the repository root.)
+(`_count_abstract.py` / `_check_submission_ready.py` also work from the repository root.)
 
 ## Rules
 
