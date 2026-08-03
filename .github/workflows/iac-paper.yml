@@ -23,7 +23,9 @@ jobs:
       run:
         working-directory: paper/iac2026
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
 
       - name: Install TeX Live and tools
         run: |
@@ -38,14 +40,27 @@ jobs:
             python3 \
             poppler-utils
 
-      - name: Forbid strings in paper/iac2026
+      - name: Forbid strings in rendered manuscript sources
         working-directory: ${{ github.workspace }}
         run: |
           set -e
+          mapfile -t manuscript_sources < <(
+            find paper/iac2026 -type f \( -name '*.tex' -o -name '*.sty' \) -print | sort
+          )
+          if [ "${#manuscript_sources[@]}" -eq 0 ]; then
+            echo "ERROR: no .tex/.sty manuscript sources found"
+            exit 1
+          fi
+          echo "Scanning ${#manuscript_sources[@]} manuscript source files"
           fail=0
-          for needle in "Sydney" "IAC-26,A3,IP,xxx" "guaranteed safety" "flight-ready system"; do
-            if grep -R -n -F -- "$needle" paper/iac2026; then
-              echo "ERROR: forbidden string found: $needle"
+          for needle in \
+            "Sydney" \
+            "IAC-26,A3,IP,xxx" \
+            "guaranteed safety" \
+            "flight-ready system"
+          do
+            if grep -n -F -- "$needle" "${manuscript_sources[@]}"; then
+              echo "ERROR: forbidden manuscript string found: $needle"
               fail=1
             fi
           done
@@ -66,7 +81,7 @@ jobs:
 
       - name: Whitespace check
         working-directory: ${{ github.workspace }}
-        run: git diff --check
+        run: git diff --check HEAD^ HEAD
 
       - name: Build PDF
         run: |

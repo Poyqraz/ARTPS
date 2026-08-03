@@ -34,6 +34,13 @@ FORBIDDEN_AI_IMPLICATIONS = (
     re.compile(r"produced\s+by\s+(generative\s+)?AI", re.I),
 )
 
+FORBIDDEN_MANUSCRIPT_STRINGS = (
+    "Sydney",
+    "IAC-26,A3,IP,xxx",
+    "guaranteed safety",
+    "flight-ready system",
+)
+
 
 def _paper_dir() -> Path:
     here = Path(__file__).resolve().parent
@@ -131,11 +138,13 @@ def main() -> int:
 
     main_raw = main_path.read_text(encoding="utf-8")
     main_clean = _strip_tex_comments(main_raw)
+
+    # Rendered manuscript sources only (comment-stripped). No markdown/policy docs.
+    source_paths = [main_path, sty] + [
+        root / "sections" / n for n in REQUIRED_SECTIONS
+    ]
     pack_text = "\n".join(
-        p.read_text(encoding="utf-8")
-        for p in [main_path, sty, decl]
-        + [root / "sections" / n for n in REQUIRED_SECTIONS]
-        if p.is_file()
+        _strip_tex_comments(p.read_text(encoding="utf-8")) for p in source_paths
     )
 
     if PAPER_CODE not in main_raw:
@@ -143,16 +152,18 @@ def main() -> int:
     else:
         ok.append(f"paper_code={PAPER_CODE}")
 
-    if "Sydney" in pack_text:
-        errors.append("forbidden string 'Sydney' found under paper/iac2026 sources")
-    if "IAC-26,A3,IP,xxx" in pack_text:
-        errors.append("placeholder paper code IAC-26,A3,IP,xxx still present")
+    for needle in FORBIDDEN_MANUSCRIPT_STRINGS:
+        if needle in pack_text:
+            errors.append(
+                f"forbidden string {needle!r} found in rendered .tex/.sty sources"
+            )
 
+    abstract = _extract_abstract(main_clean)
     for num in REQUIRED_NUMBERS:
-        if num not in main_raw:
-            errors.append(f"accepted abstract number missing from main.tex: {num}")
-    if not any(f"accepted abstract number missing" in e for e in errors):
-        ok.append("accepted_abstract_numbers_present")
+        if num not in abstract:
+            errors.append(f"accepted abstract number missing from abstract block: {num}")
+    if not any("accepted abstract number missing" in e for e in errors):
+        ok.append("accepted_abstract_numbers_in_abstract")
 
     has_email_ph = any(ph in main_raw for ph in EMAIL_PLACEHOLDERS)
     if has_email_ph and not args.allow_email_placeholder:
@@ -165,7 +176,6 @@ def main() -> int:
     else:
         ok.append("email_placeholder_absent")
 
-    abstract = _extract_abstract(main_clean)
     for pat in PROXY_ABSTRACT_PATTERNS:
         if pat.search(abstract):
             errors.append(f"proxy-related phrasing found in abstract: /{pat.pattern}/")
@@ -185,7 +195,7 @@ def main() -> int:
     if not any("declaration" in e for e in errors):
         ok.append("declaration_language_only_ok")
 
-    if "references.bib" and refs.is_file():
+    if refs.is_file():
         ok.append("references.bib_present")
     ok.append(f"sections_present={len(REQUIRED_SECTIONS)}")
 
