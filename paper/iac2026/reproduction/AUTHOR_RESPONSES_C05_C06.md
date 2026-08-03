@@ -4,9 +4,9 @@
 These answers **do not** authorize claim closure, do **not** invent historical experiment
 parameters, and do **not** set `real_run_allowed=true`.
 
-Questionnaire: [AUTHOR_QUESTIONNAIRE_C05_C06.md](AUTHOR_QUESTIONNAIRE_C05_C06.md)  
-Audit: [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md)  
-Gaps: [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md)  
+Questionnaire: [AUTHOR_QUESTIONNAIRE_C05_C06.md](AUTHOR_QUESTIONNAIRE_C05_C06.md)
+Audit: [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md)
+Gaps: [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md)
 Defs: [`reproduction/iac2026/C05_C06_DEFINITIONS.yaml`](../../../reproduction/iac2026/C05_C06_DEFINITIONS.yaml)
 
 Ledger support remains: `accepted_abstract_reproduction_pending`.
