@@ -374,10 +374,10 @@ sağlayan **hibrit yapay zeka sistemidir**.
 ### 🔬 Hibrit Teknik Özellikler (Güncel)
 - **Convolutional Autoencoder**: Anomali tespiti (optimize 17M param.)
 - **Derinlik Geliştirilmiş Sınıflandırıcı**: Dinamik değer (RGB latent + 14 derinlik öz.)
-- **DPT_Large Derinlik Tahmini**: Yüksek doğruluk (CUDA hızlandırmalı)
+- **DPT_Large goreli derinlik siralamasi**: Yuksek dogruluklu goruntu-ici haritalar (CUDA; metrik mesafe degil)
 - **PaDiM (Patch Distribution Modeling)**: Görüntü tabanlı anomaliyi AE+Derinlik ile füzyon
 - **Çok Ölçekli İnce Detay**: Laplacian(3,5) + DoG ile küçük taş/kum çizgisi vurgusu
-- **Uzak Alan Hassasiyeti**: Yakınlık karışımı ve derinliğe koşullu alan eşiği
+- **Goruntu-ici uzak hassasiyeti**: Yakinlik karisimi ve derinlige kosullu alan esigi (metrik metre degil)
 - **Curiosity Verileri**: ~2,575 görüntü (train/valid)
 - **Odağa Yumuşak Maske**: Seçili hedef çevresinde Gauss geçişli vurgulama
 
@@ -391,9 +391,9 @@ sağlayan **hibrit yapay zeka sistemidir**.
 - **Dinamik Bilinen Değer**: Kategori bazlı otomatik etiketleme (0-1)
 
 ### 🌊 Derinlik Analizi (Güncel)
-- **DPT_Large**: Yüksek doğruluklu monocular depth, rehberli iyileştirme ve filtreleme
-- **14 Derinlik Özelliği**: Ortalama, std, min, max, yüzey karmaşıklığı, gradient vb.
-- **Uzak/ Yakın Denge**: Uzak alanlarda küçük detayları korumak için eşik uyarlama
+- **DPT_Large**: Yuksek dogruluklu monocular **goreli derinlik siralamasi**, rehberli iyilestirme (metrik mesafe degil)
+- **14 Derinlik Özelliği**: Ortalama, std, min, max, yüzey karmaşıklığı, gradient vb. (goreli harita istatistikleri)
+- **Goruntu-ici yakin/uzak dengesi**: Ayni goruntude goreli olarak daha uzak bolgelerdeki kucuk detaylari korumak icin esik uyarlama
 - **3D/2D Görselleştirme**: Turbo colormap, 3D yüzey, histogram ve istatistikler
 
 ### 🎮 Hibrit Kullanım

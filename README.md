@@ -5,7 +5,7 @@
 
 ## Overview
 
-ARTPS (Autonomous Rover Target Prioritization System) is a hybrid AI system that combines depth estimation, anomaly detection, and learnable curiosity scoring for autonomous exploration of planetary surfaces.
+ARTPS (Autonomous Rover Target Prioritization System) is a hybrid AI system that combines monocular relative depth ordering, anomaly detection, and learnable curiosity scoring for autonomous exploration of planetary surfaces.
 
 **Author:** Poyraz BAYDEMİR  
 **Affiliation:** Selçuk University  
@@ -13,7 +13,7 @@ ARTPS (Autonomous Rover Target Prioritization System) is a hybrid AI system that
 
 ### Key Features
 - **Convolutional Autoencoder**: Compresses and reconstructs Mars rock images
-- **DPT_Large Depth Estimation**: Monocular depth maps (local weights supported)
+- **DPT_Large relative depth ordering**: Monocular within-image depth maps (local weights supported; not metric distance)
 - **Anomaly Detection**: PaDiM, PatchCore, and reconstruction-error scoring
 - **Curiosity Score**: Combines exploitation and exploration signals
 - **Streamlit UI**: TR/EN bilingual web interface at repository root
@@ -34,10 +34,10 @@ pip install -r requirements.txt
 ### Local DPT_Large weights (optional, not in git)
 Place MiDaS DPT_Large state_dict at `raw_models/dpt_large_384.pt` (~1.3 GB).  
 See [`raw_models/README.md`](raw_models/README.md). Requires `timm` (listed in `requirements.txt`).  
-Without this file, depth estimation falls back to a lightweight CNN.
+Without this file, relative depth falls back to a lightweight CNN.
 
 ### Depth output semantics
-ARTPS uses monocular relative depth, not metric distance. In the UI, `0=Near` and `1=Far` only describe ordering within the same image. They should not be interpreted as calibrated meters or compared directly across unrelated images. When the app falls back to the lightweight CNN depth model, near/far cues remain usable as a rough prior but are lower-confidence than `DPT_Large`.
+ARTPS uses monocular relative depth, not metric distance. In the UI, `0=Near` and `1=Far` only describe ordering within the same image. They should not be interpreted as calibrated meters or compared directly across unrelated images. When the app falls back to the lightweight CNN depth model, near/far cues remain usable as a rough prior but are lower-confidence than `DPT_Large`. Size–distance proposal features use **apparent size** and **image-relative near/far categorization** (`size_distance_band`), not metric size or absolute range.
 
 Trained project weights (`results/*.pth`) and image datasets (`mars_images/`) are also kept locally and excluded from git.
 
@@ -77,7 +77,7 @@ python scripts/verify_i18n.py
 
 ## Keywords
 
-*Mars rover*, *Autonomous Exploration*, *depth estimation*, *Vision Transformers*, *planetary surfaces*, *machine learning*, *Anomaly Detection*, *Computer Vision*
+*Mars rover*, *Autonomous Exploration*, *relative depth ordering*, *apparent size*, *Vision Transformers*, *planetary surfaces*, *machine learning*, *Anomaly Detection*, *Computer Vision*
 
 ## Citation
 

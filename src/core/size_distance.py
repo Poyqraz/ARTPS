@@ -1,4 +1,11 @@
-"""Canonical size/distance features and 2x2 proposal policy (no UI)."""
+"""Canonical relative size/distance features and 2x2 proposal policy (no UI).
+
+Uses monocular **relative depth ordering** (within-image) and **apparent size**,
+not metric distance. `metric_proxy` is an unscaled 3D-structure hint when
+`depth_span` is available; `metric_size` is set only if `depth_scale_m` is
+provided (shipped ARTPS has no calibration — see `estimate_depth_scale_m`).
+Bands are image-relative near/far categorization, not absolute classes.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -26,11 +33,11 @@ class SizeDistanceFeatures:
     area_ratio: float
     metric_proxy: float | None
     metric_size: float | None
-    band: SizeDistanceBand
+    band: SizeDistanceBand  # image-relative near/far x size band, not absolute class
 
 
 def estimate_depth_scale_m(depth_map: np.ndarray) -> float | None:
-    """ponytail: calibration hook; returns None until scale-aware depth exists."""
+    """Calibration hook: returns None — no metric calibration in shipped ARTPS."""
     _ = depth_map
     return None
 
