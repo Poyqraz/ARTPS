@@ -24,9 +24,14 @@
 \setlength{\columnsep}{6mm}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
 
-\newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Sydney, Australia}
+% Two-line header needs enough headheight (avoids fancyhdr "too small" warning).
+\setlength{\headheight}{28pt}
+\addtolength{\topmargin}{-4pt}
+
+\newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 Oct 2026.}
 \newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
-\newcommand{\IACpapercode}{IAC-26,A3,IP,xxx,xXXXXX}
+% Canonical paper code is set in main.tex via \renewcommand{\IACpapercode}{...}.
+\newcommand{\IACpapercode}{}%
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -57,7 +62,10 @@
 
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{1em}
-\titleformat{\section}{\normalsize\bfseries\uppercase}{\thesection.}{0.5em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+% IAC Word template: section bold; subsection/subsubsection italic; no forced uppercase.
+\titleformat{\section}{\normalsize\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\itshape}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
 \titlespacing*{\section}{0pt}{1.1em}{0.45em}
 \titlespacing*{\subsection}{0pt}{0.85em}{0.35em}
+\titlespacing*{\subsubsection}{0pt}{0.7em}{0.3em}

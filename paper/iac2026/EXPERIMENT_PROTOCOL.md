@@ -19,12 +19,12 @@ Authoritative for `sections/experiments.tex`. Bind claims via [`CLAIM_EVIDENCE_L
 
 ## Splits
 
-Document the exact image list and seed when closing C05–C07. Current proxy runs used curated benchmark subsets (e.g. round3 + rover samples, `n=21` in shadow/size-distance proxy summaries). Pin paths in the ledger when re-run.
+Document the exact image list and seed when closing C05–C07 (`accepted_abstract_reproduction_pending`). Current proxy runs used curated benchmark subsets (e.g. round3 + rover samples, `n=21` in shadow/size-distance proxy summaries). Pin paths in the ledger when re-run.
 
 ## Baselines
 
 - PaDiM / PatchCore-style anomaly maps (cite Defard, Roth).
-- Heuristic contour + fusion baseline for proposal metrics (`results/paper_figs/paper_report.md` axes).
+- Heuristic contour + fusion axes listed in `results/paper_figs/paper_report.md` are **exploratory only** (sample count = 5; not a quantitative manuscript result).
 
 ## Metrics (names only in manuscript)
 
@@ -35,27 +35,60 @@ AUROC, AUPRC, F1, FPS, latency, peak memory; proxy FPR / recall / avg detections
 - Toggle gates: FP suppression ON/OFF; size–distance policy ON/OFF (`--fp_mode`, `--size_distance_policy` on export / proxy runners).
 - Record config JSON next to each `results/paper_figs/iac_*_summary.json`.
 
-## Proxy eval (not human bbox GT)
+## Preliminary proxy analysis (not human bbox GT; not in abstract)
 
-| Study | Script | Artifacts |
-|-------|--------|-----------|
-| Shadow / FP | `scripts/run_iac_shadow_proxy_eval.py` | `results/paper_figs/iac_shadow_proxy_*` |
-| Size–distance | `scripts/run_iac_size_distance_proxy_eval.py` | `results/paper_figs/iac_size_distance_proxy_*` |
-| Lite size–distance | `tests/test_size_distance_lite_bench.py` | software verification only |
+Proxy studies are **preliminary** on a curated `n=21` set. They must not be presented as accepted-abstract headline results.
+
+| Study | Script | Artifacts | Support |
+|-------|--------|-----------|---------|
+| Shadow / FP | `scripts/run_iac_shadow_proxy_eval.py` | `results/paper_figs/iac_shadow_proxy_*` | `proxy` |
+| Size–distance | `scripts/run_iac_size_distance_proxy_eval.py` | `results/paper_figs/iac_size_distance_proxy_*` | `proxy` |
+| Lite size–distance | `tests/test_size_distance_lite_bench.py` | — | `software_verification` |
 
 ## Workstation timing (C07)
 
-Candidate: `scripts/benchmark_cv_core_speed.py` (lightweight OpenCV + fusion + localization; exclude learned depth/AE). Pin resolution (256 / 384 / 768), device, commit SHA.
+Accepted abstract: 28.1 FPS at 256×256 in a lightweight configuration **excluding learned depth and AE inference** (`accepted_abstract_reproduction_pending`).
+
+Candidate re-run: `scripts/benchmark_cv_core_speed.py`. Pin resolution (256 / 384 / 768), device, commit SHA, config file.
 
 ## Jetson benchmark protocol (C14) — planned, not executed
 
-**Goal:** profile-aware FPS/latency/memory on NVIDIA Jetson (Orin Nano / Orin NX or equivalent). Not flight certification.
+**Status:** `planned`. **Not** flight hardware. **Not** flight certification.
+
+**Exact target device:** to be fixed before execution (do not report Orin Nano / Orin NX as a scientific result until author confirms hardware).
+
+### Required log fields (before/during run)
+
+| Field | Notes |
+|-------|-------|
+| Exact target device | TBD until author confirms |
+| JetPack version | record string |
+| CUDA / cuDNN / TensorRT versions | record strings |
+| `nvpmodel` power mode | record mode id/name |
+| `jetson_clocks` | enabled / disabled |
+| Batch size | typically 1 for onboard screening |
+| Precision | FP32 / FP16 / INT8 |
+| Backend | PyTorch / ONNX Runtime / TensorRT |
+| Mean latency | ms |
+| p95 latency | ms |
+| p99 or worst-case latency | ms |
+| FPS | derived or measured |
+| Peak RAM / GPU memory | MB |
+| Average power | W |
+| Peak power | W |
+| Energy per frame | J/frame |
+| CPU / GPU temperature | °C |
+| Thermal throttling | yes/no + events |
+| Warm-up count | e.g. 30 |
+| Timed-run count | e.g. 100 |
+| Commit SHA | git revision |
+| Config file | path to pinned JSON/YAML |
+
+### Procedure sketch
 
 1. **Images:** fixed list (≥20) from the detection bench; same preprocess as workstation.
 2. **Profiles:** (a) lightweight core only; (b) + relative depth; (c) + AE/learned anomaly if memory allows.
 3. **Resolutions:** 256, 384, 768 (square letterbox as in app).
-4. **Metrics:** mean/p95 latency, FPS, peak RSS / GPU mem, thermal throttle flags.
-5. **Runs:** 30 warm + 100 timed; report mean ± std; record JetPack / CUDA / Power mode.
-6. **Out of scope:** claiming flight readiness; metric depth.
+4. **Out of scope:** flight-ready claims; metric distance.
 
 Deliverable when run: `results/paper_figs/iac_jetson_summary.json` + table T_jetson.

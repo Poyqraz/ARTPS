@@ -2,6 +2,9 @@
 
 LaTeX master: [`main.tex`](main.tex) + [`iac2026.sty`](iac2026.sty). Word template is visual reference only (`IAC 2026_manuscript_template.doc`). No official IAF `.cls`.
 
+- **Paper code:** `IAC-26,A3,IP,109,x109221` (canonical in `main.tex`)
+- **Congress:** 77th IAC 2026, Antalya, Türkiye, 5–9 Oct 2026 (header in `iac2026.sty`)
+
 Claim binding: [`CLAIM_EVIDENCE_LEDGER.md`](CLAIM_EVIDENCE_LEDGER.md). Experiments: [`EXPERIMENT_PROTOCOL.md`](EXPERIMENT_PROTOCOL.md). Figures/tables: [`FIGURE_TABLE_PLAN.md`](FIGURE_TABLE_PLAN.md). Safety: [`SAFETY_CASE_MATRIX.md`](SAFETY_CASE_MATRIX.md). Refs: [`REFERENCE_CLEANUP.md`](REFERENCE_CLEANUP.md).
 
 Source full MS: `docs/Full_Baydemir_ARTPS.pdf` (32p) — **compress/rewrite**, do not dump.
@@ -11,21 +14,27 @@ Source full MS: `docs/Full_Baydemir_ARTPS.pdf` (32p) — **compress/rewrite**, d
 1. **Introduction** (`sections/introduction.tex`) — problem, gap, contributions; Related Work folded in.
 2. **Material and Methods** (`sections/methods.tex`) — architecture; depth-guided enhancement; cues; entropy fusion; localization + FP/shadow + size–distance; curiosity; diversity; Priority Buffer; Real-ESRGAN one paragraph.
 3. **Experimental Protocol** (`sections/experiments.tex`) — dataset, labeling, split, baselines, metrics (names), hardware, ablation/proxy, Jetson protocol pointer.
-4. **Results** (`sections/results.tex`) — stubs only until ledger rows close; no rewritten numbers in this milestone.
-5. **Discussion** (`sections/discussion.tex`) — measured vs proxy; failures; relative-depth limit; safety; flight-readiness wording.
+4. **Results** (`sections/results.tex`) — stubs only; accepted-abstract numbers are `accepted_abstract_reproduction_pending`; no rewritten tables in this milestone.
+5. **Discussion** (`sections/discussion.tex`) — implemented vs proxy vs planned; failures; relative-depth limit; safety-aware / not flight-qualified wording.
 6. **Conclusions** (`sections/conclusion.tex`) — short; no industrial laundry list.
+
+## Abstract policy
+
+- Keep accepted numbers: 0.894 AUROC, 0.847 AUPRC, 0.823 F1, baseline 0.856 AUROC, 28.1 FPS @ 256×256 (lightweight core, no learned depth/AE).
+- Ledger status for those numbers: `accepted_abstract_reproduction_pending`.
+- **Do not** put preliminary proxy ablation sentences in the abstract (n=21 curated; no human bbox GT).
 
 ## Repo features → sections
 
 | Feature | Section | Evidence |
 |---------|---------|----------|
-| Rover + boundary-shadow FP | Methods + Results (proxy) | C09 |
-| Object-in-shadow gate | Methods + Results (proxy) | C10 |
-| Size–distance policy | Methods + Results (proxy) | C11–C12 |
-| Tight box merge | Methods | code |
-| Depth-on-RGB QC | Methods | C16 |
-| Priority Buffer + diversity | Methods + Discussion | C03–C04 |
-| Real-ESRGAN | Methods one paragraph | C13 unsupported |
+| Rover + boundary-shadow FP | Methods + Results (preliminary proxy) | C09 `proxy` / mechanism `implemented` |
+| Object-in-shadow gate | Methods + Results (preliminary proxy) | C10 |
+| Size–distance policy | Methods + Results (preliminary proxy) | C11–C12 |
+| Tight box merge | Methods | `implemented` |
+| Depth-on-RGB QC | Methods | C16 `implemented` |
+| Priority Buffer + diversity | Methods + Discussion | C03–C04 `implemented` |
+| Real-ESRGAN | Methods one paragraph | C13 `unsupported` |
 
 ## Cut / keep (from 32p)
 

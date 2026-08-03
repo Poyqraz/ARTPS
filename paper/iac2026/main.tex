@@ -4,7 +4,8 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
 \usepackage{iac2026}
 
-\renewcommand{\IACpapercode}{IAC-26,A3,IP,xxx,xXXXXX}
+% Canonical accepted ARTPS paper code (footer).
+\renewcommand{\IACpapercode}{IAC-26,A3,IP,109,x109221}
 
 \begin{document}
 
@@ -30,8 +31,6 @@ On NASA Mars rover imagery, ARTPS reports 0.894 AUROC, 0.847 AUPRC, and 0.823 F1
 PaDiM/PatchCore baseline (0.856 AUROC).
 In a lightweight configuration excluding learned depth and autoencoder inference, the core
 pipeline sustains 28.1~FPS at $256{\times}256$ on a development workstation.
-Proxy ablations (not human bounding-box ground truth) indicate reduced shadow-dense false
-positives and lower field-scale false-positive rate under the size--distance policy.
 }%
 {Mars rover; autonomous exploration; anomaly detection; relative depth; target prioritization; operational safety}
 
