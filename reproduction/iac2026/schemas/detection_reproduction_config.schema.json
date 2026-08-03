@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "detection_reproduction_config.schema.json",
+  "title": "IAC2026DetectionReproductionConfig",
+  "type": "object",
+  "required": [
+    "evidence_mode",
+    "claim_ids",
+    "task_level",
+    "positive_label",
+    "score_semantics",
+    "higher_score_means_more_anomalous",
+    "dataset_manifest",
+    "dataset_root_env",
+    "train_split",
+    "validation_split",
+    "test_split",
+    "random_seed",
+    "preprocessing",
+    "resolution",
+    "normalization",
+    "model_name",
+    "model_version",
+    "checkpoint_path",
+    "checkpoint_sha256",
+    "threshold_policy",
+    "threshold_selection_metric",
+    "threshold_tie_break",
+    "fixed_threshold",
+    "pr_metric_method",
+    "bootstrap_iterations",
+    "predictions_csv",
+    "output_directory",
+    "allow_dirty_git",
+    "require_real_sha256"
+  ],
+  "properties": {
+    "evidence_mode": {
+      "type": "string",
+      "enum": ["software_verification", "real_evidence"]
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "task_level": {
+      "type": "string",
+      "enum": ["image_binary", "pixel_binary", "region_binary", "TASK_LEVEL_TBD"]
+    },
+    "positive_label": { "type": ["integer", "string"] },
+    "score_semantics": { "type": "string" },
+    "higher_score_means_more_anomalous": { "type": "boolean" },
+    "dataset_manifest": { "type": "string", "minLength": 1 },
+    "dataset_root_env": { "type": "string", "minLength": 1 },
+    "train_split": { "type": "string" },
+    "validation_split": { "type": "string" },
+    "test_split": { "type": "string" },
+    "random_seed": { "type": "integer" },
+    "preprocessing": { "type": "string" },
+    "resolution": { "type": ["string", "integer"] },
+    "normalization": { "type": "string" },
+    "model_name": { "type": "string" },
+    "model_version": { "type": "string" },
+    "checkpoint_path": { "type": ["string", "null"] },
+    "checkpoint_sha256": { "type": "string" },
+    "threshold_policy": {
+      "type": "string",
+      "enum": ["unknown", "fixed_historical", "validation_selected"]
+    },
+    "threshold_selection_metric": {
+      "type": "string",
+      "enum": ["f1", "none"]
+    },
+    "threshold_tie_break": {
+      "type": "string",
+      "enum": [
+        "highest_threshold",
+        "lowest_threshold",
+        "highest_precision",
+        "highest_recall",
+        "none"
+      ]
+    },
+    "fixed_threshold": { "type": ["number", "null"] },
+    "pr_metric_method": {
+      "type": "string",
+      "enum": ["average_precision", "trapezoidal_pr_auc", "UNKNOWN"]
+    },
+    "bootstrap_iterations": { "type": "integer", "minimum": 0 },
+    "predictions_csv": { "type": "string", "minLength": 1 },
+    "output_directory": { "type": "string", "minLength": 1 },
+    "allow_dirty_git": { "type": "boolean" },
+    "require_real_sha256": { "type": "boolean" },
+    "config_id": { "type": "string" },
+    "source_id_cross_split": {
+      "type": "string",
+      "enum": ["warning", "error"],
+      "default": "warning"
+    }
+  },
+  "additionalProperties": false
+}

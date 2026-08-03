@@ -1,5 +1,5 @@
 claim_ids: ["C05"]
-# Software-verification config: still documents TBD task_level; metrics from fixtures only.
+evidence_mode: software_verification
 task_level: TASK_LEVEL_TBD
 positive_label: 1
 score_semantics: higher_score_means_more_anomalous
@@ -15,11 +15,17 @@ resolution: n/a
 normalization: n/a
 model_name: synth_model
 model_version: v0
+checkpoint_path: null
 checkpoint_sha256: SYNTHETIC
 threshold_policy: fixed_historical
+threshold_selection_metric: none
+threshold_tie_break: none
 fixed_threshold: 0.5
+pr_metric_method: average_precision
 bootstrap_iterations: 0
 predictions_csv: reproduction/iac2026/fixtures/synthetic_predictions.csv
 output_directory: results/iac2026/reproduction
 allow_dirty_git: true
 require_real_sha256: false
+config_id: example
+source_id_cross_split: warning

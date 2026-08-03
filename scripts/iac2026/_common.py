@@ -1,4 +1,4 @@
-"""Shared I/O helpers for IAC 2026 reproduction harness (stdlib-first)."""
+"""Shared I/O helpers for IAC 2026 reproduction harness."""
 from __future__ import annotations
 
 import csv
@@ -33,7 +33,7 @@ def read_csv_dicts(path: Path) -> List[Dict[str, str]]:
 def write_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2, sort_keys=True)
+        json.dump(payload, f, indent=2, sort_keys=True, allow_nan=False)
         f.write("\n")
 
 
@@ -55,6 +55,10 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def resolve_repo_path(path_str: str) -> Path:
@@ -112,6 +116,16 @@ def load_json_schema(name: str) -> Dict[str, Any]:
         return json.load(f)
 
 
+def require_jsonschema():
+    try:
+        import jsonschema
+    except ImportError as exc:
+        raise RuntimeError(
+            "jsonschema is required; install reproduction/iac2026/requirements-ci.txt"
+        ) from exc
+    return jsonschema
+
+
 def validate_rows(
     rows: Sequence[Mapping[str, Any]],
     schema: Mapping[str, Any],
@@ -119,10 +133,8 @@ def validate_rows(
     coerce_ints: Optional[Iterable[str]] = None,
     coerce_floats: Optional[Iterable[str]] = None,
 ) -> List[str]:
-    """Validate CSV-derived rows against a JSON Schema object definition.
-
-    Uses jsonschema when available; otherwise applies required-key checks only.
-    """
+    """Validate CSV-derived rows. Fail closed if jsonschema missing."""
+    jsonschema = require_jsonschema()
     errors: List[str] = []
     coerced: List[Dict[str, Any]] = []
     int_keys = set(coerce_ints or ())
@@ -143,16 +155,6 @@ def validate_rows(
                     errors.append(f"row {i}: {k} not float-compatible: {item[k]!r}")
         coerced.append(item)
 
-    try:
-        import jsonschema
-    except ImportError:
-        required = list(schema.get("required") or [])
-        for i, item in enumerate(coerced):
-            for key in required:
-                if key not in item or item[key] in (None, ""):
-                    errors.append(f"row {i}: missing required field {key}")
-        return errors
-
     validator = jsonschema.Draft202012Validator(schema)
     for i, item in enumerate(coerced):
         for err in sorted(validator.iter_errors(item), key=lambda e: e.path):
@@ -164,3 +166,50 @@ def copy_config_sidecar(config_path: Path, dest_dir: Path) -> Path:
     dest = dest_dir / "config_used.yaml"
     dest.write_bytes(config_path.read_bytes())
     return dest
+
+
+def write_run_bundle(
+    out_dir: Path,
+    *,
+    config_path: Optional[Path],
+    command: Sequence[str],
+    provenance_extra: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    env = environment_snapshot()
+    write_json(out_dir / "environment.json", env)
+    if config_path is not None and config_path.is_file():
+        copy_config_sidecar(config_path, out_dir)
+        config_sha = sha256_file(config_path)
+    else:
+        config_sha = None
+    provenance = {
+        "git_head": env["git_head"],
+        "git_dirty": git_dirty(),
+        "config_sha256": config_sha,
+        "command": " ".join(command),
+        "timestamp_utc": env["timestamp_utc"],
+    }
+    if provenance_extra:
+        provenance.update(dict(provenance_extra))
+    write_json(out_dir / "provenance.json", provenance)
+    write_text(out_dir / "command.txt", " ".join(command) + "\n")
+    return provenance
+
+
+def resolve_under_dataset_root(dataset_root: Path, relative_path: str) -> Path:
+    """Reject absolute paths, .. traversal, and symlink escape outside root."""
+    if not relative_path or relative_path.strip() == "":
+        raise ValueError("empty relative_path")
+    rel = Path(relative_path)
+    if rel.is_absolute():
+        raise ValueError(f"absolute relative_path rejected: {relative_path}")
+    if ".." in rel.parts:
+        raise ValueError(f"path traversal rejected: {relative_path}")
+    root = dataset_root.resolve()
+    candidate = (root / rel).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"path escapes dataset root: {relative_path}") from exc
+    return candidate
