@@ -1,6 +1,7 @@
 """
 ARTPS - Derinlik Tahmin Modülü
-MiDaS tabanlı monocular depth estimation
+MiDaS tabanlı monocular relative depth ordering (not metric distance).
+Within-image 0=Near / 1=Far ranking only; no calibrated metres.
 """
 
 import torch

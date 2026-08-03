@@ -1,6 +1,6 @@
 # IAC shadow / FP proxy ablation
 
-Proxy metrics (class labels, depth/shadow masks, OFF-run pseudo-GT). Not human bbox GT. Synthetic size/distance tests are software verification only.
+Proxy metrics (class labels, depth/shadow masks, OFF-run pseudo-GT). Not human bbox GT. Synthetic size/distance tests are software verification only. Depth cues are **relative depth ordering** within each image (not metric distance). See [depth_semantics.md](depth_semantics.md).
 
 | Metric | OFF | ON | Delta |
 |--------|-----|----|-------|

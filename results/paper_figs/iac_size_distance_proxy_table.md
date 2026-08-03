@@ -1,6 +1,6 @@
 # IAC size/distance policy proxy ablation
 
-Proxy metrics (class labels, OFF-run far-small pseudo-GT, self-IoU). Not human bbox GT. Lite bench is software verification only - not a performance result.
+Proxy metrics (class labels, OFF-run far-small pseudo-GT, self-IoU). Not human bbox GT. Lite bench is software verification only - not a performance result. Bands are **image-relative near/far categorization**; features use **apparent size**, not metric size or calibrated distance. See [depth_semantics.md](depth_semantics.md).
 
 | Metric | Policy OFF | Policy ON | Delta |
 |--------|------------|-----------|-------|

@@ -374,10 +374,10 @@ without waiting for commands from Earth.
 ### 🔬 Hybrid Technical Features (Current)
 - **Convolutional Autoencoder**: Anomaly detection (optimized 17M params)
 - **Depth-Enhanced Classifier**: Dynamic value (RGB latent + 14 depth features)
-- **DPT_Large Depth Estimation**: High accuracy (CUDA accelerated)
+- **DPT_Large relative depth ordering**: High-accuracy monocular within-image maps (CUDA; not metric distance)
 - **PaDiM (Patch Distribution Modeling)**: Fuses image-based anomaly with AE+Depth
 - **Multi-Scale Fine Detail**: Laplacian(3,5) + DoG highlighting small rocks and sand ripples
-- **Far-Field Sensitivity**: Proximity blending and depth-conditioned area threshold
+- **Image-relative far sensitivity**: Proximity blending and depth-conditioned area threshold (within-image near/far, not metres)
 - **Curiosity Data**: ~2,575 images (train/valid)
 - **Soft Focus Mask**: Gaussian-blended emphasis around the selected target
 
@@ -391,9 +391,9 @@ Curiosity Score = α × Dynamic Known Value + β × Anomaly Score
 - **Dynamic Known Value**: Category-based automatic labeling (0-1)
 
 ### 🌊 Depth Analysis (Current)
-- **DPT_Large**: High-accuracy monocular depth with guided refinement and filtering
-- **14 Depth Features**: Mean, std, min, max, surface complexity, gradient, etc.
-- **Far/Near Balance**: Adaptive thresholding to preserve small details in distant areas
+- **DPT_Large**: High-accuracy monocular **relative depth ordering** with guided refinement (not metric distance)
+- **14 Depth Features**: Mean, std, min, max, surface complexity, gradient, etc. (relative map statistics)
+- **Image-relative near/far balance**: Adaptive thresholding to preserve small details in relatively farther regions of the same image
 - **3D/2D Visualization**: Turbo colormap, 3D surface, histogram, and statistics
 
 ### 🎮 Hybrid Usage
