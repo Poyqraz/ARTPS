@@ -89,6 +89,6 @@ Candidate re-run: `scripts/benchmark_cv_core_speed.py`. Pin resolution (256 / 38
 1. **Images:** fixed list (≥20) from the detection bench; same preprocess as workstation.
 2. **Profiles:** (a) lightweight core only; (b) + relative depth; (c) + AE/learned anomaly if memory allows.
 3. **Resolutions:** 256, 384, 768 (square letterbox as in app).
-4. **Out of scope:** flight-ready claims; metric distance.
+4. **Out of scope:** flight certification claims; metric distance.
 
 Deliverable when run: `results/paper_figs/iac_jetson_summary.json` + table T_jetson.

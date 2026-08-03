@@ -29,7 +29,7 @@ Keep the long-term goal visible without over-claiming:
 - ARTPS is developed as a **flight-readiness-oriented development path** and a **safety-aware onboard prioritization architecture**.
 - The system is **not flight-qualified**.
 - Closing that gap requires **hardware qualification**, **independent V&V**, and **mission-specific safety evidence**.
-- Do **not** use “guaranteed safety” or “flight-ready system” as present-tense manuscript claims.
+- Do **not** claim absolute/universal safety guarantees or present the system as flight-certified in the present tense.
 
 ## Discussion checklist
 

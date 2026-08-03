@@ -1,6 +1,6 @@
 # IAC 2026 manuscript + evidence plan
 
-This folder is the **claim–evidence planning milestone** for IAC 2026 (paper code **IAC-26,A3,IP,109,x109221**). It is **not** a full prose rewrite of `docs/Full_Baydemir_ARTPS.pdf`.
+This folder is the **sole canonical manuscript workspace** for IAC 2026 (paper code **IAC-26,A3,IP,109,x109221**). It is **not** a full prose rewrite of `docs/Full_Baydemir_ARTPS.pdf`. Do not recreate `docs/iac2026/`.
 
 Congress: 77th International Astronautical Congress (IAC 2026), Antalya, Türkiye, 5–9 Oct 2026.
 
@@ -12,11 +12,18 @@ Congress: 77th International Astronautical Congress (IAC 2026), Antalya, Türkiy
 | [FIGURE_TABLE_PLAN.md](FIGURE_TABLE_PLAN.md) | Figure/table inventory + experiment map |
 | [REFERENCE_CLEANUP.md](REFERENCE_CLEANUP.md) | Bib keep/drop; camera-ready TODOs |
 | [SAFETY_CASE_MATRIX.md](SAFETY_CASE_MATRIX.md) | Operational safety ↔ evidence |
-| [main.tex](main.tex) + [sections/](sections/) | Compilable stubs |
+| [main.tex](main.tex) + [sections/](sections/) | Compilable stubs (+ AI disclosure) |
 | [iac2026.sty](iac2026.sty) | Informal layout (`article`); Word template = visual ref |
 | [references.bib](references.bib) | **Minimal skeleton bib for builds only** (not camera-ready) |
 
-Official IAF publishes Word + PDF guidelines — **no official LaTeX class**. Do not invent `IAC.cls`. Work only under `paper/iac2026/` (do not recreate `docs/iac2026/`).
+Official IAF publishes Word + PDF guidelines — **no official LaTeX class**. Do not invent `IAC.cls`.
+
+## Submission disclosures (check before camera-ready)
+
+- **Generative AI:** used only for language verification, grammar, and readability support. Scientific content, methods, code, experiments, results, and conclusions are author-produced and author-verified. See `sections/declaration.tex`. If the official IAC Word template requires a different declaration slot, move the text there (TODO).
+- **Corresponding author email:** replace `CORRESPONDING_EMAIL_TBD` in `main.tex` before submission.
+- **Header:** visually compare the two-line centered PDF header against the official IAC Word manuscript template.
+- **CI:** GitHub Actions (`.github/workflows/iac-paper.yml`) validates LaTeX compilation, abstract limits, and formatting forbid-strings.
 
 ## Support levels (short)
 

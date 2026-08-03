@@ -24,23 +24,34 @@
 \setlength{\columnsep}{6mm}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
 
-% Two-line header needs enough headheight (avoids fancyhdr "too small" warning).
-\setlength{\headheight}{28pt}
-\addtolength{\topmargin}{-4pt}
+% Two-line centered header (congress + copyright).
+\setlength{\headheight}{40pt}
+\addtolength{\topmargin}{-12pt}
 
 \newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 Oct 2026.}
 \newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
 % Canonical paper code is set in main.tex via \renewcommand{\IACpapercode}{...}.
 \newcommand{\IACpapercode}{}%
 
+\newcommand{\IACapplypagestyle}{%
+  \fancyhf{}%
+  \fancyhead[C]{%
+    \parbox{\textwidth}{%
+      \centering\footnotesize
+      \IACcongress\\
+      \IACcopyright
+    }%
+  }%
+  \fancyfoot[L]{\footnotesize\IACpapercode}%
+  \fancyfoot[R]{\footnotesize Page~\thepage\ of~\pageref{LastPage}}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.4pt}%
+}
+
 \pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\footnotesize\IACcongress}
-\fancyhead[R]{\footnotesize\IACcopyright}
-\fancyfoot[L]{\footnotesize\IACpapercode}
-\fancyfoot[R]{\footnotesize Page~\thepage\ of~\pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0.4pt}
+\IACapplypagestyle
+% First page of \twocolumn[...] often uses plain; keep the same header/footer.
+\fancypagestyle{plain}{\IACapplypagestyle}
 
 \newcommand{\IACmaketitle}[5]{%
   \twocolumn[{%

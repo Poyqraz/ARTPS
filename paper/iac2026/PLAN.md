@@ -17,12 +17,21 @@ Source full MS: `docs/Full_Baydemir_ARTPS.pdf` (32p) — **compress/rewrite**, d
 4. **Results** (`sections/results.tex`) — stubs only; accepted-abstract numbers are `accepted_abstract_reproduction_pending`; no rewritten tables in this milestone.
 5. **Discussion** (`sections/discussion.tex`) — implemented vs proxy vs planned; failures; relative-depth limit; safety-aware / not flight-qualified wording.
 6. **Conclusions** (`sections/conclusion.tex`) — short; no industrial laundry list.
+7. **Declaration of Generative AI Use** (`sections/declaration.tex`) — language verification / grammar / readability only; science is author-produced and verified. Move if official IAC template requires another slot.
 
 ## Abstract policy
 
 - Keep accepted numbers: 0.894 AUROC, 0.847 AUPRC, 0.823 F1, baseline 0.856 AUROC, 28.1 FPS @ 256×256 (lightweight core, no learned depth/AE).
 - Ledger status for those numbers: `accepted_abstract_reproduction_pending`.
 - **Do not** put preliminary proxy ablation sentences in the abstract (n=21 curated; no human bbox GT).
+
+## Submission checklist (format / disclosure)
+
+- Replace `CORRESPONDING_EMAIL_TBD` before submission.
+- Visually compare PDF header (full-width two-line congress + copyright) to the official IAC Word template.
+- Confirm AI disclosure remains language-only (no AI-authored science implication).
+- GitHub Actions validates LaTeX build and forbid-strings under `paper/iac2026/`.
+- `paper/iac2026` remains the only canonical manuscript workspace.
 
 ## Repo features → sections
 
