@@ -687,6 +687,14 @@ def _fuse_object_scores(
     return local_value, anomaly_score, final_score
 
 
+def _size_distance_policy_enabled() -> bool:
+    return bool(globals().get("size_distance_policy", True))
+
+
+def _fp_suppression_enabled() -> bool:
+    return bool(globals().get("fp_suppression_enabled", True))
+
+
 def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool:
     """Benchmark kaynakli hafif post-filter."""
     h_img, w_img = image_shape[:2]
@@ -704,10 +712,11 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
         float(det.get("padim_pool", 0.0)),
         float(det.get("patchcore_pool", 0.0)),
     )
+    sd_on = _size_distance_policy_enabled()
     feat = features_from_det_fields(det)
     if feat is None:
         feat = compute_size_distance_features(w=w, h=h, img_hw=(h_img, w_img))
-    if should_reject_field_scale(feat, support):
+    if sd_on and should_reject_field_scale(feat, support):
         return False
     near_top = y <= max(12, int(0.06 * h_img))
     very_wide = (w / max(1, h)) >= 8.0
@@ -743,7 +752,8 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
         if float(det.get("plateau_mass", 0.0)) > 0 and float(det.get("score", 0.0)) >= 0.006:
             return True
     if src == "heuristic":
-        if area_ratio < 0.003 and support < 0.035 and feat.band != "far_small":
+        far_small_ok = sd_on and feat.band == "far_small"
+        if area_ratio < 0.003 and support < 0.035 and not far_small_ok:
             return False
         if near_top and area_ratio < 0.01 and support < 0.05:
             return False
@@ -754,7 +764,7 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
         ):
             return True
         # far_small: weak-support soft keep (recall); do not harden
-        if feat.band == "far_small" and (support >= 0.004 or fine_proxy >= 0.025):
+        if sd_on and feat.band == "far_small" and (support >= 0.004 or fine_proxy >= 0.025):
             return True
         return False
     return True
@@ -1025,15 +1035,19 @@ def _should_merge_proposals(a: dict, b: dict, combined: np.ndarray, diag: float,
     # ponytail: 1.5*size_scale rocky field'da zincir merge → tek dev kutu
     close_gap = max(gap_x, gap_y) < max(16.0, 0.8 * size_scale)
     aligned = x_overlap_ratio > 0.35 or y_overlap_ratio > 0.35
-    img_hw = (int(combined.shape[0]), int(combined.shape[1]))
-    feat_a = features_from_det_fields(a) or compute_size_distance_features(
-        w=int(a["w"]), h=int(a["h"]), img_hw=img_hw
-    )
-    feat_b = features_from_det_fields(b) or compute_size_distance_features(
-        w=int(b["w"]), h=int(b["h"]), img_hw=img_hw
-    )
-    bridge_need = merge_bridge_floor(feat_a, feat_b, 0.05)
-    bridge_need_tight = merge_bridge_floor(feat_a, feat_b, 0.06)
+    if _size_distance_policy_enabled():
+        img_hw = (int(combined.shape[0]), int(combined.shape[1]))
+        feat_a = features_from_det_fields(a) or compute_size_distance_features(
+            w=int(a["w"]), h=int(a["h"]), img_hw=img_hw
+        )
+        feat_b = features_from_det_fields(b) or compute_size_distance_features(
+            w=int(b["w"]), h=int(b["h"]), img_hw=img_hw
+        )
+        bridge_need = merge_bridge_floor(feat_a, feat_b, 0.05)
+        bridge_need_tight = merge_bridge_floor(feat_a, feat_b, 0.06)
+    else:
+        bridge_need = 0.05
+        bridge_need_tight = 0.06
     return bool(
         close_centers
         or ((aligned and close_gap) and bridge > bridge_need)
@@ -1073,7 +1087,11 @@ def _collect_detection_from_contour(
         depth_crop=depth_crop,
         proximity_crop=prox_crop,
     )
-    local_area_min = area_min * area_min_scale(feat)
+    region_far = float(feat.relative_far)
+    if _size_distance_policy_enabled():
+        local_area_min = area_min * area_min_scale(feat)
+    else:
+        local_area_min = area_min * (0.35 + 0.65 * (1.0 - region_far))
     if cv2.contourArea(cnt) < local_area_min:
         return None
     rect = cv2.minAreaRect(cnt)
@@ -1098,17 +1116,22 @@ def _collect_detection_from_contour(
     rover_pen = float(np.mean(region_rover)) if (region_rover is not None and region_rover.size) else 0.0
     lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if lowvar_mask is not None else 0.0
     fine_local = float(np.mean(fine_detail[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
-    region_far = float(feat.relative_far)
     prox_weight = 0.20 * (1.0 - 0.6 * region_far)
     lowvar_pen *= 1.0 - 0.45 * region_far
     penalty_scale = 0.8 if clutter_mode else 1.0
     score = 0.5 * comb_mean + 0.25 * edge_mean + prox_weight * prox_mean + 0.05 * fine_local - penalty_scale * (0.35 * shadow_pen + 0.20 * illum_pen + 0.30 * spec_pen + 0.30 * boundary_pen + 0.45 * rover_pen + 0.25 * lowvar_pen)
     score = float(max(0.0, score))
-    e_scale = edge_min_scale(feat)
-    sh_cut = float(globals().get('shadow_cut', 0.45)) + shadow_cut_delta(feat)
-    im_edge_min = float(globals().get('img_edge_min', 0.10)) * e_scale
-    dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (0.55 + 0.45 * e_scale)
-    sp_cut = float(globals().get('spec_cut', 0.50)) + 0.8 * shadow_cut_delta(feat)
+    if _size_distance_policy_enabled():
+        e_scale = edge_min_scale(feat)
+        sh_cut = float(globals().get('shadow_cut', 0.45)) + shadow_cut_delta(feat)
+        im_edge_min = float(globals().get('img_edge_min', 0.10)) * e_scale
+        dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (0.55 + 0.45 * e_scale)
+        sp_cut = float(globals().get('spec_cut', 0.50)) + 0.8 * shadow_cut_delta(feat)
+    else:
+        sh_cut = float(globals().get('shadow_cut', 0.45)) + 0.10 * region_far
+        im_edge_min = float(globals().get('img_edge_min', 0.10)) * (1.0 - 0.35 * region_far)
+        dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (1.0 - 0.45 * region_far)
+        sp_cut = float(globals().get('spec_cut', 0.50)) + 0.08 * region_far
     depth_edge_local = float(np.mean(depth_edge_n[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
     if shadow_pen > sh_cut and edge_mean < im_edge_min and depth_edge_local < dp_edge_min:
         return None
@@ -1854,8 +1877,11 @@ def compute_combined_anomaly_map(
         var_norm = variance / max(variance.max(), 1e-6)
 
         # Saha ayarlı katsayılar
-        alpha_shad = float(globals().get('alpha_shad', 0.65))
-        beta_shadow_obj = float(globals().get('beta_shadow_obj', 0.5))
+        fp_on = _fp_suppression_enabled()
+        alpha_shad = float(globals().get('alpha_shad', 0.65)) if fp_on else 0.0
+        beta_shadow_obj = float(globals().get('beta_shadow_obj', 0.5)) if fp_on else 0.0
+        alpha_boundary = 0.85 if fp_on else 0.0
+        alpha_rover = 0.90 if fp_on else 0.0
         beta_illum = float(globals().get('beta_illum', 0.25))
         spec_gamma = float(globals().get('spec_gamma', 0.35))
         spec_lowvar_gamma = float(globals().get('spec_lowvar_gamma', 0.35))
@@ -1885,8 +1911,8 @@ def compute_combined_anomaly_map(
             shadow_like=None,
             boundary_shadow=boundary_shadow,
             rover_body=rover_body,
-            alpha_boundary=0.85,
-            alpha_rover=0.90,
+            alpha_boundary=alpha_boundary,
+            alpha_rover=alpha_rover,
         )
     except Exception:
         pass
@@ -2074,13 +2100,14 @@ def compute_combined_anomaly_map(
         horizon_mask = None
 
     try:
+        fp_on = _fp_suppression_enabled()
         combined = apply_fp_suppression(
             combined,
             shadow_like=None,
             boundary_shadow=boundary_shadow if 'boundary_shadow' in locals() else None,
             rover_body=rover_body if 'rover_body' in locals() else None,
-            alpha_boundary=0.85,
-            alpha_rover=0.95,
+            alpha_boundary=0.85 if fp_on else 0.0,
+            alpha_rover=0.95 if fp_on else 0.0,
         )
     except Exception:
         pass

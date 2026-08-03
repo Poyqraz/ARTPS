@@ -5,6 +5,9 @@ import time
 from pathlib import Path
 from typing import Dict, List
 
+# Ensure project root is importable when run as a script
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 from PIL import Image
 import matplotlib
@@ -12,6 +15,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import cv2
 import torch
+
+from src.core.false_positive_masks import (
+    compute_object_in_shadow,
+    compute_rover_body_mask,
+    compute_shadow_like,
+)
+from src.eval.iac_shadow_proxy import det_mask_stats, scene_shadow_density
 
 
 class _Spinner:
@@ -72,12 +82,55 @@ def _det_to_jsonable(det: dict) -> dict:
         "class_id", "class_name", "proposal_source", "recommended",
         "cluster_id", "sim_max", "score_drop", "in_priority_buffer",
         "comb_mean", "edge_mean", "z_peak", "z_mean", "z_std", "depth_span",
+        "relative_far", "apparent_size", "area_ratio", "metric_proxy",
+        "metric_size", "size_distance_band",
+        "shadow_mean", "object_gate_mean", "rover_mean",
     }
     row = {k: det[k] for k in keep if k in det}
     poly = det.get("poly")
     if poly is not None:
         row["poly"] = poly
     return row
+
+
+def _attach_mask_stats(
+    detections: List[dict],
+    *,
+    rgb: np.ndarray,
+    depth: np.ndarray | None,
+) -> dict:
+    """Compute scene + per-det mask means for IAC proxy eval (JSONL)."""
+    out_meta = {
+        "scene_shadow_density": 0.0,
+        "shadow_dense": False,
+    }
+    if depth is None:
+        return out_meta
+    try:
+        rgb_f = rgb.astype(np.float32, copy=False)
+        if rgb_f.max() > 1.5:
+            rgb_f = rgb_f / 255.0
+        depth_f = depth.astype(np.float32, copy=False)
+        h, w = rgb_f.shape[:2]
+        if depth_f.shape[:2] != (h, w):
+            depth_f = cv2.resize(depth_f, (w, h), interpolation=cv2.INTER_LINEAR)
+        shadow_like = compute_shadow_like(rgb_f, depth_f)
+        object_gate = compute_object_in_shadow(rgb_f, depth_f)
+        rover_body = compute_rover_body_mask(depth_f)
+        dens = scene_shadow_density(shadow_like)
+        out_meta["scene_shadow_density"] = dens
+        out_meta["shadow_dense"] = bool(dens >= 0.25)
+        for det in detections:
+            stats = det_mask_stats(
+                det,
+                shadow_like=shadow_like,
+                object_gate=object_gate,
+                rover_body=rover_body,
+            )
+            det.update(stats)
+    except Exception:
+        pass
+    return out_meta
 
 
 def _draw_detection_boxes(image: np.ndarray, detections: List[dict]) -> np.ndarray:
@@ -113,6 +166,8 @@ def main():
     p.add_argument('--jsonl', type=str, default='results/app_detections.jsonl')
     p.add_argument('--recall-ablation', type=str, default='slim',
                    choices=['full', 'slim', 'no_boost', 'no_cap'])
+    p.add_argument('--fp_mode', type=str, default='on', choices=['on', 'off'])
+    p.add_argument('--size_distance_policy', type=str, default='on', choices=['on', 'off'])
     args = p.parse_args()
 
     device_pref = args.device
@@ -143,6 +198,8 @@ def main():
     exts = {'.jpg', '.jpeg', '.png', '.bmp'}
     files = [p for p in root.rglob('*') if p.suffix.lower() in exts]
     latencies: list[float] = []
+    fp_on = args.fp_mode == "on"
+    sd_on = args.size_distance_policy == "on"
 
     for pth in files:
         t0 = time.perf_counter()
@@ -151,12 +208,23 @@ def main():
             "detector_backend": args.backend,
             "detector_conf": float(args.detector_conf),
             "recall_ablation": args.recall_ablation,
+            "fp_suppression_enabled": fp_on,
+            "size_distance_policy": sd_on,
+            "alpha_shad": 0.65 if fp_on else 0.0,
+            "beta_shadow_obj": 0.5 if fp_on else 0.0,
         })
         res = appmod.analyze_mars_image(models, img)
         base_u8 = (res['original'] * 255).astype(np.uint8)
         heat = res['combined_anomaly_map'].astype(np.float32)
         overlay = _overlay(base_u8, heat, alpha=0.45)
-        detections = res.get('detections') or []
+        detections = list(res.get('detections') or [])
+        rgb_f = res.get("original")
+        depth_map = res.get("depth_map_full")
+        mask_meta = _attach_mask_stats(
+            detections,
+            rgb=rgb_f if isinstance(rgb_f, np.ndarray) else base_u8.astype(np.float32) / 255.0,
+            depth=depth_map if isinstance(depth_map, np.ndarray) else None,
+        )
         disp = _draw_detection_boxes(overlay, detections)
         Image.fromarray(disp).save(out_dir / f"{pth.stem}_det_overlay_app.png")
         depth_overlay_path = None
@@ -183,6 +251,10 @@ def main():
             "image_path": str(pth),
             "class_label": _class_from_path(pth),
             "backend": str(res.get("detector_backend", args.backend)),
+            "fp_mode": args.fp_mode,
+            "size_distance_policy": args.size_distance_policy,
+            "scene_shadow_density": mask_meta.get("scene_shadow_density", 0.0),
+            "shadow_dense": bool(mask_meta.get("shadow_dense", False)),
             "proposal_count": int(res.get("proposal_count", len(rows))),
             "pre_filter_proposal_count": int(res.get("pre_filter_proposal_count", len(rows))),
             "clutter_mode": bool(res.get("clutter_mode", False)),
@@ -204,7 +276,7 @@ def main():
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
         latencies.append(float(record["latency_sec"]))
     avg_lat = float(np.mean(latencies)) if latencies else 0.0
-    print(f"Overlay üretildi: {out_dir} (adet: {len(files)}, avg_latency_sec={avg_lat:.2f})")
+    print(f"Overlay üretildi: {out_dir} (adet: {len(files)}, avg_latency_sec={avg_lat:.2f}, fp_mode={args.fp_mode}, size_distance_policy={args.size_distance_policy})")
 
 
 if __name__ == '__main__':

@@ -1,0 +1,14 @@
+{
+  "disclaimer": "Proxy metrics (class labels, OFF-run far-small pseudo-GT, self-IoU). Not human bbox GT. Lite bench is software verification only - not a performance result.",
+  "n_images": 21,
+  "far_small_recall_mean": null,
+  "near_large_over_merge_off": 0.0,
+  "near_large_over_merge_on": 0.0,
+  "near_large_over_merge_delta": 0.0,
+  "field_scale_fpr_off": 0.4999999999999999,
+  "field_scale_fpr_on": 0.35119047619047616,
+  "field_scale_fpr_delta": -0.14880952380952372,
+  "mean_matched_iou_off_on": 0.9985775248933143,
+  "avg_detections_off": 2.2857142857142856,
+  "avg_detections_on": 2.761904761904762
+}
