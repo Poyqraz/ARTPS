@@ -1,0 +1,9 @@
+sample_id,mission,instrument,sol,source_id,source_url,relative_path,sha256,split,binary_label,label_semantics,label_source,annotation_version,scene_group_id,duplicate_group_id,notes
+syn_train_0,synthetic,synthcam,0,syn0,,fixtures/syn_0.png,SYNTHETIC_train_0,train,0,anomaly_binary,synthetic,v0,scene_a,dup_a,software_verification
+syn_train_1,synthetic,synthcam,0,syn1,,fixtures/syn_1.png,SYNTHETIC_train_1,train,1,anomaly_binary,synthetic,v0,scene_b,dup_b,software_verification
+syn_val_0,synthetic,synthcam,1,syn2,,fixtures/syn_2.png,SYNTHETIC_val_0,validation,0,anomaly_binary,synthetic,v0,scene_c,dup_c,software_verification
+syn_val_1,synthetic,synthcam,1,syn3,,fixtures/syn_3.png,SYNTHETIC_val_1,validation,1,anomaly_binary,synthetic,v0,scene_d,dup_d,software_verification
+syn_test_0,synthetic,synthcam,2,syn4,,fixtures/syn_4.png,SYNTHETIC_test_0,test,0,anomaly_binary,synthetic,v0,scene_e,dup_e,software_verification
+syn_test_1,synthetic,synthcam,2,syn5,,fixtures/syn_5.png,SYNTHETIC_test_1,test,1,anomaly_binary,synthetic,v0,scene_f,dup_f,software_verification
+syn_test_2,synthetic,synthcam,2,syn6,,fixtures/syn_6.png,SYNTHETIC_test_2,test,0,anomaly_binary,synthetic,v0,scene_g,dup_g,software_verification
+syn_test_3,synthetic,synthcam,2,syn7,,fixtures/syn_7.png,SYNTHETIC_test_3,test,1,anomaly_binary,synthetic,v0,scene_h,dup_h,software_verification

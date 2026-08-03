@@ -21,14 +21,19 @@ Authoritative for `sections/experiments.tex`. Bind claims via [`CLAIM_EVIDENCE_L
 
 Document the exact image list and seed when closing C05–C07 (`accepted_abstract_reproduction_pending`). Current proxy runs used curated benchmark subsets (e.g. round3 + rover samples, `n=21` in shadow/size-distance proxy summaries). Pin paths in the ledger when re-run.
 
+Manifest / prediction contracts: `reproduction/iac2026/schemas/`. Archaeology blockers: [`reproduction/ARCHAEOLOGY_REPORT.md`](reproduction/ARCHAEOLOGY_REPORT.md). Status table: [`reproduction/REPRODUCTION_STATUS.md`](reproduction/REPRODUCTION_STATUS.md).
+
 ## Baselines
 
 - PaDiM / PatchCore-style anomaly maps (cite Defard, Roth).
+- Harness adapters (fail-loud until contract known): `scripts/iac2026/baselines/padim_adapter.py`, `patchcore_adapter.py`. Do **not** average into a fake 0.856; do **not** use anomalib for the C06 column.
 - Heuristic contour + fusion axes listed in `results/paper_figs/paper_report.md` are **exploratory only** (sample count = 5; not a quantitative manuscript result).
 
 ## Metrics (names only in manuscript)
 
 AUROC, AUPRC, F1, FPS, latency, peak memory; proxy FPR / recall / avg detections; self-IoU for merge stability. **No textbook formula expansions.**
+
+Prediction-table runner (software verification / future pinned preds): `scripts/iac2026/reproduce_detection_metrics.py`. Input audit (fail closed): `scripts/iac2026/audit_reproduction_inputs.py`. Artifacts under `results/iac2026/reproduction/<run_id>/`. Never pass/fail against accepted-abstract targets.
 
 ## Ablation protocol
 
@@ -49,7 +54,13 @@ Proxy studies are **preliminary** on a curated `n=21` set. They must not be pres
 
 Accepted abstract: 28.1 FPS at 256×256 in a lightweight configuration **excluding learned depth and AE inference** (`accepted_abstract_reproduction_pending`).
 
-Candidate re-run: `scripts/benchmark_cv_core_speed.py`. Pin resolution (256 / 384 / 768), device, commit SHA, config file.
+Harness: `scripts/benchmark_cv_core_speed.py`.
+
+- **historical_exact** — `reproduction/iac2026/configs/c07_historical_exact.example.yaml`; `pipeline_id: historical_opencv_surrogate_8f7e3ff`; headline `historical_exact_fps` (total historical process_frame). Closest path to the accepted claim; do not assert equality with 28.1 until measured+registered.
+- **current_production** — `c07_current_production.example.yaml`; uses `src/utils/image_enhancement.py`; headline `current_pipeline_fps`. Never present as the 28.1 reproduction.
+- **software_verification** — `c07_software_verification.example.yaml` + `--software-verification` only; `input_source=synthetic`; `eligible_for_claim_closure=false`.
+
+No silent synthetic fallback in real_evidence mode.
 
 ## Jetson benchmark protocol (C14) — planned, not executed
 

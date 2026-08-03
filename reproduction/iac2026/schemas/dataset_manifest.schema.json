@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataset_manifest.schema.json",
+  "title": "IAC2026DatasetManifestRow",
+  "type": "object",
+  "required": [
+    "sample_id",
+    "mission",
+    "instrument",
+    "sol",
+    "source_id",
+    "source_url",
+    "relative_path",
+    "sha256",
+    "split",
+    "binary_label",
+    "label_semantics",
+    "label_source",
+    "annotation_version",
+    "scene_group_id",
+    "duplicate_group_id",
+    "notes"
+  ],
+  "properties": {
+    "sample_id": { "type": "string", "minLength": 1 },
+    "mission": { "type": "string" },
+    "instrument": { "type": "string" },
+    "sol": { "type": ["string", "integer"] },
+    "source_id": { "type": "string" },
+    "source_url": { "type": "string" },
+    "relative_path": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$|^SYNTHETIC_[A-Za-z0-9_]+$" },
+    "split": { "type": "string", "enum": ["train", "validation", "test"] },
+    "binary_label": { "type": "integer", "enum": [0, 1] },
+    "label_semantics": { "type": "string" },
+    "label_source": { "type": "string" },
+    "annotation_version": { "type": "string" },
+    "scene_group_id": { "type": "string" },
+    "duplicate_group_id": { "type": "string" },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

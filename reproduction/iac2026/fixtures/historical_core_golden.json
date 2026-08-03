@@ -1,0 +1,10 @@
+{
+  "equivalence_class": "regression_smoke",
+  "equivalence_test_status": "not_independently_verified",
+  "n_detections_min": 0,
+  "n_detections_max": 25,
+  "map_mean_min": 0.1,
+  "map_mean_max": 0.9,
+  "map_max_min": 0.5,
+  "note": "Soft cross-platform bounds; OpenCV float bytes are not portable across OS builds. Not an independent byte-equivalence proof vs 8f7e3ff."
+}

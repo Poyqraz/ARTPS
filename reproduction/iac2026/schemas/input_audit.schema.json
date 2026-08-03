@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "input_audit.schema.json",
+  "title": "IAC2026InputAudit",
+  "type": "object",
+  "required": [
+    "passed",
+    "evidence_mode",
+    "claim_ids",
+    "config_id",
+    "config_sha256",
+    "manifest_sha256",
+    "predictions_sha256",
+    "git_head",
+    "git_dirty",
+    "blockers",
+    "errors"
+  ],
+  "properties": {
+    "passed": { "type": "boolean" },
+    "evidence_mode": {
+      "type": "string",
+      "enum": ["software_verification", "real_evidence"]
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "config_id": { "type": "string", "minLength": 1 },
+    "config_sha256": { "type": ["string", "null"] },
+    "manifest_sha256": { "type": ["string", "null"] },
+    "predictions_sha256": { "type": ["string", "null"] },
+    "checkpoint_sha256": { "type": ["string", "null"] },
+    "git_head": { "type": "string", "minLength": 1 },
+    "git_dirty": { "type": "boolean" },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "class_balance_manifest": { "type": "object" },
+    "class_balance_predictions": { "type": "object" },
+    "details": { "type": "object" },
+    "run_id": { "type": "string" }
+  },
+  "additionalProperties": true
+}

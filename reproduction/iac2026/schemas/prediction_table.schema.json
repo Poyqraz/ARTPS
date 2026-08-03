@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prediction_table.schema.json",
+  "title": "IAC2026PredictionRow",
+  "type": "object",
+  "required": [
+    "sample_id",
+    "split",
+    "y_true",
+    "anomaly_score",
+    "model_name",
+    "model_version",
+    "config_id"
+  ],
+  "properties": {
+    "sample_id": { "type": "string", "minLength": 1 },
+    "split": { "type": "string", "enum": ["train", "validation", "test"] },
+    "y_true": { "type": "integer", "enum": [0, 1] },
+    "anomaly_score": { "type": "number" },
+    "model_name": { "type": "string" },
+    "model_version": { "type": "string" },
+    "config_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}

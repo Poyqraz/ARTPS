@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "c07_timing_config.schema.json",
+  "title": "IAC2026C07TimingConfig",
+  "type": "object",
+  "required": [
+    "claim_ids",
+    "evidence_mode",
+    "profile",
+    "input_resolution",
+    "batch_size",
+    "learned_depth_enabled",
+    "autoencoder_enabled",
+    "warmup_count",
+    "timed_iteration_count",
+    "output_directory",
+    "allow_dirty_git"
+  ],
+  "properties": {
+    "claim_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "evidence_mode": {
+      "type": "string",
+      "enum": ["software_verification", "real_evidence"]
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "historical_exact",
+        "historical_software_verification",
+        "current_enhancement_historical_surrogate"
+      ]
+    },
+    "input_resolution": { "type": "integer", "const": 256 },
+    "batch_size": { "type": "integer", "const": 1 },
+    "learned_depth_enabled": { "type": "boolean", "const": false },
+    "autoencoder_enabled": { "type": "boolean", "const": false },
+    "warmup_count": { "type": "integer", "minimum": 30 },
+    "timed_iteration_count": { "type": "integer", "minimum": 300 },
+    "output_directory": { "type": "string", "minLength": 1 },
+    "allow_dirty_git": { "type": "boolean" },
+    "synthetic_frames": { "type": "integer", "minimum": 1 },
+    "input_manifest": { "type": "string", "minLength": 1 },
+    "dataset_root_env": { "type": "string", "minLength": 1 },
+    "images_dir": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "evidence_mode": { "const": "software_verification" } },
+        "required": ["evidence_mode"]
+      },
+      "then": {
+        "properties": {
+          "profile": { "const": "historical_software_verification" }
+        },
+        "required": ["synthetic_frames"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "evidence_mode": { "const": "real_evidence" } },
+        "required": ["evidence_mode"]
+      },
+      "then": {
+        "properties": {
+          "allow_dirty_git": { "const": false },
+          "profile": {
+            "enum": ["historical_exact", "current_enhancement_historical_surrogate"]
+          }
+        },
+        "required": ["input_manifest", "dataset_root_env"],
+        "not": { "required": ["synthetic_frames"] }
+      }
+    }
+  ]
+}

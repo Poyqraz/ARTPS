@@ -1,0 +1,32 @@
+claim_ids: ["C05", "C06"]
+evidence_mode: real_evidence
+# Blocker until archaeology recovers the historical aggregation level.
+task_level: TASK_LEVEL_TBD
+positive_label: 1
+score_semantics: higher_score_means_more_anomalous
+higher_score_means_more_anomalous: true
+dataset_manifest: reproduction/iac2026/fixtures/synthetic_manifest.csv
+dataset_root_env: ARTPS_DATASET_ROOT
+train_split: train
+validation_split: validation
+test_split: test
+random_seed: 0
+preprocessing: TBD
+resolution: TBD
+normalization: TBD
+model_name: ARTPS_TBD
+model_version: TBD
+checkpoint_path: null
+checkpoint_sha256: TBD
+threshold_policy: unknown
+threshold_selection_metric: none
+threshold_tie_break: none
+fixed_threshold: null
+pr_metric_method: UNKNOWN
+bootstrap_iterations: 0
+predictions_csv: reproduction/iac2026/fixtures/synthetic_predictions.csv
+output_directory: results/iac2026/reproduction
+allow_dirty_git: true
+require_real_sha256: false
+config_id: example
+source_id_cross_split: warning

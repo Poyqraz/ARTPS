@@ -1,0 +1,13 @@
+claim_ids: ["C07"]
+evidence_mode: real_evidence
+profile: current_enhancement_historical_surrogate
+input_resolution: 256
+batch_size: 1
+learned_depth_enabled: false
+autoencoder_enabled: false
+warmup_count: 30
+timed_iteration_count: 300
+input_manifest: REPLACE_WITH_PINNED_C07_MANIFEST.csv
+dataset_root_env: ARTPS_DATASET_ROOT
+output_directory: results/iac2026/reproduction
+allow_dirty_git: false
