@@ -1,0 +1,14 @@
+{
+  "disclaimer": "Proxy metrics (class labels, depth/shadow masks, OFF-run pseudo-GT). Not human bbox GT. Synthetic size/distance tests are software verification only.",
+  "n_images": 21,
+  "n_shadow_dense": 6,
+  "shadow_dense_fpr_off": 0.08333333333333333,
+  "shadow_dense_fpr_on": 0.0,
+  "shadow_dense_fpr_delta": -0.08333333333333333,
+  "rover_fp_count_off": 0,
+  "rover_fp_count_on": 1,
+  "target_recall_proxy_mean": 0.3125850340136055,
+  "shadow_rock_loss_mean": 0.0,
+  "avg_detections_off": 3.4761904761904763,
+  "avg_detections_on": 2.761904761904762
+}
