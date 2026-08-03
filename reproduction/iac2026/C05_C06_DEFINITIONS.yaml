@@ -7,8 +7,10 @@ schema_version: 1
 claim_ids: ["C05", "C06"]
 support_level_locked: accepted_abstract_reproduction_pending
 audit_doc: paper/iac2026/reproduction/C05_C06_DEFINITION_AUDIT.md
+author_responses: paper/iac2026/reproduction/AUTHOR_RESPONSES_C05_C06.md
 manifest_template: reproduction/iac2026/manifests/c05_c06_manifest.template.csv
 real_manifest_path: null
+# author_responses records unknown/no/unsure fills; they do NOT close P0 values below.
 
 task_level:
   value: null
