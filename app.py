@@ -42,6 +42,16 @@ from src.core.false_positive_masks import (
     compute_rover_body_mask,
     compute_shadow_like,
 )
+from src.core.size_distance import (
+    area_min_scale,
+    compute_size_distance_features,
+    edge_min_scale,
+    estimate_depth_scale_m,
+    features_from_det_fields,
+    merge_bridge_floor,
+    shadow_cut_delta,
+    should_reject_field_scale,
+)
 from src.ui import (
     inject_theme,
     render_hero,
@@ -610,6 +620,40 @@ def _append_detection_geomorph_metrics(det: dict, depth_map: np.ndarray | None, 
     det["z_std"] = float(np.std(protrusion_region))
 
 
+def _annotate_det_size_distance(
+    det: dict,
+    img_hw: tuple[int, int],
+    *,
+    proximity_w: np.ndarray | None = None,
+    depth_map: np.ndarray | None = None,
+) -> None:
+    """Write size/distance fields onto a detection dict (proposal + score paths)."""
+    H, W = int(img_hw[0]), int(img_hw[1])
+    x = int(det.get("x", 0))
+    y = int(det.get("y", 0))
+    w = max(1, int(det.get("w", 1)))
+    h = max(1, int(det.get("h", 1)))
+    y2, x2 = min(H, y + h), min(W, x + w)
+    prox_crop = proximity_w[y:y2, x:x2] if proximity_w is not None and y2 > y and x2 > x else None
+    depth_crop = depth_map[y:y2, x:x2] if depth_map is not None and y2 > y and x2 > x else None
+    span = det.get("depth_span")
+    feat = compute_size_distance_features(
+        w=w,
+        h=h,
+        img_hw=(H, W),
+        depth_crop=depth_crop,
+        proximity_crop=prox_crop,
+        depth_span=float(span) if span is not None else None,
+        depth_scale_m=estimate_depth_scale_m(depth_map) if depth_map is not None else None,
+    )
+    det["relative_far"] = feat.relative_far
+    det["apparent_size"] = feat.apparent_size
+    det["area_ratio"] = feat.area_ratio
+    det["metric_proxy"] = feat.metric_proxy
+    det["metric_size"] = feat.metric_size
+    det["size_distance_band"] = feat.band
+
+
 def _fuse_object_scores(
     *,
     detector_conf: float,
@@ -660,6 +704,11 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
         float(det.get("padim_pool", 0.0)),
         float(det.get("patchcore_pool", 0.0)),
     )
+    feat = features_from_det_fields(det)
+    if feat is None:
+        feat = compute_size_distance_features(w=w, h=h, img_hw=(h_img, w_img))
+    if should_reject_field_scale(feat, support):
+        return False
     near_top = y <= max(12, int(0.06 * h_img))
     very_wide = (w / max(1, h)) >= 8.0
     src = str(det.get("proposal_source", ""))
@@ -694,7 +743,7 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
         if float(det.get("plateau_mass", 0.0)) > 0 and float(det.get("score", 0.0)) >= 0.006:
             return True
     if src == "heuristic":
-        if area_ratio < 0.003 and support < 0.035:
+        if area_ratio < 0.003 and support < 0.035 and feat.band != "far_small":
             return False
         if near_top and area_ratio < 0.01 and support < 0.05:
             return False
@@ -703,6 +752,9 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
         if src in {"heuristic_relaxed", "heuristic_peaks", "heuristic_plateau", "heuristic_detail_first"} and (
             support >= 0.006 or fine_proxy >= 0.035
         ):
+            return True
+        # far_small: weak-support soft keep (recall); do not harden
+        if feat.band == "far_small" and (support >= 0.004 or fine_proxy >= 0.025):
             return True
         return False
     return True
@@ -918,6 +970,7 @@ def _collect_plateau_detections(
                 "edge_mean": float(np.percentile(region, 90)) if region.size else float(score),
             }
         )
+        _annotate_det_size_distance(out[-1], (H, W))
     out = sorted(out, key=lambda d: float(d.get("plateau_mass", d.get("score", 0.0))), reverse=True)
     return out[:max_plateaus]
 
@@ -972,10 +1025,22 @@ def _should_merge_proposals(a: dict, b: dict, combined: np.ndarray, diag: float,
     # ponytail: 1.5*size_scale rocky field'da zincir merge → tek dev kutu
     close_gap = max(gap_x, gap_y) < max(16.0, 0.8 * size_scale)
     aligned = x_overlap_ratio > 0.35 or y_overlap_ratio > 0.35
+    img_hw = (int(combined.shape[0]), int(combined.shape[1]))
+    feat_a = features_from_det_fields(a) or compute_size_distance_features(
+        w=int(a["w"]), h=int(a["h"]), img_hw=img_hw
+    )
+    feat_b = features_from_det_fields(b) or compute_size_distance_features(
+        w=int(b["w"]), h=int(b["h"]), img_hw=img_hw
+    )
+    bridge_need = merge_bridge_floor(feat_a, feat_b, 0.05)
+    bridge_need_tight = merge_bridge_floor(feat_a, feat_b, 0.06)
     return bool(
         close_centers
-        or ((aligned and close_gap) and bridge > 0.05)
-        or (_bridge_strength(combined, a, b, pad=4) > 0.06 and center_dist < max(22.0, 0.40 * size_scale))
+        or ((aligned and close_gap) and bridge > bridge_need)
+        or (
+            _bridge_strength(combined, a, b, pad=4) > bridge_need_tight
+            and center_dist < max(22.0, 0.40 * size_scale)
+        )
     )
 
 
@@ -1001,8 +1066,14 @@ def _collect_detection_from_contour(
     x, y, w, h = cv2.boundingRect(cnt)
     y1c, y2c = max(0, y), min(H, y + h)
     x1c, x2c = max(0, x), min(W, x + w)
-    region_depth_mean = float(np.mean(depth_n_for_region[y1c:y2c, x1c:x2c])) if (y2c > y1c and x2c > x1c) else 0.0
-    local_area_min = area_min * (0.35 + 0.65 * (1.0 - region_depth_mean))
+    prox_crop = proximity_w[y1c:y2c, x1c:x2c] if (y2c > y1c and x2c > x1c) else None
+    depth_crop = depth_n_for_region[y1c:y2c, x1c:x2c] if (y2c > y1c and x2c > x1c) else None
+    feat = compute_size_distance_features(
+        w=w, h=h, img_hw=(H, W),
+        depth_crop=depth_crop,
+        proximity_crop=prox_crop,
+    )
+    local_area_min = area_min * area_min_scale(feat)
     if cv2.contourArea(cnt) < local_area_min:
         return None
     rect = cv2.minAreaRect(cnt)
@@ -1027,16 +1098,17 @@ def _collect_detection_from_contour(
     rover_pen = float(np.mean(region_rover)) if (region_rover is not None and region_rover.size) else 0.0
     lowvar_pen = float(np.mean(lowvar_mask[y1:y2, x1:x2])) if lowvar_mask is not None else 0.0
     fine_local = float(np.mean(fine_detail[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
-    region_far = float(np.clip(region_depth_mean, 0.0, 1.0))
+    region_far = float(feat.relative_far)
     prox_weight = 0.20 * (1.0 - 0.6 * region_far)
     lowvar_pen *= 1.0 - 0.45 * region_far
     penalty_scale = 0.8 if clutter_mode else 1.0
     score = 0.5 * comb_mean + 0.25 * edge_mean + prox_weight * prox_mean + 0.05 * fine_local - penalty_scale * (0.35 * shadow_pen + 0.20 * illum_pen + 0.30 * spec_pen + 0.30 * boundary_pen + 0.45 * rover_pen + 0.25 * lowvar_pen)
     score = float(max(0.0, score))
-    sh_cut = float(globals().get('shadow_cut', 0.45)) + 0.10 * region_far
-    im_edge_min = float(globals().get('img_edge_min', 0.10)) * (1.0 - 0.35 * region_far)
-    dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (1.0 - 0.45 * region_far)
-    sp_cut = float(globals().get('spec_cut', 0.50)) + 0.08 * region_far
+    e_scale = edge_min_scale(feat)
+    sh_cut = float(globals().get('shadow_cut', 0.45)) + shadow_cut_delta(feat)
+    im_edge_min = float(globals().get('img_edge_min', 0.10)) * e_scale
+    dp_edge_min = float(globals().get('depth_edge_min', 0.08)) * (0.55 + 0.45 * e_scale)
+    sp_cut = float(globals().get('spec_cut', 0.50)) + 0.8 * shadow_cut_delta(feat)
     depth_edge_local = float(np.mean(depth_edge_n[y1:y2, x1:x2])) if (y2 > y1 and x2 > x1) else 0.0
     if shadow_pen > sh_cut and edge_mean < im_edge_min and depth_edge_local < dp_edge_min:
         return None
@@ -1058,6 +1130,12 @@ def _collect_detection_from_contour(
         "spec_pen": float(spec_pen),
         "lowvar_pen": float(lowvar_pen),
         "proposal_source": "heuristic",
+        "relative_far": feat.relative_far,
+        "apparent_size": feat.apparent_size,
+        "area_ratio": feat.area_ratio,
+        "metric_proxy": feat.metric_proxy,
+        "metric_size": feat.metric_size,
+        "size_distance_band": feat.band,
     }
 
 
@@ -1118,6 +1196,7 @@ def _collect_peak_window_detections(
                 "proposal_source": "heuristic_peaks",
             }
         )
+        _annotate_det_size_distance(out[-1], (H, W))
     return out
 
 
@@ -1161,6 +1240,7 @@ def _collect_detail_first_detections(
                 "proposal_source": "heuristic_detail_first",
             }
         )
+        _annotate_det_size_distance(out[-1], (H, W))
     out.sort(key=lambda d: float(d["score"]), reverse=True)
     return out[:max(1, int(top_k))]
 
@@ -1234,6 +1314,7 @@ def _score_object_detections(
         return detections
 
     depth_norm = _normalize_map(depth_map) if depth_map is not None else None
+    proximity_w = _normalize_map(1.0 - depth_map) if depth_map is not None else None
     kept: list[dict] = []
     for det in detections:
         det["combined_pool"] = _pool_region(combined_map, det)
@@ -1241,6 +1322,12 @@ def _score_object_detections(
         det["patchcore_pool"] = _pool_region(patchcore_map, det)
         det["depth_pool"] = _pool_region(depth_norm, det)
         _append_detection_geomorph_metrics(det, depth_map, protrusion_map)
+        _annotate_det_size_distance(
+            det,
+            (int(original_rgb_float.shape[0]), int(original_rgb_float.shape[1])),
+            proximity_w=proximity_w,
+            depth_map=depth_map,
+        )
         if _recall_ablation_flags()["boost"]:
             _boost_recall_detection_pools(det)
         det["detector_conf"] = float(det.get("detector_conf", det.get("score", 0.0)))
@@ -1277,20 +1364,22 @@ def _run_detector_backend(
     )
     detections: list[dict] = []
     for box in boxes:
-        detections.append(
-            {
-                "x": int(box.x),
-                "y": int(box.y),
-                "w": int(box.w),
-                "h": int(box.h),
-                "score": float(box.score),
-                "detector_conf": float(box.score),
-                "class_id": int(box.class_id),
-                "class_name": str(box.class_name),
-                "proposal_source": "yolo",
-                "poly": None,
-            }
+        det = {
+            "x": int(box.x),
+            "y": int(box.y),
+            "w": int(box.w),
+            "h": int(box.h),
+            "score": float(box.score),
+            "detector_conf": float(box.score),
+            "class_id": int(box.class_id),
+            "class_name": str(box.class_name),
+            "proposal_source": "yolo",
+            "poly": None,
+        }
+        _annotate_det_size_distance(
+            det, (int(image_rgb_float.shape[0]), int(image_rgb_float.shape[1]))
         )
+        detections.append(det)
     return detections
 
 def _assign_clusters(latents: np.ndarray, method: str, k: int, eps: float, min_samples: int) -> np.ndarray:
@@ -1902,6 +1991,10 @@ def compute_combined_anomaly_map(
     try:
         miou = float(globals().get('merge_iou', 0.15))
         mtol = float(globals().get('merge_tol', 0.5))
+        for det in detections:
+            _annotate_det_size_distance(
+                det, (H, W), proximity_w=proximity_w, depth_map=depth_n_for_region
+            )
         merged = []
         used = [False] * len(detections)
         diag = float(np.hypot(W, H))
@@ -1943,12 +2036,16 @@ def compute_combined_anomaly_map(
                 merged.append(detections[best_idx])
                 used[i] = True
                 continue
-            merged.append({
+            merged_det = {
                 'x': x1, 'y': y1, 'w': x2 - x1, 'h': y2 - y1,
                 'score': _region_proposal_score(region) if region.size else a['score'],
                 'poly': None,
                 'proposal_source': 'heuristic_merged' if len(group) > 1 else a.get('proposal_source', 'heuristic'),
-            })
+            }
+            _annotate_det_size_distance(
+                merged_det, (H, W), proximity_w=proximity_w, depth_map=depth_n_for_region
+            )
+            merged.append(merged_det)
             used[i] = True
         detections = merged
     except Exception:
