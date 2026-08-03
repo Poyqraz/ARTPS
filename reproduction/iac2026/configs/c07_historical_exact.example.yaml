@@ -1,11 +1,12 @@
 claim_ids: ["C07"]
+evidence_mode: real_evidence
+profile: historical_exact
 input_resolution: 256
 batch_size: 1
 learned_depth_enabled: false
 autoencoder_enabled: false
 warmup_count: 30
 timed_iteration_count: 300
-images_dir: null
-synthetic_frames: 8
+images_dir: REPLACE_WITH_PINNED_IMAGE_DIR
 output_directory: results/iac2026/reproduction
-allow_dirty_git: true
+allow_dirty_git: false

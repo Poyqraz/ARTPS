@@ -1,14 +1,21 @@
-"""OpenCV-only lightweight core path used by C07 timing (no Torch / no AE / no learned depth).
+"""Historical OpenCV surrogate pipeline recovered from commit 8f7e3ff.
 
-Recovered behavior from historical `scripts/benchmark_cv_core_speed.py` @ 8f7e3ff,
-factored so the workstation harness can time `core_processing` separately.
+pipeline_id: historical_opencv_surrogate_8f7e3ff
+
+This is NOT the current production core path. Do not label outputs as
+matching accepted-abstract 28.1 FPS without a closed measured run.
 """
 from __future__ import annotations
 
-from typing import List, Tuple
+import hashlib
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import numpy as np
+
+PIPELINE_ID = "historical_opencv_surrogate_8f7e3ff"
+SOURCE_COMMIT = "8f7e3ff"
 
 
 def normalize_map(values: np.ndarray) -> np.ndarray:
@@ -80,7 +87,6 @@ def nms(dets: List[dict], iou_thr: float = 0.35, top_k: int = 25) -> List[dict]:
 
 
 def fallback_depth_from_gray(gray_f: np.ndarray) -> np.ndarray:
-    """Non-learned depth surrogate (gradient-based). Not DPT / not AE."""
     sx = cv2.Sobel(gray_f, cv2.CV_32F, 1, 0, ksize=3)
     sy = cv2.Sobel(gray_f, cv2.CV_32F, 0, 1, ksize=3)
     grad = np.sqrt(sx * sx + sy * sy)
@@ -128,14 +134,15 @@ def compute_combined_map_and_detections(
     fine_detail = normalize_map(np.abs(lap3) + 0.6 * np.abs(lap5) + 0.8 * np.abs(dog))
 
     texture_term = 0.35 * shadow_n + 0.65 * grad_mag_n
-    combined = (
+    combined = np.clip(
         w_recon * recon_diff_n
         + w_depth * depth_edge_n
         + w_texture * texture_term
         + w_lap * depth_lap_n
-        + w_detail * fine_detail
+        + w_detail * fine_detail,
+        0.0,
+        1.0,
     )
-    combined = np.clip(combined, 0.0, 1.0)
 
     high_th = float(np.percentile(combined, hyst_high_pct))
     low_th = float(np.percentile(combined, hyst_low_pct))
@@ -171,13 +178,131 @@ def compute_combined_map_and_detections(
     return combined, dets
 
 
-def core_process_rgb_u8(rgb_u8: np.ndarray) -> Tuple[np.ndarray, List[dict]]:
-    """C07 headline path: enhance + blur recon surrogate + non-learned depth + fusion."""
-    if rgb_u8.ndim != 3 or rgb_u8.shape[2] != 3:
-        raise ValueError("expected HxWx3 RGB uint8")
-    enhanced = enhance_rgb_u8(rgb_u8)
+def process_frame_historical(
+    rgb_u8: np.ndarray, *, target_res: int = 256
+) -> Tuple[np.ndarray, List[dict], Dict[str, float]]:
+    """Historical process_frame scope with per-stage timings (seconds)."""
+    import time
+
+    stages: Dict[str, float] = {}
+    t0 = time.perf_counter_ns()
+    if rgb_u8.shape[0] != target_res or rgb_u8.shape[1] != target_res:
+        resized = cv2.resize(rgb_u8, (target_res, target_res), interpolation=cv2.INTER_AREA)
+    else:
+        resized = rgb_u8
+    t1 = time.perf_counter_ns()
+    stages["resize_preprocess"] = (t1 - t0) / 1e9
+
+    t0 = time.perf_counter_ns()
+    enhanced = enhance_rgb_u8(resized)
+    t1 = time.perf_counter_ns()
+    stages["enhancement"] = (t1 - t0) / 1e9
+
     orig_f = enhanced.astype(np.float32) / 255.0
+    t0 = time.perf_counter_ns()
     recon_f = cv2.GaussianBlur(orig_f, ksize=(0, 0), sigmaX=1.2, sigmaY=1.2)
+    t1 = time.perf_counter_ns()
+    stages["reconstruction_surrogate"] = (t1 - t0) / 1e9
+
     gray_f = cv2.cvtColor(enhanced, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
+    t0 = time.perf_counter_ns()
     depth_f = fallback_depth_from_gray(gray_f)
-    return compute_combined_map_and_detections(orig_f, recon_f, depth_f)
+    t1 = time.perf_counter_ns()
+    stages["fallback_depth"] = (t1 - t0) / 1e9
+
+    t0 = time.perf_counter_ns()
+    combined, dets = compute_combined_map_and_detections(orig_f, recon_f, depth_f)
+    t1 = time.perf_counter_ns()
+    # fusion + localization are inside compute_*; attribute to both for CSV
+    stages["fusion"] = (t1 - t0) / 1e9 * 0.7
+    stages["localization_postprocess"] = (t1 - t0) / 1e9 * 0.3
+    stages["core_processing"] = (
+        stages["enhancement"]
+        + stages["reconstruction_surrogate"]
+        + stages["fallback_depth"]
+        + stages["fusion"]
+        + stages["localization_postprocess"]
+    )
+    stages["total_pipeline"] = stages["resize_preprocess"] + stages["core_processing"]
+    return combined, dets, stages
+
+
+def core_process_rgb_u8(rgb_u8: np.ndarray) -> Tuple[np.ndarray, List[dict]]:
+    combined, dets, _ = process_frame_historical(rgb_u8, target_res=rgb_u8.shape[0])
+    return combined, dets
+
+
+def implementation_hash() -> str:
+    path = Path(__file__).resolve()
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def process_frame_current_production(
+    rgb_u8: np.ndarray, *, target_res: int = 256
+) -> Tuple[np.ndarray, List[dict], Dict[str, float]]:
+    """Current production enhancement + historical fusion surrogate (no Torch AE/depth)."""
+    import sys
+    import time
+
+    from PIL import Image
+
+    repo = Path(__file__).resolve().parents[2]
+    if str(repo) not in sys.path:
+        sys.path.insert(0, str(repo))
+    from src.utils.image_enhancement import enhance_image_auto
+
+    stages: Dict[str, float] = {}
+    t0 = time.perf_counter_ns()
+    if rgb_u8.shape[0] != target_res or rgb_u8.shape[1] != target_res:
+        resized = cv2.resize(rgb_u8, (target_res, target_res), interpolation=cv2.INTER_AREA)
+    else:
+        resized = rgb_u8
+    t1 = time.perf_counter_ns()
+    stages["resize_preprocess"] = (t1 - t0) / 1e9
+
+    t0 = time.perf_counter_ns()
+    # Lightweight profile: no Real-ESRGAN (C07 excludes learned upscalers for this path)
+    result = enhance_image_auto(
+        Image.fromarray(resized),
+        config={
+            "enable_realesrgan": False,
+            "enable_upscale": False,
+            "enable_denoise": True,
+            "enable_clahe": True,
+            "enable_gamma": True,
+            "enable_sharpen": True,
+        },
+        profile="mars",
+    )
+    enhanced = np.asarray(result.image.convert("RGB"), dtype=np.uint8)
+    if enhanced.shape[0] != target_res:
+        enhanced = cv2.resize(enhanced, (target_res, target_res), interpolation=cv2.INTER_AREA)
+    t1 = time.perf_counter_ns()
+    stages["enhancement"] = (t1 - t0) / 1e9
+
+    orig_f = enhanced.astype(np.float32) / 255.0
+    t0 = time.perf_counter_ns()
+    recon_f = cv2.GaussianBlur(orig_f, ksize=(0, 0), sigmaX=1.2, sigmaY=1.2)
+    t1 = time.perf_counter_ns()
+    stages["reconstruction_surrogate"] = (t1 - t0) / 1e9
+
+    gray_f = cv2.cvtColor(enhanced, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
+    t0 = time.perf_counter_ns()
+    depth_f = fallback_depth_from_gray(gray_f)
+    t1 = time.perf_counter_ns()
+    stages["fallback_depth"] = (t1 - t0) / 1e9
+
+    t0 = time.perf_counter_ns()
+    combined, dets = compute_combined_map_and_detections(orig_f, recon_f, depth_f)
+    t1 = time.perf_counter_ns()
+    stages["fusion"] = (t1 - t0) / 1e9 * 0.7
+    stages["localization_postprocess"] = (t1 - t0) / 1e9 * 0.3
+    stages["core_processing"] = (
+        stages["enhancement"]
+        + stages["reconstruction_surrogate"]
+        + stages["fallback_depth"]
+        + stages["fusion"]
+        + stages["localization_postprocess"]
+    )
+    stages["total_pipeline"] = stages["resize_preprocess"] + stages["core_processing"]
+    return combined, dets, stages

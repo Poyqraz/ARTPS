@@ -1,0 +1,13 @@
+claim_ids: ["C07"]
+evidence_mode: software_verification
+profile: software_verification_historical
+input_resolution: 256
+batch_size: 1
+learned_depth_enabled: false
+autoencoder_enabled: false
+warmup_count: 30
+timed_iteration_count: 300
+synthetic_frames: 8
+images_dir: null
+output_directory: results/iac2026/reproduction
+allow_dirty_git: true
