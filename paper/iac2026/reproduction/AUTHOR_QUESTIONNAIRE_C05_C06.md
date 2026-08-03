@@ -9,6 +9,9 @@ Do **not** invent values to unblock a run.
 Evidence summary: [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md),
 [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md).
 
+**Recorded responses (evidence-honest, do not close P0):**
+[AUTHOR_RESPONSES_C05_C06.md](AUTHOR_RESPONSES_C05_C06.md).
+
 ---
 
 ## P0 — blocks any real C05/C06 reproduction run

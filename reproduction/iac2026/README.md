@@ -11,6 +11,7 @@ Only after archaeology closes task_level, labels, score definition, split, thres
 - Audit table: `paper/iac2026/reproduction/C05_C06_DEFINITION_AUDIT.md`
 - Manifest gaps: `paper/iac2026/reproduction/DATASET_MANIFEST_GAPS.md`
 - Author questionnaire: `paper/iac2026/reproduction/AUTHOR_QUESTIONNAIRE_C05_C06.md`
+- Author responses (evidence-honest; do not close P0): `paper/iac2026/reproduction/AUTHOR_RESPONSES_C05_C06.md`
 - Machine-readable defs: `reproduction/iac2026/C05_C06_DEFINITIONS.yaml`
 - Manifest **template** (header only): `reproduction/iac2026/manifests/c05_c06_manifest.template.csv`
 - Readiness gate: `python scripts/iac2026/check_c05_c06_definition_readiness.py` (must report `real_run_allowed: false` until P0 evidence exists)
