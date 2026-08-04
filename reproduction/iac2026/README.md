@@ -17,6 +17,8 @@ Only after archaeology closes task_level, labels, score definition, split, thres
 - Manifest **template** (header only): `reproduction/iac2026/manifests/c05_c06_manifest.template.csv`
 - Readiness gate: `python scripts/iac2026/check_c05_c06_definition_readiness.py` (must report `real_run_allowed: false` until P0 evidence exists)
 
+Layered readiness (`definition_readiness` ∧ `artifact_reference_readiness` ∧ `input_audit_readiness=passed`) is required for `real_run_allowed=true`. YAML `LOCATED` labels alone are not enough: on-disk manifest + predictions (or full re-inference contract) must pass hash/schema checks, and `--input-audit-json` must be a `real_evidence` audit whose hashes match current artifacts. A prior audit JSON is not authoritative if hashes are stale. The metrics runner still requires a fresh `audit_inputs()` call; this checker never sets `dataset_files_audited=true` (image bytes are audited only by `audit_reproduction_inputs.py`).
+
 Do **not** invent split rows from aggregate counts (2847 / 1247 / 892 / 708).
 
 ## Commands
