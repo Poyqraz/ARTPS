@@ -1,15 +1,36 @@
-# Author responses — C05 / C06 (evidence-honest)
+# C05 / C06 response and evidence status
 
-**Status:** archaeology / agent fill-in where author memory and recoverable artifacts do not close P0.
-These answers **do not** authorize claim closure, do **not** invent historical experiment
-parameters, and do **not** set `real_run_allowed=true`.
+```yaml
+status_type: audit_observation
+author_attestation_status: not_provided
+author_verified: false
+recorded_from:
+  - repository archaeology
+  - manuscript claims
+  - scanned local paths
+real_run_allowed: false
+```
+
+This document records the status of unresolved questionnaire fields based on
+repository/document archaeology. It is not an author attestation and must not be
+represented as author-confirmed historical experiment metadata.
 
 Questionnaire: [AUTHOR_QUESTIONNAIRE_C05_C06.md](AUTHOR_QUESTIONNAIRE_C05_C06.md)
+Author attestation template (empty / pending):
+[AUTHOR_ATTESTATION_C05_C06.template.md](AUTHOR_ATTESTATION_C05_C06.template.md)
 Audit: [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md)
 Gaps: [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md)
 Defs: [`reproduction/iac2026/C05_C06_DEFINITIONS.yaml`](../../../reproduction/iac2026/C05_C06_DEFINITIONS.yaml)
 
 Ledger support remains: `accepted_abstract_reproduction_pending`.
+
+**Default evidence_scope for “not located” statements below:**
+- git history (including baseline `8f7e3ff` and `git log -S` / `-G` scans)
+- scanned repository paths under HEAD
+- listed local result / image paths (`results/`, `mars_images/`, fixtures)
+- manuscript/PDF sources (`docs/paper.tex`, Full/portal abstracts)
+
+Absence outside the scanned sources is not established.
 
 ---
 
@@ -34,7 +55,7 @@ Ledger support remains: `accepted_abstract_reproduction_pending`.
 
 **Labeling rule:** unknown
 
-**Source / file path:** none recovered for the claim dataset.
+**Source / file path:** no claim-dataset annotation artifact was recovered from the documented scan scope.
 Note: `reproduction/iac2026/fixtures/synthetic_manifest.csv` / synthetic config use
 `positive_label: 1` / `anomaly_binary` for **software verification only** — not claim GT.
 
@@ -44,9 +65,15 @@ Note: `reproduction/iac2026/fixtures/synthetic_manifest.csv` / synthetic config 
 
 ## P0-03 — Per-file split
 
-**Split file exists:** no
+**Split file:** not located in the scanned sources
 
-**Path or archive:** none located in git history, stash name-list, or scanned local trees
+**Path or archive:** no artifact was recovered from the documented scan scope
+
+**evidence_scope:**
+- git history
+- scanned repository paths
+- listed local result paths
+- manuscript/PDF sources
 
 **1247 / 892 / 708 numbers mean:** unsure —
 manuscript aggregates (Curiosity 1247, Perseverance 892, test/validation bullet 708;
@@ -54,6 +81,8 @@ total stated 2847). Whether these are disjoint partition buckets vs mission sour
 overlapping the 708 pool remains **UNKNOWN** (see [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md)).
 
 **Confidence:** unknown
+
+Absence outside the scanned sources is not established.
 
 ---
 
@@ -70,7 +99,7 @@ overlapping the 708 pool remains **UNKNOWN** (see [DATASET_MANIFEST_GAPS.md](DAT
 **Source / log / notebook:**
 - `8f7e3ff:docs/paper.tex` Protocol: “Decision thresholds are selected on validation data;
   results are reported on the test set.”
-- No logged threshold float / notebook cell recovered
+- No logged threshold float / notebook cell recovered from the documented scan scope
 
 **Confidence:** selection-split narrative **likely** (as manuscript claim); metric / tie-break / numeric **unknown**
 
@@ -97,7 +126,8 @@ overlapping the 708 pool remains **UNKNOWN** (see [DATASET_MANIFEST_GAPS.md](DAT
 **Identity:** unknown
 
 **Same test IDs as ARTPS:** unsure
-(protocol claims identical train/validation/test splits; no per-file ID intersection proof)
+(protocol claims identical train/validation/test splits; no per-file ID intersection proof
+was recovered from the documented scan scope)
 
 **Source:**
 - Table header “PaDiM/PatchCore (WRN-50-2)” with AUROC 0.856 —
@@ -111,27 +141,34 @@ overlapping the 708 pool remains **UNKNOWN** (see [DATASET_MANIFEST_GAPS.md](DAT
 
 ## P0-07 — Predictions or re-inference
 
-**ARTPS predictions available:** no (no claim-era prediction CSV recovered)
+**ARTPS predictions:** not located in the scanned sources (no claim-era prediction CSV recovered)
 
-**Baseline predictions available:** no
+**Baseline predictions:** not located in the scanned sources
+
+**evidence_scope:**
+- git history
+- scanned repository paths
+- listed local result paths
+- manuscript/PDF sources
 
 **Checkpoint paths (PATH_REFERENCE_ONLY — presence ≠ provenance):**
 - `results/padim_stats.pth` (local; gitignored; SHA/recipe unverified)
 - `results/patchcore_bank.pth` (local; gitignored; SHA/recipe unverified)
 
-**Config/notebook/script paths for the published table:** not located
+**Config/notebook/script paths for the published table:** not located in the scanned sources
 
-**Split file:** no
+**Split file:** not located in the scanned sources
 
-**Any backup, archive, external disk, Drive, old Cursor workspace or local results folder:**
-Scanned for this response pack:
+**Backup / archive / Drive / old workspace scan (within documented scope):**
 - full git history (`git log -S` / `-G`, baseline `8f7e3ff`)
 - `stash@{0}` name listing only (not applied)
 - local `results/`, `mars_images/`, `docs/*.pdf`, HEAD `reproduction/iac2026/fixtures/`
-No C05/C06 claim prediction table or pinned split archive found.
+No C05/C06 claim prediction table or pinned split archive was recovered from that scope.
 Synthetic fixture predictions remain SW-only.
 
-**Confidence:** **likely** regarding absence within scanned sources (not a proof that no private copy exists elsewhere)
+**Confidence:** **likely** regarding non-recovery within scanned sources
+
+Absence outside the scanned sources is not established.
 
 ---
 
@@ -141,7 +178,9 @@ Synthetic fixture predictions remain SW-only.
 python scripts/iac2026/check_c05_c06_definition_readiness.py
 → readiness: blocked
 → real_run_allowed: false
+→ author_attestation_status: pending
+→ author_verified: false
 ```
 
 P0 fields in `C05_C06_DEFINITIONS.yaml` stay `UNKNOWN_EVIDENCE_NOT_LOCATED` /
-`PARTIALLY_LOCATED` as before. These responses do not close them.
+`PARTIALLY_LOCATED` as before. This audit-observation document does not close them.

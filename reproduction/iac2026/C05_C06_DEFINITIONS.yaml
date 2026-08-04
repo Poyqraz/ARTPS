@@ -7,10 +7,17 @@ schema_version: 1
 claim_ids: ["C05", "C06"]
 support_level_locked: accepted_abstract_reproduction_pending
 audit_doc: paper/iac2026/reproduction/C05_C06_DEFINITION_AUDIT.md
-author_responses: paper/iac2026/reproduction/AUTHOR_RESPONSES_C05_C06.md
+response_status:
+  path: paper/iac2026/reproduction/C05_C06_RESPONSE_STATUS.md
+  type: audit_observation
+  author_verified: false
+author_attestation:
+  path: paper/iac2026/reproduction/AUTHOR_ATTESTATION_C05_C06.template.md
+  status: pending
+  author_verified: false
 manifest_template: reproduction/iac2026/manifests/c05_c06_manifest.template.csv
 real_manifest_path: null
-# author_responses records unknown/no/unsure fills; they do NOT close P0 values below.
+# response_status / author_attestation metadata do NOT close P0 values below.
 
 task_level:
   value: null
