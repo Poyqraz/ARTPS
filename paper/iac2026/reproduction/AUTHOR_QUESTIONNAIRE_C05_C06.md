@@ -9,8 +9,11 @@ Do **not** invent values to unblock a run.
 Evidence summary: [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md),
 [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md).
 
-**Recorded responses (evidence-honest, do not close P0):**
-[AUTHOR_RESPONSES_C05_C06.md](AUTHOR_RESPONSES_C05_C06.md).
+**Recorded status (audit observation — not author attestation):**
+[C05_C06_RESPONSE_STATUS.md](C05_C06_RESPONSE_STATUS.md).
+
+**Author attestation (pending template — do not invent fills):**
+[AUTHOR_ATTESTATION_C05_C06.template.md](AUTHOR_ATTESTATION_C05_C06.template.md).
 
 ---
 

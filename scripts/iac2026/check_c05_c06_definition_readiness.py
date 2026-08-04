@@ -2,7 +2,8 @@
 """Check whether C05/C06 definitions are evidence-ready for a real run.
 
 Reads reproduction/iac2026/C05_C06_DEFINITIONS.yaml only. Does not guess.
-Expected outcome on this branch: readiness=blocked, real_run_allowed=false.
+Author attestation metadata is reported but never sufficient alone.
+Expected outcome on HEAD without closed artifacts: readiness=blocked.
 """
 from __future__ import annotations
 
@@ -33,13 +34,11 @@ P0_FIELDS = (
     "threshold_selection_metric",
     "pr_metric_method",
     "c06_baseline_identity",
-    "raw_predictions",
-    "re_inference_path_documented",
 )
+# raw_predictions XOR re_inference handled separately (either evidence path suffices).
 
 CLOSED_STATUSES = frozenset({"LOCATED", "PARTIALLY_LOCATED"})
 # PARTIALLY_LOCATED alone is not enough for several P0 keys — see per-field rules.
-
 
 def _load_defs(path: Path) -> Dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -64,8 +63,34 @@ def _missing(msg: str, missing: List[str]) -> None:
     missing.append(msg)
 
 
+def _attestation_meta(defs: Mapping[str, Any]) -> Dict[str, Any]:
+    """Read author_attestation block; never treat as artifact closure."""
+    block = defs.get("author_attestation")
+    if not isinstance(block, Mapping):
+        return {
+            "author_attestation_status": "pending",
+            "author_verified": False,
+        }
+    status = block.get("status", "pending")
+    verified = bool(block.get("author_verified", False))
+    return {
+        "author_attestation_status": str(status),
+        "author_verified": verified,
+    }
+
+
 def evaluate(defs: Mapping[str, Any], *, repo: Path = REPO) -> Dict[str, Any]:
     missing: List[str] = []
+    attest = _attestation_meta(defs)
+
+    # Audit observation / response_status is never a readiness unlock.
+    rs = defs.get("response_status")
+    if isinstance(rs, Mapping) and rs.get("type") == "audit_observation":
+        if rs.get("author_verified") is True:
+            _missing(
+                "response_status is audit_observation and must not set author_verified=true",
+                missing,
+            )
 
     support = defs.get("support_level_locked")
     if support != "accepted_abstract_reproduction_pending":
@@ -156,15 +181,27 @@ def evaluate(defs: Mapping[str, Any], *, repo: Path = REPO) -> Dict[str, Any]:
             missing,
         )
 
+    # author_verified alone never unlocks; if false while somehow missing empty, still blocked via P0
+    if not attest["author_verified"]:
+        # Informational gate: keep blocked messaging explicit when attestation pending
+        # (does not replace artifact requirements).
+        pass
+
     blocked = len(missing) > 0
+    # Attestation true without artifacts: still blocked because missing list non-empty.
+    # Attestation never clears missing.
     return {
         "readiness": "blocked" if blocked else "ready",
         "real_run_allowed": False if blocked else True,
+        "author_attestation_status": attest["author_attestation_status"],
+        "author_verified": attest["author_verified"],
         "missing": missing,
         "definitions_path": str(DEFAULT_DEFS.relative_to(repo)) if DEFAULT_DEFS.exists() else None,
         "p0_fields_checked": list(P0_FIELDS),
         "notes": (
             "Manuscript-claimed metrics (0.894/0.847/0.823/0.856) never authorize real_run_allowed. "
+            "Audit observations are not author attestations. "
+            "author_verified alone never unlocks a real run; artifacts remain required. "
             "This checker refuses to invent splits, labels, thresholds, or baseline identity."
         ),
     }
@@ -187,6 +224,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         print(f"readiness: {result['readiness']}")
         print(f"real_run_allowed: {result['real_run_allowed']}")
+        print(f"author_attestation_status: {result['author_attestation_status']}")
+        print(f"author_verified: {result['author_verified']}")
         print("missing:")
         for m in result["missing"]:
             print(f"  - {m}")
