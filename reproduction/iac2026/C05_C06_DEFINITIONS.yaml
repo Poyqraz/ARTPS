@@ -2,6 +2,10 @@
 # status values: LOCATED | PARTIALLY_LOCATED | MANUSCRIPT_CLAIM_ONLY |
 #                PATH_REFERENCE_ONLY | UNKNOWN_EVIDENCE_NOT_LOCATED
 # Never treat MANUSCRIPT_CLAIM_ONLY metrics as measured experiment outputs.
+# Independent (non-historical) protocol pin:
+#   paper/iac2026/reproduction/INDEPENDENT_EVALUATION_PROTOCOL.md
+#   reproduction/iac2026/INDEPENDENT_EVAL_V1.yaml
+# That protocol does NOT close P0 fields below and must not claim 0.894/0.847/0.823/0.856.
 
 schema_version: 1
 claim_ids: ["C05", "C06"]

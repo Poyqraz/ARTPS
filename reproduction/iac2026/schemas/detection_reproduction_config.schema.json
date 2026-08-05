@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "evidence_mode",
+    "evaluation_purpose",
     "claim_ids",
     "task_level",
     "positive_label",
@@ -39,6 +40,14 @@
     "evidence_mode": {
       "type": "string",
       "enum": ["software_verification", "real_evidence"]
+    },
+    "evaluation_purpose": {
+      "type": "string",
+      "enum": [
+        "historical_claim_reproduction",
+        "current_reproducible_evaluation",
+        "software_verification"
+      ]
     },
     "claim_ids": {
       "type": "array",
@@ -143,6 +152,27 @@
       "then": {
         "properties": {
           "evidence_mode": { "const": "software_verification" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evaluation_purpose": { "const": "current_reproducible_evaluation" }
+        },
+        "required": ["evaluation_purpose"]
+      },
+      "then": {
+        "properties": {
+          "claim_ids": {
+            "type": "array",
+            "items": { "const": "IND_EVAL_V1" },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "task_level": { "const": "image_binary" },
+          "pr_metric_method": { "const": "average_precision" },
+          "threshold_policy": { "const": "validation_selected" }
         }
       }
     }

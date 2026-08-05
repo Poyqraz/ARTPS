@@ -60,6 +60,39 @@ PIXEL_REGION_MSG = (
 )
 
 
+INDEPENDENT_CLAIM_IDS = frozenset({"IND_EVAL_V1"})
+
+
+def apply_evaluation_purpose_policy(cfg: Mapping[str, Any]) -> List[str]:
+    """Fail-closed: independent eval must not close historical C05/C06 claims."""
+    errors: List[str] = []
+    purpose = cfg.get("evaluation_purpose")
+    claims = [str(c) for c in (cfg.get("claim_ids") or [])]
+    claim_set = set(claims)
+
+    if purpose == "current_reproducible_evaluation":
+        if not claim_set or (claim_set - INDEPENDENT_CLAIM_IDS):
+            errors.append(
+                "current_reproducible_evaluation requires claim_ids ⊆ {IND_EVAL_V1} "
+                f"(got {claims})"
+            )
+        if cfg.get("task_level") != "image_binary":
+            errors.append("current_reproducible_evaluation requires task_level=image_binary")
+        if cfg.get("pr_metric_method") != "average_precision":
+            errors.append("current_reproducible_evaluation requires pr_metric_method=average_precision")
+        if cfg.get("threshold_policy") != "validation_selected":
+            errors.append(
+                "current_reproducible_evaluation requires threshold_policy=validation_selected"
+            )
+    elif purpose == "historical_claim_reproduction":
+        if claim_set & INDEPENDENT_CLAIM_IDS:
+            errors.append(
+                "historical_claim_reproduction must not use claim_ids IND_EVAL_V1 "
+                "(that id is reserved for independent_eval_v1)"
+            )
+    return errors
+
+
 def apply_real_evidence_policy(cfg: Mapping[str, Any]) -> List[str]:
     """Extra real_evidence constraints beyond JSON Schema enums."""
     errors: List[str] = []
@@ -102,6 +135,12 @@ def load_and_validate_config(path: Path | str) -> LoadedConfig:
     schema_errors = validate_instance(data, "detection_reproduction_config.schema.json")
     if schema_errors:
         raise ConfigValidationError("config schema validation failed:\n- " + "\n- ".join(schema_errors))
+
+    purpose_errors = apply_evaluation_purpose_policy(data)
+    if purpose_errors:
+        raise ConfigValidationError(
+            "evaluation_purpose policy failed:\n- " + "\n- ".join(purpose_errors)
+        )
 
     policy_errors = apply_real_evidence_policy(data)
     if policy_errors:

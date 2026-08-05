@@ -1,0 +1,37 @@
+# Independent evaluation config example (protocol independent_eval_v1).
+# NOT a historical C05/C06 reproduction of 0.894 / 0.847 / 0.823 / 0.856.
+# Manifest path is header-only template until labeled SHA-pinned rows exist.
+# real_evidence policy will still fail until checkpoints + non-template data exist.
+
+claim_ids: ["IND_EVAL_V1"]
+evidence_mode: real_evidence
+evaluation_purpose: current_reproducible_evaluation
+task_level: image_binary
+positive_label: 1
+score_semantics: higher_score_means_more_anomalous
+higher_score_means_more_anomalous: true
+dataset_manifest: reproduction/iac2026/manifests/independent_eval_v1.template.csv
+dataset_root_env: ARTPS_DATASET_ROOT
+train_split: train
+validation_split: validation
+test_split: test
+random_seed: 0
+preprocessing: resolution_equalize_denoise_clahe_gamma
+resolution: 256
+normalization: imagenet
+model_name: ARTPS_independent_eval_v1
+model_version: TBD
+checkpoint_path: null
+checkpoint_sha256: TBD
+threshold_policy: validation_selected
+threshold_selection_metric: f1
+threshold_tie_break: highest_threshold
+fixed_threshold: null
+pr_metric_method: average_precision
+bootstrap_iterations: 0
+predictions_csv: results/iac2026/reproduction/PENDING_independent_eval_v1_predictions.csv
+output_directory: results/iac2026/reproduction
+allow_dirty_git: false
+require_real_sha256: true
+config_id: independent_eval_v1
+source_id_cross_split: error

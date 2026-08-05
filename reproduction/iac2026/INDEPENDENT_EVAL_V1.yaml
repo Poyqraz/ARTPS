@@ -1,0 +1,94 @@
+# independent_eval_v1 — machine-readable protocol lock
+# Not a historical C05/C06 reproduction. Dataset/label rows stay PENDING_DATA
+# until a SHA-pinned labeled set exists (do not invent aggregate expansions).
+
+schema_version: 1
+protocol_id: independent_eval_v1
+evaluation_purpose: current_reproducible_evaluation
+claim_ids: ["IND_EVAL_V1"]
+support_level: protocol_defined_pending_data
+protocol_doc: paper/iac2026/reproduction/INDEPENDENT_EVALUATION_PROTOCOL.md
+manifest_template: reproduction/iac2026/manifests/independent_eval_v1.template.csv
+real_manifest_path: null
+example_config: reproduction/iac2026/configs/independent_evaluation.example.yaml
+
+# Contract pins (values locked; data availability separate)
+task_level:
+  value: image_binary
+  status: LOCKED
+positive_class:
+  value: 1
+  status: LOCKED
+  notes: "binary_label=1 means image-level anomaly under annotation_version independent_eval_v1"
+label_semantics:
+  value: anomaly_binary
+  status: LOCKED
+annotation_version:
+  value: independent_eval_v1
+  status: LOCKED
+score_orientation:
+  value: higher_is_more_anomalous
+  status: LOCKED
+image_score_aggregation:
+  value: max_pool_anomaly_map
+  status: LOCKED
+train_split:
+  value: train
+  status: LOCKED
+validation_split:
+  value: validation
+  status: LOCKED
+test_split:
+  value: test
+  status: LOCKED
+group_aware_leakage_policy:
+  value: error_on_cross_split_sha256_or_scene_or_duplicate
+  status: LOCKED
+pr_metric_method:
+  value: average_precision
+  status: LOCKED
+auroc_method:
+  value: roc_auc
+  status: LOCKED
+threshold_policy:
+  value: validation_selected
+  status: LOCKED
+threshold_selection_metric:
+  value: f1
+  status: LOCKED
+threshold_tie_break:
+  value: highest_threshold
+  status: LOCKED
+baselines:
+  reporting: separate_runs_only
+  forbid_average_into_0_856: true
+  padim_required_keys:
+    - backbone
+    - layers
+    - image_size
+    - weights_path
+    - weights_sha256
+    - score_aggregation
+    - train_bank_recipe
+  patchcore_required_keys:
+    - backbone
+    - layers
+    - image_size
+    - weights_path
+    - weights_sha256
+    - score_aggregation
+    - train_bank_recipe
+    - coreset_ratio
+  status: LOCKED_CONTRACT_PENDING_WEIGHTS
+
+# Data not invented in this pin
+dataset_rows:
+  status: PENDING_DATA
+labels:
+  status: PENDING_DATA
+historical_accepted_numbers:
+  auroc_0_894: not_targeted_by_this_protocol
+  auprc_0_847: not_targeted_by_this_protocol
+  f1_0_823: not_targeted_by_this_protocol
+  baseline_auroc_0_856: not_targeted_by_this_protocol
+  note: "Remain accepted_abstract_reproduction_pending on C05/C06 ledger rows."

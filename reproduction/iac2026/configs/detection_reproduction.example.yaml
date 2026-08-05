@@ -1,5 +1,6 @@
 claim_ids: ["C05", "C06"]
 evidence_mode: real_evidence
+evaluation_purpose: historical_claim_reproduction
 # Blocker until archaeology recovers the historical aggregation level.
 task_level: TASK_LEVEL_TBD
 positive_label: 1

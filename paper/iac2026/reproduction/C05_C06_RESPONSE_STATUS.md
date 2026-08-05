@@ -22,6 +22,10 @@ Audit: [C05_C06_DEFINITION_AUDIT.md](C05_C06_DEFINITION_AUDIT.md)
 Gaps: [DATASET_MANIFEST_GAPS.md](DATASET_MANIFEST_GAPS.md)
 Defs: [`reproduction/iac2026/C05_C06_DEFINITIONS.yaml`](../../../reproduction/iac2026/C05_C06_DEFINITIONS.yaml)
 
+Independent (non-historical) evaluation protocol pin (does **not** unlock C05/C06):
+[INDEPENDENT_EVALUATION_PROTOCOL.md](INDEPENDENT_EVALUATION_PROTOCOL.md) /
+[`reproduction/iac2026/INDEPENDENT_EVAL_V1.yaml`](../../../reproduction/iac2026/INDEPENDENT_EVAL_V1.yaml).
+
 Ledger support remains: `accepted_abstract_reproduction_pending`.
 
 **Default evidence_scope for “not located” statements below:**
