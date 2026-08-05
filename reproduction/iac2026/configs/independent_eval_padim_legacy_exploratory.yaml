@@ -1,0 +1,24 @@
+# Legacy PaDiM exploratory baseline (validation only; not primary manuscript evidence).
+evaluation_role: secondary_exploratory
+eligible_for_manuscript_primary_results: false
+eligible_for_primary_baseline_table: false
+eligible_for_C06_reproduction: false
+not_final_test_result: true
+protocol_id: independent_eval_v1
+baseline_type: padim
+config_id: padim_legacy_exploratory_v1
+model_name: PaDiM
+model_version: padim_stats_legacy_frozen
+dataset_manifest: reproduction/iac2026/manifests/independent_eval_v1.csv
+dataset_root_env: ARTPS_DATASET_ROOT
+validation_split: validation
+allowed_splits: [validation]
+score_aggregation: max_anomaly_map_exploratory
+train_bank_recipe: embedded_in_checkpoint_no_rebuild
+checkpoint_path: results/padim_stats.pth
+checkpoint_sha256: 3f6068d6dc4a2b383716df7fc542b564bd7893f271790209509c5c134e962cc2
+backbone: wide_resnet50_2
+backbone_weights_sha256: 9ba9bcbebc349d733a72eb7608143fd754e4689ac8d8ce2916ca0bdff6443950
+layers: [layer2, layer3]
+image_size: 256
+output_directory: results/iac2026/independent_eval_v1/validation/padim_legacy_exploratory
