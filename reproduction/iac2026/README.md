@@ -19,6 +19,17 @@ Only after archaeology closes task_level, labels, score definition, split, thres
 
 Layered readiness (`definition_readiness` ∧ `artifact_reference_readiness` ∧ `input_audit_readiness=passed`) is required for `real_run_allowed=true`. YAML `LOCATED` labels alone are not enough: on-disk manifest + predictions (or full re-inference contract) must pass hash/schema checks, and `--input-audit-json` must be a `real_evidence` audit whose hashes match current artifacts. A prior audit JSON is not authoritative if hashes are stale. The metrics runner still requires a fresh `audit_inputs()` call; this checker never sets `dataset_files_audited=true` (image bytes are audited only by `audit_reproduction_inputs.py`).
 
+### Independent evaluation (not C05/C06 reproduction)
+
+When historical C05/C06 artifacts remain missing, use the pinned **independent** protocol instead of inventing historical closures:
+
+- Protocol: `paper/iac2026/reproduction/INDEPENDENT_EVALUATION_PROTOCOL.md`
+- Lock: `reproduction/iac2026/INDEPENDENT_EVAL_V1.yaml`
+- Example config: `reproduction/iac2026/configs/independent_evaluation.example.yaml`
+- Manifest template (header only): `reproduction/iac2026/manifests/independent_eval_v1.template.csv`
+
+Configs with `evaluation_purpose: current_reproducible_evaluation` must use `claim_ids: ["IND_EVAL_V1"]` only. Results must be reported as **current reproducible evaluation**, never as reproduction of accepted 0.894 / 0.847 / 0.823 / 0.856. C05/C06 ledger support stays `accepted_abstract_reproduction_pending` until historical artifacts are recovered.
+
 Do **not** invent split rows from aggregate counts (2847 / 1247 / 892 / 708).
 
 ## Commands
