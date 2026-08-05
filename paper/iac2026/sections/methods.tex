@@ -1,33 +1,102 @@
-\section{Material and Methods}
-% Stub — keep original equations in a later prose PR (see PLAN.md keep-list).
-% Architecture: RGB → relative depth → enhance → cues → entropy fusion → localize/merge
-% → curiosity + diversity → Priority Buffer.
+\section{ARTPS Methodology}
+This section describes the ARTPS pipeline as an architectural specification.
+Quantitative performance claims appear only in Section~\ref{sec:results} under evidence gates;
+method prose here does not invent metrics.
 
-\subsection{System architecture}
-ARTPS processes an RGB frame through relative-depth estimation, optional enhancement,
-multi-cue anomaly extraction, entropy-weighted fusion, localization with tightened merge,
-and ranked selection with a Priority Buffer.
+\begin{figure*}[t]
+\centering
+% Placeholder schematic (no external image asset; avoids broken \includegraphics).
+\begin{tabular}{@{}l@{$\rightarrow$}l@{$\rightarrow$}l@{$\rightarrow$}l@{}}
+\multicolumn{4}{c}{\textbf{ARTPS pipeline (schematic)}} \\
+\hline
+Input image & Anomaly cues + relative depth & Entropy fusion + localization & Suppression + ranking \\
+ &  & Diversity + Priority Buffer & Priority list / no-select \\
+\hline
+\end{tabular}
+\caption{ARTPS end-to-end pipeline: multi-cue anomaly responses and monocular relative depth
+are fused, localized, operationally filtered, ranked with diversity, and optionally retained
+in a Priority Buffer for second-chance evaluation.}
+\label{fig:pipeline}
+\end{figure*}
 
-\subsection{Depth-guided enhancement}
-% KEEP equation: depth-guided enhancement.
-% Real-ESRGAN: one paragraph only; no Results claim (unsupported without ablation).
-Depth-guided enhancement modulates local contrast using the relative-depth map.
-Optional Real-ESRGAN may appear as a profile-aware enhance path; it is not an ablation claim.
+\subsection{System overview}
+ARTPS ingests a single RGB field image and produces a ranked list of candidate targets, or an
+explicit no-selection outcome when evidence is insufficient.
+Primary modules are: (i)~multi-cue anomaly responses, (ii)~monocular relative depth,
+(iii)~entropy-weighted fusion, (iv)~candidate localization, (v)~operational false-positive
+suppression, (vi)~apparent size / image-relative size--distance policy,
+(vii)~feature-space diversity, (viii)~Priority Buffer, and (ix)~fail-closed runtime and claim
+gates.
+The primary image-level anomaly score used by the current evaluation contract is
+\texttt{max\_valid\_candidate\_after\_masks}: the maximum score among candidates that remain
+valid after operational masks and suppressions.
+This score definition is pinned for \texttt{independent\_eval\_v1} and must not be silently
+redefined between protocol versions.
 
-\subsection{Anomaly cues and entropy-weighted fusion}
-% KEEP: entropy-weighted fusion.
-Image, depth, and optional learned anomaly maps are combined with entropy-weighted fusion
-that adapts component weights at runtime~\citep{defard2020padim,roth2022patchcore}.
+\subsection{Multi-cue visual anomaly detection}
+ARTPS forms visual anomaly responses from embedding- or reconstruction-oriented cues aligned
+with industrial anomaly practice~\citep{defard2020padim,roth2022patchcore}.
+Cue maps highlight unusual appearance relative to a reference distribution of ``normal''
+terrain context.
+ARTPS does not treat any single cue as a mineral detector or as a complete science classifier;
+cues are inputs to fusion and prioritization.
+% TODO(citation): add Autoencoder / FastFlow / CFA keys only after bibliography verification.
 
-\subsection{Localization, false-positive gates, and size--distance policy}
-% KEEP: size--distance policy; tight merge; rover/shadow FP; object-in-shadow gate.
-Localization uses tightened box merge.
-Rover-body and boundary-shadow masks suppress common false positives; an object-in-shadow
-gate protects shadowed rock-like support.
-Size--distance policy uses image-relative relative-far and apparent size (not metric size).
+\subsection{Monocular relative depth}
+A dense monocular estimator provides an image-relative depth field for near/far
+organization~\citep{ranftl2021dpt}.
+Depth values are used as relative ordering cues, not as metric metres, absolute physical size,
+or calibrated stereo geometry.
+Metric depth claims are forbidden in this manuscript and in evaluation contracts.
+Depth supports apparent size--distance policy and spatial structuring of candidates.
 
-\subsection{Curiosity score, diversity, and Priority Buffer}
-% KEEP: curiosity score; soft similarity; uncertainty/disagreement; Priority Buffer rule.
-Candidates are ranked by a curiosity score with a soft similarity penalty.
-The Priority Buffer retains high raw-anomaly candidates down-weighted by diversity policy
-for second-chance review when resources allow.
+\subsection{Entropy-weighted dynamic fusion}
+Cue reliability can vary across illumination and terrain.
+ARTPS uses an entropy-weighted dynamic fusion rule that increases weight on cues with more
+informative (lower-entropy / more peaked) responses and reduces weight on diffuse,
+uninformative maps.
+% TODO(results): report fusion ablations only after independent\_eval\_v1 metrics exist.
+Static equal-weight baselines remain available for protocol comparison but are not asserted
+here as superior without evidence.
+
+\subsection{Candidate localization}
+Fused anomaly responses are converted into discrete candidate regions via localization
+(thresholding / connected components / peak extraction---implementation detail retained in
+code).
+Each candidate carries a score, spatial extent, and optional feature descriptor for diversity.
+Candidates that fail validity checks after masks do not contribute to
+\texttt{max\_valid\_candidate\_after\_masks}.
+
+\subsection{Operational false-positive suppression}
+Rover imagery frequently contains distractors: rover body / hardware, strong boundary shadows,
+frame edges, and telemetry overlays.
+ARTPS applies operational masks and suppressions so that high responses in these regions are
+down-weighted or invalidated before ranking.
+Suppression is policy-driven and auditable; it is not a claim of perfect distractor rejection.
+
+\subsection{Apparent size / image-relative size--distance policy}
+Given relative depth and image extent, ARTPS applies an image-relative size--distance policy
+to prefer candidates whose apparent size is consistent with the intended operational envelope
+(e.g., avoiding both tiny noise peaks and unrealistically large blobs under relative depth
+ordering).
+This is a relative heuristic, not a physical size measurement in metres.
+
+\subsection{Feature-space diversity}
+To avoid redundant near-duplicates in the priority list, ARTPS penalizes candidates that are
+too similar in feature space to already selected items.
+Diversity improves coverage of distinct visual modes under limited downlink slots.
+% TODO(results): quantify diversity impact only after frozen independent evaluation.
+
+\subsection{Priority Buffer}
+Aggressive diversity or suppression can discard rare but scientifically interesting peaks.
+The Priority Buffer retains high-anomaly candidates that lose the diversity contest for
+second-chance re-evaluation when slots remain or when later context revises ranking.
+The buffer is a recovery mechanism, not a guarantee that every rare target is recovered.
+
+\subsection{Runtime and safety-aware fail-closed behaviour}
+ARTPS is intended for edge-oriented operation with bounded compute.
+When inputs, models, masks, or claim gates are incomplete, the system prefers fail-closed
+behaviour: no selection, or blocked evaluation, rather than emitting an unverified priority
+list.
+Safety wording is bounded: ARTPS is safety-aware software architecture, not flight-qualified
+avionics, and does not claim absolute guaranteed safety.
