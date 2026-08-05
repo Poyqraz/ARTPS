@@ -3,19 +3,19 @@ ARTPS - Derinlik Geliştirilmiş Kategori Bazlı Sınıflandırıcı
 Derinlik algısı + kategori bazlı otomatik etiketleme
 """
 
+import os
+import sys
+from pathlib import Path
+
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
 from PIL import Image
-import os
-from pathlib import Path
-import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report, confusion_matrix
-import cv2
+from torch.utils.data import DataLoader, Dataset
 
-import sys
-import os
+# ponytail: inference must not import sklearn/matplotlib (NumPy 2.x + pyarrow breakage);
+# training report helpers import those only inside create_/evaluate_ functions below.
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.models.depth_estimation import DEPTH_FEATURE_KEYS, MiDaSDepthEstimator
@@ -326,6 +326,8 @@ def create_depth_enhanced_classifier():
             print(f"  ✅ Yeni en iyi model kaydedildi")
     
     # 8. Eğitim eğrilerini çiz
+    import matplotlib.pyplot as plt  # training-only
+
     plt.figure(figsize=(12, 4))
     
     plt.subplot(1, 2, 1)
@@ -423,6 +425,8 @@ def test_depth_enhanced_classifier():
     print(f"Tahmin edilen sınıflar: {unique_predictions}")
     
     # Sadece mevcut sınıflar için rapor oluştur
+    from sklearn.metrics import classification_report  # training-only
+
     available_classes = sorted(set(all_labels + all_predictions))
     target_names = [value_names.get(i, f"Sınıf_{i}") for i in available_classes]
     

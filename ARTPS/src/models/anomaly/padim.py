@@ -175,8 +175,8 @@ class PaDiM(AnomalyModel):
             raise RuntimeError("PaDiM istatistikleri yüklenmedi/hazırlanmadı")
         fmap = self._extract(image_rgb_uint8)  # [H*W, C]
         X = fmap - self.mean  # [H*W, C]
-        # Mahalanobis uzaklığı
-        m = torch.einsum("nc,cc,nd->n", X, self.cov_inv, X.t()).sqrt()  # [H*W]
+        # Mahalanobis distance: sqrt( (x-μ)^T Σ^{-1} (x-μ) ) per spatial location
+        m = torch.einsum("ni,ij,nj->n", X, self.cov_inv, X).sqrt()  # [H*W]
         H, W = self.spatial_size  # type: ignore
         amap = m.reshape(H, W).cpu().numpy()
         amap = cv2.resize(amap, (image_rgb_uint8.shape[1], image_rgb_uint8.shape[0]), interpolation=cv2.INTER_CUBIC)
