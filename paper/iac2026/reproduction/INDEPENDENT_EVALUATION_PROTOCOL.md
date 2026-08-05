@@ -1,7 +1,9 @@
 # Independent evaluation protocol v1
 
-**Purpose:** `current_reproducible_evaluation`  
-**Protocol id:** `independent_eval_v1`  
+**Purpose:** `current_reproducible_evaluation`
+
+**Protocol id:** `independent_eval_v1`
+
 **Claim id for outputs:** `IND_EVAL_V1`
 
 This protocol is **not** a reproduction of accepted-abstract C05/C06 numbers
