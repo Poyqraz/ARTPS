@@ -152,6 +152,18 @@ jobs:
           print("c07 dry-run ok", s.get("pipeline_id"), s.get("headline_fps"))
           PY
 
+      - name: Guard — no large checkpoint cache arrays committed
+        run: |
+          set -e
+          if [ -d results/iac2026/independent_eval_v1/cache ]; then
+            if find results/iac2026/independent_eval_v1/cache -type f \( -name '*.pth' -o -name '*.pt' -o -name '*.npz' -o -name '*.npy' \) | grep -q .; then
+              echo "ERROR: large cache arrays or weights under independent_eval_v1/cache"
+              find results/iac2026/independent_eval_v1/cache -type f \( -name '*.pth' -o -name '*.pt' -o -name '*.npz' -o -name '*.npy' \)
+              exit 1
+            fi
+          fi
+          echo "OK: no committed cache weight/array files"
+
       - name: Guard — no download/GPU hooks in executable harness sources
         run: |
           set -e
