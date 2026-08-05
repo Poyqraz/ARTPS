@@ -1,0 +1,12 @@
+{
+  "annotator_count": 1,
+  "class_balance_positive_frac": 0.5,
+  "excluded": 527,
+  "included_resolved": 360,
+  "independent_double_review": false,
+  "label_source": "workspace_visual_review",
+  "negatives": 180,
+  "positives": 180,
+  "queue_rows": 1186,
+  "uncertain": 299
+}

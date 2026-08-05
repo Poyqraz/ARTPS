@@ -4,7 +4,7 @@ evidence_mode: software_verification
 evaluation_purpose: current_reproducible_evaluation
 protocol_id: independent_eval_v1
 protocol_lock_path: reproduction/iac2026/INDEPENDENT_EVAL_V1.yaml
-protocol_lock_sha256: "f5e039df698d5ed4992d01c29f119400915d630906426f4c2510cd6d0bbef71d"
+protocol_lock_sha256: "7767f695746d0237803f57ffd2fef8f96a1434fca5d2f2ffaf2c799c3187dfe9"
 annotation_version: independent_eval_v1
 label_semantics: anomaly_binary
 image_score_aggregation: max_valid_candidate_after_masks
