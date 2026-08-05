@@ -1,9 +1,39 @@
 \section{Results}
-% NO rewritten result tables in this PR.
-% C05--C07: accepted_abstract_reproduction_pending (keep abstract numbers; no final tables).
-% C09--C11: preliminary proxy analysis only (not abstract headlines).
-% Bind claims to CLAIM_EVIDENCE_LEDGER.md and FIGURE_TABLE_PLAN.md.
-Results will summarize detection, ranking, localization, field-condition, and hardware
-profiles once ledger rows close beyond accepted-abstract reproduction pending.
-Preliminary proxy analyses (shadow/FP and size--distance on a curated non--human-GT set)
-may be noted as such; they are not restated as final manuscript headline results here.
+\label{sec:results}
+Results in this draft are evidence-gated.
+No invented metrics appear below.
+
+\subsection{Reported results from the accepted IAC abstract}
+Table~\ref{tab:accepted-abstract} restates numbers from the accepted abstract for reference.
+These values remain pending repository-level reproduction and are not claimed as freshly
+reproduced from current artifacts in this manuscript.
+
+\begin{table}[t]
+\centering
+\caption{Reported results from the accepted IAC abstract.
+Values remain pending repository-level reproduction
+(\texttt{accepted\_abstract\_reproduction\_pending}).}
+\label{tab:accepted-abstract}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Metric & Value \\
+\midrule
+AUROC & $0.894$ \\
+AUPRC & $0.847$ \\
+F1 & $0.823$ \\
+Baseline AUROC & $0.856$ \\
+FPS @ $256\times256$ (lightweight core) & $28.1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Independent evaluation (\texttt{independent\_eval\_v1})}
+No numeric results are reported for \texttt{independent\_eval\_v1} in this draft.
+Support status remains \texttt{protocol\_defined\_pending\_data}.
+% TODO(results): populate detection / ranking tables only after frozen split + verified metrics.
+
+\subsection{Proxy analyses}
+Preliminary proxy analyses (shadow/FP gates; size--distance policy) may be discussed
+qualitatively in Discussion once cited as non-headline proxies.
+They are deliberately omitted from primary Results tables here to avoid conflation with
+accepted-abstract or independent-evaluation headlines.
