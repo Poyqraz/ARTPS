@@ -1,0 +1,1211 @@
+{
+  "n_exact_sha_groups": 360,
+  "n_multi_sha_groups": 0,
+  "n_non_primary_rows": 826,
+  "n_perceptual_auto_matches": 3765,
+  "n_rows": 360,
+  "note": "Perceptual matches are assistive; spot-check before trusting as hard GT.",
+  "perceptual_auto_matches": [
+    {
+      "a": "ie1_train_flat_terrain_curiosity_1100_MAST_1292_jpg.rf.2c89ddebfe6973dcd41717603056d_07d0443d3e49",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_299_jpg.rf.09f47cf320ca5dec2f7efdbd133f837_04d014f94707",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_flat_terrain_curiosity_1100_MAST_1292_jpg.rf.2c89ddebfe6973dcd41717603056d_07d0443d3e49",
+      "b": "ie1_train_dusty_curiosity_100_MAST_301_jpg.rf.c4b508ec74f1660fb3fcdbd7aa325658.jpg_29959e68e6e9",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_rocky_curiosity_1100_MAST_1382_jpg.rf.6d022876036f25e57d3deb424e1097c2.jpg_620d1d481e7f",
+      "b": "ie1_valid_rocky_curiosity_1100_MAST_761_jpg.rf.6d1bef7e4a73cc34c81925a1a8dfaf11.jpg_e6a8f0a334a1",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1163_jpg.rf.8de4a7cf83e6287de8c56d52f24_104965fc827e",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_843_jpg.rf.4e07c2eb4af059dffc19afa8b351_f70c87edda6e",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_162_jpg.rf.19e8c3df404f6ae994183d4968ab4_92d7648b66ce",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_846_jpg.rf.074c13ef392ee57e8ca6bedbda91_22d1432f0e5f",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_842_jpg.rf.8f93245ee07e3e084dbf0d7cd228_4e6b1fc15590",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1173_jpg.rf.4fff02571318e59921f99099013_db3c79569132",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_100_MAST_374_jpg.rf.ca376db4c84cdbc85fcc07e9446e05b7.jpg_39a0f300b4a5",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_816_jpg.rf.e3d42fc70cb19298d01c0865814953eb.jpg_4f2bdd4a35ad",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1175_jpg.rf.f42765d735f99b3e58a971b9ef545_581b45a66a0c",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1323_jpg.rf.b3a6ffee922f233b51e144e43e6_d84efb971acf",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1430_jpg.rf.34ee2e59da72315318559b4e7c4_18c1e5813dc6",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_836_jpg.rf.caf15e672a16b56874e0a6066ebd_0e00c003d92b",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_1439_jpg.rf.8a17cd5834a3709ed33049b75d36a828.j_1096cc1607d3",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1441_jpg.rf.7b3ae0661daeaed49c94c749984_4f976e5ebe1a",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1335_jpg.rf.40874ae8a4888c21e498205b3294af7a.jpg_169a962b7aa8",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1440_jpg.rf.443a36d8b5fb7745cf1d07710e2a927c.jpg_fcd29af55ca4",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_158_jpg.rf.472bf2bfbfd530b4c763b3e4412b0a86.jpg_17f62d385c4b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1437_jpg.rf.427fdfd770bab5460b44b006cd0_b42745d6ebca",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_1438_jpg.rf.f86ba2e72ca5651e94223d7c73acee06.j_360d9a9472a6",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1149_jpg.rf.8111cdc117939f4b9bd4f1d870f46_36aeeba98c5d",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_815_jpg.rf.aa8fdc2e090d27aae56e1c5405a4_f984ec97d059",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_950_jpg.rf.5cc296ffc11acfb919f30a1edd7dc5a9.jp_a19c1c582c08",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_boulder_curiosity_1100_MAST_820_jpg.rf.f841627a7951ce9c8ce9e2a8715cbdeb.jp_d13e4049eec1",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_100_MAST_160_jpg.rf.f6c8857f3bf0999c8ccdd600b12f2_cf1f7e7d087d",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1453_jpg.rf.5934ad4fff15e5f33542aa8aa9d_35a3790f8279",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1148_jpg.rf.95bea45be70bca3d5ec7cfe3142_ae9521131bad",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_dusty_curiosity_100_MAST_161_jpg.rf.fecdecdf4ff111ca65a0a58cc5659338.jpg_5d150e9997f4",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1172_jpg.rf.9a15f1fe97f09712c11e788f7bc_606676e8f074",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1171_jpg.rf.60b111c21aed88918ee22604f38_0600de862f27",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_834_jpg.rf.c0d4f13a55f694199ab3385b3797_7b8d85fe2ff0",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1043_jpg.rf.0b34721e6729375bf2d852a685401f73.jpg_a5b307158b71",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1324_jpg.rf.cb12a5f1b2ba74cdbe133d37189_fa6d2235ba6c",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1145_jpg.rf.af9175c57c47a13eb40074f581a_b6cf1c48e752",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_100_MAST_224_jpg.rf.6d17a8e53ef6c712c5d879cd2f12e76f.jpg_6ec0ffa6142e",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_837_jpg.rf.c2d32c66d0a5eb41b9b6ff15e224_e88ff76ad066",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1490_jpg.rf.4891b449bcd14af958b21e0b5c4ee565.jpg_e144b5e0bf5b",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1330_jpg.rf.29eb7784198fc8a397ab6eebc09_7128f4c1f091",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1452_jpg.rf.d6d473ce5ae76f35dba6db979cb_f7f8eb77152e",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1322_jpg.rf.1274ce147b3dc2b86a2c49de5a7_2cb415b4ae55",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1436_jpg.rf.d36ecc957e60e32c99af4e7bb67_a2e9046c772f",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1146_jpg.rf.d2ba6fc0f957d70b5877c2f549286d8c.jpg_20fc390259a7",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_810_jpg.rf.7958ac6ee1ab30e7d45b3d5792e2_b3fba23a800a",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_dusty_curiosity_1100_MAST_1288_jpg.rf.655af17e92c82bee364b448a0a43be67.jpg_7f26d667f0a2",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1154_jpg.rf.cea7d8e4205b91620383bac631dbe_dc982da10f95",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1454_jpg.rf.406c9a550ee819159fe75c06efa_c1449788166a",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_832_jpg.rf.5052795aaa1ea2f07f0c284bc1b6_ca000e029bbb",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_819_jpg.rf.1a28c96b926c8f8e2db3991e8f3d2436.jp_dc9450133a97",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_220_jpg.rf.7384e348297190e82f7703e8535b787_69b811de6e27",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1328_jpg.rf.28e2e7ed2535cd9f24491627688_8e12c9e1ba8b",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_boulder_curiosity_1100_MAST_823_jpg.rf.ffd205ff71c6bfa2ee88b91ad2b4db0f.jp_899a81f2e47f",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_323_jpg.rf.9c8bc813bd96fc367b62b89b5ddd9184.jpg_ff2481de69e6",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_833_jpg.rf.15389e66ee8aea1e2c5b917c3b61_6cee41e0b03e",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_dusty_curiosity_1100_MAST_995_jpg.rf.ee7a1a7e16bc87c9b500683f67125857.jpg_e5d7151820ec",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1174_jpg.rf.2b972ad0feb812773fadabc92c6_7a901310c22c",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_dusty_curiosity_100_MAST_373_jpg.rf.467d200bfca54b8d904bca313c091c39.jpg_5e63c478785e",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_838_jpg.rf.cb0cbc0fd5ae4160dc9cebb155e5_846d0ba29cd4",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1327_jpg.rf.0d07a94949a039f9518b7f5ab43_1100ef4e8bdf",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg_1732bef60212",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_dusty_curiosity_100_MAST_168_jpg.rf.80942f1d101e7c59b0c66b21719a5c52.jpg_a592c19a3a90",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1444_jpg.rf.bbae87db9f78ed998c8cb804d9e89_852ea8e3964f",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_313_jpg.rf.e4b1d8d0a1480d1262f11a8fd6155_aef0d544fb07",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1147_jpg.rf.cc7f22a34e285802cac312af307_fd4a63c858c0",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_844_jpg.rf.71566c8f6c9ed688d606d41a8811_b2e44d75331c",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_946_jpg.rf.58830c4c531c79ad293314b31413_90b9f7a016ad",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1431_jpg.rf.b41117c2c419213774f1ebf92ab_90e865f0555c",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_818_jpg.rf.45e55d05c8e27bf07abfb1c773e024ea.jp_8112748007f5",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_809_jpg.rf.61815e26a71f3dd5197ab5a0aa35_33c2a1d756b6",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1163_jpg.rf.8de4a7cf83e6287de8c56d52f24_104965fc827e",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_843_jpg.rf.4e07c2eb4af059dffc19afa8b351_f70c87edda6e",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_162_jpg.rf.19e8c3df404f6ae994183d4968ab4_92d7648b66ce",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_846_jpg.rf.074c13ef392ee57e8ca6bedbda91_22d1432f0e5f",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_842_jpg.rf.8f93245ee07e3e084dbf0d7cd228_4e6b1fc15590",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1173_jpg.rf.4fff02571318e59921f99099013_db3c79569132",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_100_MAST_374_jpg.rf.ca376db4c84cdbc85fcc07e9446e05b7.jpg_39a0f300b4a5",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_816_jpg.rf.e3d42fc70cb19298d01c0865814953eb.jpg_4f2bdd4a35ad",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1175_jpg.rf.f42765d735f99b3e58a971b9ef545_581b45a66a0c",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_flat_terrain_curiosity_100_MAST_159_jpg.rf.ab432dbab30a276c57c1195ec873350_16e4fe8413e2",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1323_jpg.rf.b3a6ffee922f233b51e144e43e6_d84efb971acf",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1430_jpg.rf.34ee2e59da72315318559b4e7c4_18c1e5813dc6",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_flat_terrain_curiosity_100_MAST_214_jpg.rf.e5465465ea37095245b4f9d01f4bf05_bde1abbe362b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_821_jpg.rf.ff3587c21d84fd08166d3e278cd003_8fbbfb2ab0b4",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_836_jpg.rf.caf15e672a16b56874e0a6066ebd_0e00c003d92b",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_1439_jpg.rf.8a17cd5834a3709ed33049b75d36a828.j_1096cc1607d3",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1441_jpg.rf.7b3ae0661daeaed49c94c749984_4f976e5ebe1a",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1335_jpg.rf.40874ae8a4888c21e498205b3294af7a.jpg_169a962b7aa8",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1440_jpg.rf.443a36d8b5fb7745cf1d07710e2a927c.jpg_fcd29af55ca4",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_840_jpg.rf.97c70c7de2da2f5e47eac43e21f5_e63b3e7ef495",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_158_jpg.rf.472bf2bfbfd530b4c763b3e4412b0a86.jpg_17f62d385c4b",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1283_jpg.rf.e7ad3cbdaf3fb6d621cc633384392579.jpg_54c6fc5e3b11",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1437_jpg.rf.427fdfd770bab5460b44b006cd0_b42745d6ebca",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_831_jpg.rf.b7b8db7aacfe2540b5ff03537ba4_3a44754cfed7",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_1438_jpg.rf.f86ba2e72ca5651e94223d7c73acee06.j_360d9a9472a6",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1149_jpg.rf.8111cdc117939f4b9bd4f1d870f46_36aeeba98c5d",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_815_jpg.rf.aa8fdc2e090d27aae56e1c5405a4_f984ec97d059",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_950_jpg.rf.5cc296ffc11acfb919f30a1edd7dc5a9.jp_a19c1c582c08",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_boulder_curiosity_1100_MAST_820_jpg.rf.f841627a7951ce9c8ce9e2a8715cbdeb.jp_d13e4049eec1",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_309_jpg.rf.6a84b0e31496a693300ac0db973f9cb_cf550ef6360b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1453_jpg.rf.5934ad4fff15e5f33542aa8aa9d_35a3790f8279",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1148_jpg.rf.95bea45be70bca3d5ec7cfe3142_ae9521131bad",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_dusty_curiosity_100_MAST_161_jpg.rf.fecdecdf4ff111ca65a0a58cc5659338.jpg_5d150e9997f4",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1172_jpg.rf.9a15f1fe97f09712c11e788f7bc_606676e8f074",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1171_jpg.rf.60b111c21aed88918ee22604f38_0600de862f27",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_834_jpg.rf.c0d4f13a55f694199ab3385b3797_7b8d85fe2ff0",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1043_jpg.rf.0b34721e6729375bf2d852a685401f73.jpg_a5b307158b71",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1324_jpg.rf.cb12a5f1b2ba74cdbe133d37189_fa6d2235ba6c",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1145_jpg.rf.af9175c57c47a13eb40074f581a_b6cf1c48e752",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_353_jpg.rf.4073ef7aa61a94c67fcfda86eca95a4_481ce6f5cf60",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_100_MAST_224_jpg.rf.6d17a8e53ef6c712c5d879cd2f12e76f.jpg_6ec0ffa6142e",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_837_jpg.rf.c2d32c66d0a5eb41b9b6ff15e224_e88ff76ad066",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1320_jpg.rf.8d2d0d4447a3f0d43492e00db63_a77335552f89",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1490_jpg.rf.4891b449bcd14af958b21e0b5c4ee565.jpg_e144b5e0bf5b",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1330_jpg.rf.29eb7784198fc8a397ab6eebc09_7128f4c1f091",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1452_jpg.rf.d6d473ce5ae76f35dba6db979cb_f7f8eb77152e",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1322_jpg.rf.1274ce147b3dc2b86a2c49de5a7_2cb415b4ae55",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1436_jpg.rf.d36ecc957e60e32c99af4e7bb67_a2e9046c772f",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_825_jpg.rf.129929aa4eb0d74fff006d11ae81c1_cbc6971298ef",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1146_jpg.rf.d2ba6fc0f957d70b5877c2f549286d8c.jpg_20fc390259a7",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_dusty_curiosity_1100_MAST_1288_jpg.rf.655af17e92c82bee364b448a0a43be67.jpg_7f26d667f0a2",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1154_jpg.rf.cea7d8e4205b91620383bac631dbe_dc982da10f95",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_355_jpg.rf.f4d81edf971f70468777125760d2532_b66b499fa628",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1454_jpg.rf.406c9a550ee819159fe75c06efa_c1449788166a",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_832_jpg.rf.5052795aaa1ea2f07f0c284bc1b6_ca000e029bbb",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_819_jpg.rf.1a28c96b926c8f8e2db3991e8f3d2436.jp_dc9450133a97",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1328_jpg.rf.28e2e7ed2535cd9f24491627688_8e12c9e1ba8b",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_boulder_curiosity_1100_MAST_823_jpg.rf.ffd205ff71c6bfa2ee88b91ad2b4db0f.jp_899a81f2e47f",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_323_jpg.rf.9c8bc813bd96fc367b62b89b5ddd9184.jpg_ff2481de69e6",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_833_jpg.rf.15389e66ee8aea1e2c5b917c3b61_6cee41e0b03e",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1456_jpg.rf.276a5a0fc2e622f1473939dfe72_fb62a93a3fd9",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_dusty_curiosity_1100_MAST_995_jpg.rf.ee7a1a7e16bc87c9b500683f67125857.jpg_e5d7151820ec",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1174_jpg.rf.2b972ad0feb812773fadabc92c6_7a901310c22c",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_dusty_curiosity_100_MAST_373_jpg.rf.467d200bfca54b8d904bca313c091c39.jpg_5e63c478785e",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_838_jpg.rf.cb0cbc0fd5ae4160dc9cebb155e5_846d0ba29cd4",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_flat_terrain_curiosity_1100_MAST_824_jpg.rf.d1eefedec425faeb0d86444352800d_2b44c492f1f2",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1327_jpg.rf.0d07a94949a039f9518b7f5ab43_1100ef4e8bdf",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg_1732bef60212",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_dusty_curiosity_100_MAST_168_jpg.rf.80942f1d101e7c59b0c66b21719a5c52.jpg_a592c19a3a90",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1446_jpg.rf.377fe8066f9326affa02c73db5e03_16fc71088340",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1444_jpg.rf.bbae87db9f78ed998c8cb804d9e89_852ea8e3964f",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_841_jpg.rf.34bd070274e4d4992f7cffa416fe_b39aadc42f72",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_313_jpg.rf.e4b1d8d0a1480d1262f11a8fd6155_aef0d544fb07",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1147_jpg.rf.cc7f22a34e285802cac312af307_fd4a63c858c0",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_844_jpg.rf.71566c8f6c9ed688d606d41a8811_b2e44d75331c",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_946_jpg.rf.58830c4c531c79ad293314b31413_90b9f7a016ad",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_818_jpg.rf.45e55d05c8e27bf07abfb1c773e024ea.jp_8112748007f5",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_hills_or_ridge_curiosity_1100_MAST_1321_jpg.rf.2f12b910fc1d67ef11f33051667_b69fce1ca06e",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_809_jpg.rf.61815e26a71f3dd5197ab5a0aa35_33c2a1d756b6",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_325_jpg.rf.3a0df435627058b8d0181fa8cf03a20a.jpg_fb593c154368",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_151_jpg.rf.6d3fd0a0d8764450b5949a21a12afbb9.jpg_436fc8db453b",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_326_jpg.rf.8a19fb8b7280c327467dea1fbc9575f0.jpg_b7fabfb8e47d",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_155_jpg.rf.eab98c94f86c4be81ba522ee66a703c_0e9126a01ab3",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_flat_terrain_curiosity_100_MAST_159_jpg.rf.ab432dbab30a276c57c1195ec873350_16e4fe8413e2",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_128_jpg.rf.a7c4a284b4187aa6e2d13fa99bbe3_6327c9cae568",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_flat_terrain_curiosity_100_MAST_156_jpg.rf.be8ab862063cd7fe0828085b850ea1f_c781286e8d26",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_277_jpg.rf.c75dddd3e29c49624ba2f4efe8513_b5d4874d915f",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1170_jpg.rf.b1467589b058b52f3de601c99f3_b9be4207db66",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_157_jpg.rf.090eb6b4b6610d8d5296d7092abd60aa.jpg_32492d61aef5",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_299_jpg.rf.09f47cf320ca5dec2f7efdbd133f837_04d014f94707",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_154_jpg.rf.3593635d63a21a5cdc2f237578af8c0_0d88ec16132a",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_309_jpg.rf.6a84b0e31496a693300ac0db973f9cb_cf550ef6360b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_153_jpg.rf.824dd210aee6a645abb536b98f38733_1b317e86c2be",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_296_jpg.rf.9f5c6d37a0864abdac79a61a25ce4f2e.jpg_abbdb922590b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_180_jpg.rf.43a6f03349ab413f77d16116f78dfbaa.jpg_299ce51f0b81",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_141_jpg.rf.5671de684cd7b303ac1bfa2d34210cc8.jpg_014e9668fe6b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1455_jpg.rf.f449ff4fa0e51b4cca42a7ff237_6516210c7f47",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_353_jpg.rf.4073ef7aa61a94c67fcfda86eca95a4_481ce6f5cf60",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_345_jpg.rf.7d571fdd8cf86a97c8bd8613557f9409.jpg_51510b8beb13",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_307_jpg.rf.008dac871ab5b6c8c55575d9bd61e057.jpg_133b00a03d52",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_292_jpg.rf.64594767b6864754a8e2c53a8d22650_c6fb980ee264",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_355_jpg.rf.f4d81edf971f70468777125760d2532_b66b499fa628",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_839_jpg.rf.33c2dcc5b3ef911be590706831f4_67dfa8e158ea",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1168_jpg.rf.93bfc1f8366180acfb1140811b4_90144d4d0671",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_147_jpg.rf.ca7ecc92f441d7a1d43fd9074601174_754e7659a3a5",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_177_jpg.rf.8a7393ceb367b0ab1b8a0c0652da8cf4.jpg_abbb4ca16ea2",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_flat_terrain_curiosity_100_MAST_142_jpg.rf.49a71f1ab56fe8cc63d45fa234e6719_3816333bd582",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_131_jpg.rf.dcdb2cfac3f33663d0a857f053b6b391.jpg_56ae1340e898",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_284_jpg.rf.39c77b79f6b9cf7c02e1e37d28979675.jpg_d36cfd66b28d",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1456_jpg.rf.276a5a0fc2e622f1473939dfe72_fb62a93a3fd9",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_178_jpg.rf.7882a42c7acfbf59d7489b16f351413c.jpg_5cb6aa1dff6f",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_841_jpg.rf.34bd070274e4d4992f7cffa416fe_b39aadc42f72",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_train_dusty_curiosity_100_MAST_301_jpg.rf.c4b508ec74f1660fb3fcdbd7aa325658.jpg_29959e68e6e9",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_dusty_curiosity_100_MAST_344_jpg.rf.d61427de8a22cbe36d059a4fd7fe16fe.jpg_627b7e3a1c89",
+      "b": "ie1_valid_hills_or_ridge_curiosity_100_MAST_349_jpg.rf.b5ff478c4154d9f24270729b62529_18ccf3e23e33",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_dusty_curiosity_1100_MAST_1227_jpg.rf.26c34d654bb290cb962ff592ec662b8c.jpg_09d1dc3d9b5b",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1543_jpg.rf.992cdf7da18f456de20aea7a0d462_af3ec140393f",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_valid_dusty_curiosity_1100_MAST_1227_jpg.rf.26c34d654bb290cb962ff592ec662b8c.jpg_09d1dc3d9b5b",
+      "b": "ie1_train_boulder_curiosity_1100_MAST_898_jpg.rf.99af2fc593162225991b16584a54eeaf.jp_4cf80fa189cd",
+      "hamming": "1",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_dusty_curiosity_100_MAST_325_jpg.rf.3a0df435627058b8d0181fa8cf03a20a.jpg_fb593c154368",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_315_jpg.rf.5ace5fb5f279133814049ea19da38_14b925b2010e",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_flat_terrain_curiosity_1100_MAST_1175_jpg.rf.f42765d735f99b3e58a971b9ef545_581b45a66a0c",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_valid_flat_terrain_curiosity_100_MAST_159_jpg.rf.ab432dbab30a276c57c1195ec873350_16e4fe8413e2",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_165_jpg.rf.36ff2e0fd4b06987fe96962c4edb89a_4b723d0c5f64",
+      "hamming": "0",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_128_jpg.rf.a7c4a284b4187aa6e2d13fa99bbe3_6327c9cae568",
+      "hamming": "2",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_hills_or_ridge_curiosity_100_MAST_277_jpg.rf.c75dddd3e29c49624ba2f4efe8513_b5d4874d915f",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_valid_dusty_curiosity_100_MAST_158_jpg.rf.472bf2bfbfd530b4c763b3e4412b0a86.jpg_17f62d385c4b",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1170_jpg.rf.b1467589b058b52f3de601c99f3_b9be4207db66",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_dusty_curiosity_100_MAST_157_jpg.rf.090eb6b4b6610d8d5296d7092abd60aa.jpg_32492d61aef5",
+      "hamming": "5",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_rocky_curiosity_1100_MAST_1284_jpg.rf.ffadbcb9d782d49c1403980ffe3d842a.jpg_780e8500c54b",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_valid_hills_or_ridge_curiosity_100_MAST_160_jpg.rf.f6c8857f3bf0999c8ccdd600b12f2_cf1f7e7d087d",
+      "hamming": "3",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_flat_terrain_curiosity_100_MAST_309_jpg.rf.6a84b0e31496a693300ac0db973f9cb_cf550ef6360b",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    },
+    {
+      "a": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1325_jpg.rf.b6200698a35f8b36d18f7c27d9c_46817cac5bb9",
+      "b": "ie1_train_hills_or_ridge_curiosity_1100_MAST_1171_jpg.rf.60b111c21aed88918ee22604f38_0600de862f27",
+      "hamming": "4",
+      "needs_manual_spot_check": "true"
+    }
+  ],
+  "phash_threshold": 5
+}
