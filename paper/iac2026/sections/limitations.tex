@@ -1,0 +1,18 @@
+\section{Limitations}
+\label{sec:limitations}
+Monocular depth in ARTPS is \emph{relative}, not metric: near/far ordering does not yield
+metres, physical object size, or calibrated 3D reconstruction~\citep{ranftl2021dpt}.
+
+Historical accepted-abstract detection and speed numbers remain pending repository-level
+reproduction; they must not be read as independently re-run results in this draft.
+The current \texttt{independent\_eval\_v1} track is protocol-defined but data-pending: frozen
+splits, verified annotations, and metrics are not yet available here.
+
+Proxy analyses are preliminary and non-headline; they do not replace human-annotated
+localization benchmarks where those are required.
+
+ARTPS is a safety-aware, flight-readiness-oriented software architecture.
+It is not flight-qualified avionics, not mission-certified, and does not claim absolute
+guaranteed safety.
+Operational envelopes, independent V\&V, and mission-specific safety evidence remain
+out of scope for this manuscript draft.
