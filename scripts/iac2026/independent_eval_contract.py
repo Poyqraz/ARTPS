@@ -1,10 +1,11 @@
 """Executable independent_eval_v1 protocol lock checks (fail-closed)."""
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-from _common import REPO_ROOT, load_yaml, resolve_repo_path, sha256_file
+from _common import REPO_ROOT, load_yaml, resolve_repo_path
 
 DEFAULT_LOCK_REL = "reproduction/iac2026/INDEPENDENT_EVAL_V1.yaml"
 
@@ -38,6 +39,12 @@ REQUIRED_CONFIG_KEYS = (
 )
 
 
+def sha256_protocol_lock_bytes(path: Path) -> str:
+    """SHA256 of lock file with newlines normalized to LF (cross-platform)."""
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def _lock_value(node: Any) -> Any:
     if isinstance(node, Mapping) and "value" in node:
         return node["value"]
@@ -57,7 +64,7 @@ def load_protocol_lock(path: Path | str | None = None) -> Tuple[Dict[str, Any], 
     data = load_yaml(lock_path)
     if not isinstance(data, dict):
         raise ValueError(f"protocol lock must be a mapping: {lock_path}")
-    return data, sha256_file(lock_path), lock_path
+    return data, sha256_protocol_lock_bytes(lock_path), lock_path
 
 
 def flatten_locked_values(lock: Mapping[str, Any]) -> Dict[str, Any]:

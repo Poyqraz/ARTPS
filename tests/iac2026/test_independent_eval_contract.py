@@ -28,7 +28,7 @@ from independent_eval_contract import (  # noqa: E402
 )
 
 
-LOCK_SHA = "0f9d236dc0f2d002c4b8ee2d89c8c722895a8401b2b575dfbcc994391f98b1c5"
+LOCK_SHA = "f5e039df698d5ed4992d01c29f119400915d630906426f4c2510cd6d0bbef71d"
 
 
 def _indep_cfg():
