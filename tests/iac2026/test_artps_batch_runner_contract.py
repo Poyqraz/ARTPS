@@ -46,20 +46,17 @@ def test_profile_yaml_has_required_hashes(mini_profile):
     assert profile["depth"]["checkpoint_sha256"].startswith("2f21")
 
 
-def test_filter_manifest_refuses_test_rows(mini_profile, monkeypatch):
-    profile_path, profile = mini_profile
+def test_filter_manifest_drops_test_rows_without_scoring(mini_profile):
+    # Full manifests include frozen test IDs; filter must skip them, not score them.
+    # Explicit test request is refused via allowed_splits / --split (see embargo tests).
+    _, profile = mini_profile
     rows = [
         {"sample_id": "s1", "split": "validation", "binary_label": "0", "relative_path": "a.jpg"},
         {"sample_id": "s3", "split": "test", "binary_label": "1", "relative_path": "c.jpg"},
     ]
-
-    def _raise_test(split, status=None):
-        if str(split).lower() == "test":
-            raise ValueError("test refused")
-
-    monkeypatch.setattr("run_artps_frozen_full_profile.assert_split_allowed", _raise_test)
-    with pytest.raises(ValueError, match="test refused"):
-        _filter_manifest_rows(profile, rows)
+    filtered = _filter_manifest_rows(profile, rows)
+    assert [r["sample_id"] for r in filtered] == ["s1"]
+    assert all(r["split"] != "test" for r in filtered)
 
 
 def test_metrics_snapshot_has_detection_fields(mini_profile):
