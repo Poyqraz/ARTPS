@@ -1,13 +1,42 @@
 \section{Introduction}
-% Outline only — full prose in a later PR. See PLAN.md and CLAIM_EVIDENCE_LEDGER.md.
-% (i) Problem: bandwidth/energy + delayed ground feedback; brittle visual-only prioritization.
-% (ii) Gap: anomaly baselines lack operational FP control, diversity-aware ranking, relative-depth gates.
-% (iii) Contributions: entropy fusion; curiosity + soft similarity + Priority Buffer;
-%      rover/shadow FP gates + size--distance policy; edge profiles (workstation timings).
-% Related Work: fold into this section (short); no separate long RW chapter.
-Planetary surface operations motivate onboard screening of scientifically interesting targets
-under communications delay~\citep{estlin2012}.
-Standard anomaly detectors provide useful baselines but do not by themselves encode
-operational false-positive control or relative-depth guidance for field
-imagery~\citep{defard2020padim,roth2022patchcore,ranftl2021dpt}.
-% TODO: compress Full_Baydemir_ARTPS.pdf §1--§2 without ViT/FFN textbook derivations.
+Planetary rover missions operate under tight energy limits, constrained communications bandwidth,
+and delayed ground feedback~\citep{estlin2012}.
+Not every acquired image carries equal scientific value for follow-up imaging or downlink, so
+onboard systems must prioritize candidate targets rather than treating all detections as equally
+actionable.
+
+Classical visual anomaly detection provides useful cues for unusual appearance, but alone it
+does not define an operational target-selection policy.
+Field imagery is rich in distractors: cast shadows, rover hardware, image borders, telemetry
+overlays, and textured terrain can inflate anomaly responses and produce false positives.
+Monocular depth estimators supply image-relative near/far structure rather than calibrated
+metric distance~\citep{ranftl2021dpt}, so depth must be treated as a relative ordering cue.
+Onboard autonomy further requires attention to computational cost, diversity among selected
+targets, and safety-aware fallbacks when evidence is insufficient.
+
+This paper presents ARTPS (Autonomous Rover Target Prioritization System), an edge-oriented
+framework that couples multi-cue visual anomaly responses with monocular relative depth,
+entropy-weighted dynamic fusion, candidate localization, operational false-positive
+suppression, apparent size / image-relative size--distance policy, feature-space diversity,
+and a Priority Buffer for second-chance re-evaluation of high-anomaly candidates that would
+otherwise be discarded by diversity heuristics.
+The architecture is designed as a safety-aware, flight-readiness-oriented software path: it
+is not flight-qualified hardware and does not assert universal safety guarantees.
+
+The contributions of this work are as follows:
+\begin{enumerate}
+  \item A hybrid onboard target-prioritization pipeline that combines visual anomaly cues with
+  monocular relative-depth structure for field imagery.
+  \item Entropy-weighted dynamic fusion that adapts cue weights from cue reliability rather
+  than using fixed static mixes.
+  \item Localization with apparent size--distance policy and diversity-aware ranking to
+  structure candidates for operational review.
+  \item A Priority Buffer that retains low-confidence but potentially valuable candidates for
+  second-chance evaluation instead of irreversible discard.
+  \item Operational suppression mechanisms addressing rover-body, boundary-shadow, and related
+  imagery artefacts that commonly drive false positives.
+  \item A fail-closed reproducibility and claim--evidence infrastructure, including a current
+  reproducible evaluation protocol (\texttt{independent\_eval\_v1}) that is distinct from
+  historical accepted-abstract claims pending repository-level reproduction.
+\end{enumerate}
+% Avoid unverified ``first'' / ``state-of-the-art'' claims; contributions are architectural and operational.

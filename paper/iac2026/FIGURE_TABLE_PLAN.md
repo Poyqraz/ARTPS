@@ -1,47 +1,49 @@
 # Figure and table inventory + experiment map
 
-Do **not** invent final Result numbers in LaTeX until ledger support is closed. Accepted-abstract numbers (C05–C07) stay `accepted_abstract_reproduction_pending` — no final Results tables in this PR.
+Do **not** invent final Result numbers in LaTeX until ledger support is closed. Accepted-abstract numbers (C05–C07) stay `accepted_abstract_reproduction_pending`. Independent eval (`IND_EVAL_V1`) stays `protocol_defined_pending_data` until frozen metrics exist. Pending tables stay **plan-only** (no empty numeric cells in TeX).
 
-## Planned tables
+## Tables (full-paper v0.1 map)
 
-| ID | Title | Experiment | Ledger | Status |
-|----|-------|------------|--------|--------|
-| T_detect | Detection AUROC / AUPRC / F1 vs baseline | Primary detection bench | C05–C06 | accepted_abstract_reproduction_pending |
-| T_hw | Workstation FPS / latency by resolution | Speed bench | C07–C08 | accepted_abstract_reproduction_pending / planned |
-| T_shadow_proxy | Shadow / FP proxy OFF vs ON | Preliminary proxy | C09–C10 | artifact on disk (`proxy`) |
-| T_sd_proxy | Size–distance policy proxy | Preliminary proxy | C11 | artifact on disk (`proxy`) |
-| T_jetson | Jetson FPS / memory / power by profile | Jetson protocol | C14 | planned |
-| T_ops | Priority Buffer / diversity (if measured) | Operational study | C03–C04 | planned |
+| ID | Title | TeX now? | Ledger | Status |
+|----|-------|----------|--------|--------|
+| Table 1 | Reported results from the accepted IAC abstract | Yes (`tab:accepted-abstract`) | C05–C07 | abstract reference + reproduction-pending footnote |
+| Table 2 | Independent eval detection (AUROC/AUPRC/F1) | No — plan only | IND_EVAL_V1 | protocol_defined_pending_data |
+| Table 3 | Independent eval vs PaDiM/PatchCore baselines | No — plan only | IND_EVAL_V1 | pending metrics |
+| Table 4 | Workstation FPS / latency by resolution | No — plan only | C07 / C08 | reproduction-pending / planned |
+| Table 5 | Shadow / FP proxy OFF vs ON | No — plan only | C09–C10 | preliminary proxy (non-headline) |
+| Table 6 | Size–distance policy proxy | No — plan only | C11 | preliminary proxy (non-headline) |
 
-## Planned figures
+Legacy IDs (`T_detect`, `T_hw`, …) map to Tables 2–6 above.
 
-| ID | Content | Notes |
-|----|---------|-------|
-| F_pipeline | ARTPS block diagram | Methods |
-| F_depth_rel | Relative depth map example | Caption: not metric distance |
-| F_overlays | Detection overlays | From `results/paper_figs/detection_overlays/` if used |
-| F_proxy_shadow | Optional bar chart for T_shadow_proxy | Preliminary proxy only |
-| F_proxy_sd | Optional bar chart for T_sd_proxy | Preliminary proxy only |
+## Figures (full-paper v0.1 map)
+
+| ID | Content | TeX now? | Notes |
+|----|---------|----------|-------|
+| Fig 1 | ARTPS pipeline schematic | Yes (`fig:pipeline`) | `figure*` tabular placeholder; no missing `\includegraphics` |
+| Fig 2 | Relative depth map example | No — plan only | Caption must say not metric distance |
+| Fig 3 | Detection overlays | No — plan only | From artifacts when available |
+| Fig 4 | Optional shadow/FP proxy chart | No — plan only | Preliminary proxy only |
+| Fig 5 | Optional size–distance proxy chart | No — plan only | Preliminary proxy only |
 
 ## On-disk artifacts (inventory)
 
 | Artifact | Maps to | Role |
 |----------|---------|------|
-| `results/paper_figs/iac_shadow_proxy_summary.json` | T_shadow_proxy | preliminary proxy |
-| `results/paper_figs/iac_shadow_proxy_table.md` | T_shadow_proxy | preliminary proxy |
-| `results/paper_figs/iac_size_distance_proxy_summary.json` | T_sd_proxy | preliminary proxy |
-| `results/paper_figs/iac_size_distance_proxy_table.md` | T_sd_proxy | preliminary proxy |
-| `results/paper_figs/depth_semantics.md` | caption language | claim boundary |
-| `results/paper_figs/paper_report.md` | — | **exploratory / qualitative only**; sample count = 5; **not** a quantitative manuscript result |
+| `results/paper_figs/iac_shadow_proxy_summary.json` | Table 5 / Fig 4 | preliminary proxy |
+| `results/paper_figs/iac_shadow_proxy_table.md` | Table 5 | preliminary proxy |
+| `results/paper_figs/iac_size_distance_proxy_summary.json` | Table 6 / Fig 5 | preliminary proxy |
+| `results/paper_figs/iac_size_distance_proxy_table.md` | Table 6 | preliminary proxy |
+| `results/paper_figs/depth_semantics.md` | Fig 2 caption language | claim boundary |
+| `results/paper_figs/paper_report.md` | — | **exploratory / qualitative only**; **not** a quantitative manuscript result |
 
 ## Experiment → table map
 
 ```text
-Primary detection bench -----------> T_detect (C05–C06, reproduction pending)
-Workstation speed -----------------> T_hw (C07, reproduction pending)
-run_iac_shadow_proxy_eval.py ------> T_shadow_proxy (C09–C10, proxy)
-run_iac_size_distance_proxy_eval.py > T_sd_proxy (C11, proxy)
-test_size_distance_lite_bench.py --> (no paper table; software_verification)
-Jetson protocol -------------------> T_jetson (C14, planned)
+Accepted abstract (historical) -----> Table 1 (reference only; reproduction pending)
+independent_eval_v1 ---------------> Tables 2–3 (pending data)
+Workstation speed -----------------> Table 4 (reproduction pending / planned)
+run_iac_shadow_proxy_eval.py ------> Table 5 (proxy, non-headline)
+run_iac_size_distance_proxy_eval.py > Table 6 (proxy, non-headline)
+Jetson protocol -------------------> (future; C08/C14 planned; not Table 1–6 numeric yet)
 paper_report.md -------------------> not an IAC Results source
 ```
