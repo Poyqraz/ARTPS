@@ -14,7 +14,11 @@
     "git_head",
     "git_dirty",
     "blockers",
-    "errors"
+    "errors",
+    "protocol_id",
+    "protocol_lock_sha256",
+    "evaluation_purpose",
+    "annotation_version"
   ],
   "properties": {
     "passed": { "type": "boolean" },
@@ -34,6 +38,19 @@
     "checkpoint_sha256": { "type": ["string", "null"] },
     "git_head": { "type": "string", "minLength": 1 },
     "git_dirty": { "type": "boolean" },
+    "protocol_id": { "type": ["string", "null"] },
+    "protocol_lock_sha256": { "type": ["string", "null"] },
+    "evaluation_purpose": {
+      "type": ["string", "null"],
+      "enum": [
+        "historical_claim_reproduction",
+        "current_reproducible_evaluation",
+        "software_verification",
+        null
+      ]
+    },
+    "annotation_version": { "type": ["string", "null"] },
+    "image_score_aggregation": { "type": ["string", "null"] },
     "blockers": { "type": "array", "items": { "type": "string" } },
     "errors": { "type": "array", "items": { "type": "string" } },
     "warnings": { "type": "array", "items": { "type": "string" } },

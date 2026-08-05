@@ -55,6 +55,10 @@ COMPARE_FIELDS = (
     "checkpoint_sha256",
     "git_head",
     "git_dirty",
+    "protocol_id",
+    "protocol_lock_sha256",
+    "evaluation_purpose",
+    "annotation_version",
 )
 
 
@@ -94,8 +98,18 @@ def _compare_prior_audit(prior: Dict[str, Any], fresh: AuditResult, *, real: boo
             "predictions_sha256",
             "checkpoint_sha256",
             "git_head",
+            "protocol_id",
+            "protocol_lock_sha256",
+            "evaluation_purpose",
+            "annotation_version",
         ):
             val = prior.get(key)
+            if key in ("protocol_id", "protocol_lock_sha256", "annotation_version"):
+                # Required non-null for independent real runs; historical may be null
+                if prior.get("evaluation_purpose") == "current_reproducible_evaluation":
+                    if val is None or val == "":
+                        errs.append(f"real_evidence prior audit {key} must be non-null")
+                continue
             if val is None or val == "" or (isinstance(val, str) and len(val) < 7):
                 errs.append(f"real_evidence prior audit {key} must be non-null")
         if prior.get("git_dirty") is None:
@@ -242,10 +256,22 @@ def main(argv: List[str] | None = None) -> int:
     if incomplete:
         status = "reproduction_incomplete:" + ",".join(incomplete)
 
+    independent = cfg.get("evaluation_purpose") == "current_reproducible_evaluation"
     metrics: Dict[str, Any] = {
         "claim_ids": cfg["claim_ids"],
         "evidence_class": evidence_class,
         "eligible_for_claim_closure": False,
+        "eligible_for_C05_C06_closure": False,
+        "historical_claim_reproduction": False if independent else (
+            cfg.get("evaluation_purpose") == "historical_claim_reproduction"
+        ),
+        "eligible_for_IND_EVAL_V1_result_reporting": False,
+        "author_verified": False,
+        "protocol_id": cfg.get("protocol_id"),
+        "protocol_lock_sha256": cfg.get("protocol_lock_sha256"),
+        "evaluation_purpose": cfg.get("evaluation_purpose"),
+        "annotation_version": cfg.get("annotation_version"),
+        "image_score_aggregation": cfg.get("image_score_aggregation"),
         "task_level": cfg["task_level"],
         "score_semantics": cfg["score_semantics"],
         "higher_score_means_more_anomalous": higher,
@@ -277,12 +303,18 @@ def main(argv: List[str] | None = None) -> int:
         "reproduction_status": status,
         "notes": (
             "Neutral report from prediction table. "
-            "Accepted-abstract targets are not pass/fail criteria."
+            "Accepted-abstract targets are not pass/fail criteria. "
+            "Independent eval outputs are not C05/C06 closures."
         ),
         "test_sample_ids": test_ids,
         "model_name": cfg["model_name"],
         "model_version": cfg["model_version"],
         "config_id": str(cfg["config_id"]),
+        "manifest_sha256": audit.manifest_sha256,
+        "predictions_sha256": sha256_file(pred_path),
+        "checkpoint_sha256": audit.checkpoint_sha256,
+        "git_head": audit.git_head,
+        "git_dirty": audit.git_dirty,
     }
 
     require_jsonschema()
@@ -301,9 +333,18 @@ def main(argv: List[str] | None = None) -> int:
             "predictions_sha256": sha256_file(pred_path),
             "manifest_sha256": audit.manifest_sha256,
             "checkpoint_sha256": audit.checkpoint_sha256,
+            "protocol_id": metrics["protocol_id"],
+            "protocol_lock_sha256": metrics["protocol_lock_sha256"],
+            "evaluation_purpose": metrics["evaluation_purpose"],
+            "annotation_version": metrics["annotation_version"],
+            "image_score_aggregation": metrics["image_score_aggregation"],
+            "historical_claim_reproduction": metrics["historical_claim_reproduction"],
+            "eligible_for_C05_C06_closure": False,
+            "eligible_for_IND_EVAL_V1_result_reporting": False,
             "accepted_abstract_targets_not_used_as_pass_fail": True,
             "evidence_class": evidence_class,
             "eligible_for_claim_closure": False,
+            "author_verified": False,
             "sklearn_version": _sklearn_version(),
         },
     )
@@ -314,7 +355,12 @@ def main(argv: List[str] | None = None) -> int:
                 f"# Detection metrics `{run_id}`",
                 "",
                 f"- evidence_class: `{evidence_class}`",
+                f"- evaluation_purpose: `{metrics.get('evaluation_purpose')}`",
+                f"- protocol_id: `{metrics.get('protocol_id')}`",
+                f"- historical_claim_reproduction: `{metrics.get('historical_claim_reproduction')}`",
+                f"- eligible_for_C05_C06_closure: `False`",
                 f"- eligible_for_claim_closure: `False`",
+                f"- eligible_for_IND_EVAL_V1_result_reporting: `False`",
                 f"- status: `{status}`",
                 f"- AUROC: {auroc}",
                 f"- average_precision: {ap}",
