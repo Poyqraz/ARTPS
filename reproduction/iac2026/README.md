@@ -28,7 +28,9 @@ When historical C05/C06 artifacts remain missing, use the pinned **independent**
 - Example config: `reproduction/iac2026/configs/independent_evaluation.example.yaml`
 - Manifest template (header only): `reproduction/iac2026/manifests/independent_eval_v1.template.csv`
 
-Configs with `evaluation_purpose: current_reproducible_evaluation` must use `claim_ids: ["IND_EVAL_V1"]` only. Results must be reported as **current reproducible evaluation**, never as reproduction of accepted 0.894 / 0.847 / 0.823 / 0.856. C05/C06 ledger support stays `accepted_abstract_reproduction_pending` until historical artifacts are recovered.
+Configs with `evaluation_purpose: current_reproducible_evaluation` must use `claim_ids: ["IND_EVAL_V1"]` only and match `INDEPENDENT_EVAL_V1.yaml` via `scripts/iac2026/independent_eval_contract.py` (including `protocol_lock_sha256`). Results must be reported as **current reproducible evaluation**, never as reproduction of accepted 0.894 / 0.847 / 0.823 / 0.856. C05/C06 ledger support stays `accepted_abstract_reproduction_pending` until historical artifacts are recovered.
+
+SW fixture (contract only): `configs/independent_evaluation.synthetic.yaml` + `fixtures/independent_eval_sw_*.csv`. Split builder: `scripts/iac2026/build_independent_eval_split.py` (refuses pending ratios / frozen test mutation).
 
 Do **not** invent split rows from aggregate counts (2847 / 1247 / 892 / 708).
 

@@ -3,6 +3,7 @@
 Historical C06: protocol UNKNOWN — refuse invented scores / fake PaDiM+PatchCore averages.
 independent_eval_v1: contract keys are locked in INDEPENDENT_EVAL_V1.yaml / protocol doc,
 but weights_sha256 + train_bank_recipe must still be real before scores are produced.
+Train bank must contain only binary_label=0 samples when train_bank_sample_ids is supplied.
 No anomalib. Never invent a combined 0.856 cell.
 """
 from __future__ import annotations
@@ -24,6 +25,23 @@ def _require_keys(name: str, config: Mapping[str, Any], keys: Sequence[str]) -> 
         )
 
 
+def _forbid_positive_train_bank(name: str, config: Mapping[str, Any]) -> None:
+    ids = config.get("train_bank_sample_ids")
+    labels = config.get("train_bank_binary_labels")
+    if not ids:
+        return
+    if labels is None:
+        raise BaselineContractError(
+            f"{name}: train_bank_sample_ids set but train_bank_binary_labels missing"
+        )
+    if len(list(ids)) != len(list(labels)):
+        raise BaselineContractError(f"{name}: train_bank_sample_ids/labels length mismatch")
+    if any(int(x) != 0 for x in labels):
+        raise BaselineContractError(
+            f"{name}: train bank must contain only binary_label=0 (normal) samples"
+        )
+
+
 def predict_padim(
     sample_ids: Sequence[str], *, split: str, config: Mapping[str, Any]
 ) -> List[Dict[str, Any]]:
@@ -40,6 +58,7 @@ def predict_padim(
             "train_bank_recipe",
         ],
     )
+    _forbid_positive_train_bank("padim", config)
     raise BaselineContractError(
         "padim: refusing to invent scores. Historical C06 provenance unverified; "
         "independent_eval_v1 still requires real weights_sha256 + train_bank_recipe. "
@@ -64,6 +83,7 @@ def predict_patchcore(
             "train_bank_recipe",
         ],
     )
+    _forbid_positive_train_bank("patchcore", config)
     raise BaselineContractError(
         "patchcore: refusing to invent scores. Historical C06 UNKNOWN; "
         "independent_eval_v1 contract keys alone are insufficient without pinned weights. "

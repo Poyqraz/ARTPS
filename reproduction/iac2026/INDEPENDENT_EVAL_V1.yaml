@@ -1,13 +1,20 @@
-# independent_eval_v1 — machine-readable protocol lock
+# independent_eval_v1 — machine-readable protocol lock (executable)
 # Not a historical C05/C06 reproduction. Dataset/label rows stay PENDING_DATA
 # until a SHA-pinned labeled set exists (do not invent aggregate expansions).
 
 schema_version: 1
 protocol_id: independent_eval_v1
+protocol_version: "1.0.0"
+protocol_status: draft_pending_data
+created_before_dataset_labeling: true
+created_before_model_evaluation: true
+supersedes: null
 evaluation_purpose: current_reproducible_evaluation
 claim_ids: ["IND_EVAL_V1"]
 support_level: protocol_defined_pending_data
 protocol_doc: paper/iac2026/reproduction/INDEPENDENT_EVALUATION_PROTOCOL.md
+annotation_guide: paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_ANNOTATION_GUIDE.md
+dataset_plan: paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_DATASET_PLAN.md
 manifest_template: reproduction/iac2026/manifests/independent_eval_v1.template.csv
 real_manifest_path: null
 example_config: reproduction/iac2026/configs/independent_evaluation.example.yaml
@@ -20,6 +27,9 @@ positive_class:
   value: 1
   status: LOCKED
   notes: "binary_label=1 means image-level anomaly under annotation_version independent_eval_v1"
+positive_label:
+  value: 1
+  status: LOCKED
 label_semantics:
   value: anomaly_binary
   status: LOCKED
@@ -29,9 +39,21 @@ annotation_version:
 score_orientation:
   value: higher_is_more_anomalous
   status: LOCKED
-image_score_aggregation:
-  value: max_pool_anomaly_map
+higher_score_means_more_anomalous:
+  value: true
   status: LOCKED
+image_score_aggregation:
+  value: max_valid_candidate_after_masks
+  status: LOCKED
+  detail:
+    anomaly_map_stage: post_localization_candidates
+    apply_rover_border_telemetry_masks: true
+    valid_pixel_policy: candidates_surviving_masks_only
+    no_candidate_score: 0.0
+    multiple_candidates: max
+    raw_single_pixel_max_pool_forbidden_as_primary: true
+    sensitivity_analyses_allowed: true
+    sensitivity_may_not_change_primary: true
 train_split:
   value: train
   status: LOCKED
@@ -59,27 +81,110 @@ threshold_selection_metric:
 threshold_tie_break:
   value: highest_threshold
   status: LOCKED
+bootstrap_iterations:
+  value: 0
+  status: LOCKED
+
+split_method:
+  value: deterministic_group_aware
+  status: LOCKED
+split_seed:
+  value: null
+  status: PENDING_RATIO_SELECTION
+split_ratios:
+  value: null
+  status: PENDING_RATIO_SELECTION
+  notes: "Do not invent ratios from historical 2847/1247/892/708; set after labeled volume known and bump protocol version."
+stratification_fields:
+  value: [binary_label, mission, instrument]
+  status: LOCKED
+group_fields:
+  value: [sha256, duplicate_group_id, scene_group_id, source_id, sequence_id]
+  status: LOCKED
+test_freeze_policy:
+  value: immutable_after_creation
+  status: LOCKED
+
 baselines:
   reporting: separate_runs_only
   forbid_average_into_0_856: true
+  train_bank_labels: [0]
+  train_bank_forbid_positives: true
+  validation_and_test_require_both_classes: true
+  same_manifest_and_test_ids: true
   padim_required_keys:
     - backbone
     - layers
     - image_size
     - weights_path
     - weights_sha256
+    - pretrained_weight_source
+    - fitted_statistics_sha256
     - score_aggregation
     - train_bank_recipe
+    - train_bank_sample_ids
+    - normalization
+    - random_seed
+    - model_specific_preprocessing
   patchcore_required_keys:
     - backbone
     - layers
     - image_size
     - weights_path
     - weights_sha256
+    - pretrained_weight_source
+    - memory_bank_sha256
     - score_aggregation
     - train_bank_recipe
+    - train_bank_sample_ids
+    - normalization
     - coreset_ratio
+    - random_seed
+    - model_specific_preprocessing
   status: LOCKED_CONTRACT_PENDING_WEIGHTS
+
+artps_contract:
+  separate_config_and_run_id: true
+  required_keys:
+    - checkpoint_path
+    - checkpoint_sha256
+    - modules_enabled
+    - learned_depth_enabled
+    - ae_enabled
+    - score_generation_path
+    - model_selection_policy
+  model_selection_policy: validation_only_no_test_peek
+  status: LOCKED_CONTRACT_PENDING_CHECKPOINT
+
+model_selection_and_test_embargo:
+  preprocessing_and_hyperparams: validation_only
+  threshold: validation_only
+  test_split_open: final_frozen_run_only
+  config_change_after_test_requires: new_protocol_or_run_version
+  failed_runs_must_be_registered: true
+  reporting_best_run_only: forbidden
+  planned_model_config_ids_pre_registered: true
+  status: LOCKED
+
+statistical_reporting_plan:
+  bootstrap_iterations_current: 0
+  future_required_before_manuscript_results: true
+  planned:
+    - auroc_ci
+    - ap_ci
+    - f1_ci
+    - paired_artps_vs_padim_patchcore
+    - group_or_scene_aware_bootstrap
+    - exact_bootstrap_iterations
+    - random_seed
+    - multi_run_seed_reporting
+  status: BLOCKER_BEFORE_MANUSCRIPT_RESULTS
+
+primary_eval_row_filter:
+  inclusion_status: included
+  adjudication_status: resolved
+  annotation_version: independent_eval_v1
+  status: LOCKED
 
 # Data not invented in this pin
 dataset_rows:

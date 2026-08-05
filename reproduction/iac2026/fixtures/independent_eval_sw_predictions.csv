@@ -1,0 +1,5 @@
+sample_id,split,y_true,anomaly_score,model_name,model_version,config_id
+ie_va0,validation,0,0.1,indep_sw_model,v0,independent_eval_v1_sw
+ie_va1,validation,1,0.9,indep_sw_model,v0,independent_eval_v1_sw
+ie_te0,test,0,0.1,indep_sw_model,v0,independent_eval_v1_sw
+ie_te1,test,1,0.9,indep_sw_model,v0,independent_eval_v1_sw

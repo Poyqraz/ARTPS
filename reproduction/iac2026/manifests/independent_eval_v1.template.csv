@@ -1,1 +1,1 @@
-sample_id,mission,instrument,sol,source_id,source_url,relative_path,sha256,split,binary_label,label_semantics,label_source,annotation_version,scene_group_id,duplicate_group_id,notes
+sample_id,mission,instrument,sol,source_id,source_url,product_id,sequence_id,acquisition_timestamp,relative_path,sha256,raw_sha256,derived_sha256,preprocessing_version,split,binary_label,label_semantics,label_source,annotation_version,annotator_count,label_confidence,adjudication_status,inclusion_status,exclusion_reason,scene_group_id,duplicate_group_id,notes

@@ -20,7 +20,11 @@
           "commit_sha",
           "author_verified",
           "verification_date",
-          "notes"
+          "notes",
+          "protocol_id",
+          "protocol_lock_sha256",
+          "evaluation_purpose",
+          "annotation_version"
         ],
         "properties": {
           "run_id": { "type": "string", "minLength": 1 },
@@ -58,6 +62,22 @@
             "type": ["string", "null"],
             "pattern": "^([a-fA-F0-9]{64})?$"
           },
+          "protocol_id": { "type": ["string", "null"] },
+          "protocol_lock_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^([a-fA-F0-9]{64})?$"
+          },
+          "evaluation_purpose": {
+            "type": ["string", "null"],
+            "enum": [
+              "historical_claim_reproduction",
+              "current_reproducible_evaluation",
+              "software_verification",
+              null
+            ]
+          },
+          "annotation_version": { "type": ["string", "null"] },
+          "image_score_aggregation": { "type": ["string", "null"] },
           "commit_sha": { "type": "string", "minLength": 7 },
           "author_verified": { "type": "boolean" },
           "verification_date": { "type": "string", "format": "date-time" },

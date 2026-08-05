@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping
 
 from _common import load_json_schema, load_yaml, resolve_repo_path, sha256_file
+from independent_eval_contract import validate_config_against_lock
 
 
 class ConfigValidationError(ValueError):
@@ -141,6 +142,13 @@ def load_and_validate_config(path: Path | str) -> LoadedConfig:
         raise ConfigValidationError(
             "evaluation_purpose policy failed:\n- " + "\n- ".join(purpose_errors)
         )
+
+    if data.get("evaluation_purpose") == "current_reproducible_evaluation":
+        lock_errors = validate_config_against_lock(data)
+        if lock_errors:
+            raise ConfigValidationError(
+                "independent protocol lock failed:\n- " + "\n- ".join(lock_errors)
+            )
 
     policy_errors = apply_real_evidence_policy(data)
     if policy_errors:

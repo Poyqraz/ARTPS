@@ -61,6 +61,10 @@ def test_audit_json_missing_hashes_rejected(tmp_path, monkeypatch):
         "git_dirty": False,
         "blockers": [],
         "errors": [],
+        "protocol_id": None,
+        "protocol_lock_sha256": None,
+        "evaluation_purpose": "software_verification",
+        "annotation_version": None,
     }
     ap = tmp_path / "prior.json"
     ap.write_text(json.dumps(prior), encoding="utf-8")

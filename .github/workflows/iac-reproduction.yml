@@ -100,6 +100,37 @@ jobs:
           print("metrics dry-run ok", m["primary_pr_metric_name"], m.get("average_precision"))
           PY
 
+      - name: CLI dry-run — independent_eval_v1 SW contract
+        run: |
+          python scripts/iac2026/reproduce_detection_metrics.py \
+            --config reproduction/iac2026/configs/independent_evaluation.synthetic.yaml \
+            --software-verification \
+            --run-id ci_indep_sw
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import jsonschema
+          m = json.loads(Path("results/iac2026/reproduction/ci_indep_sw/detection_metrics.json").read_text())
+          schema = json.loads(Path("reproduction/iac2026/schemas/detection_metrics.schema.json").read_text())
+          jsonschema.Draft202012Validator(schema).validate(m)
+          assert m["evaluation_purpose"] == "current_reproducible_evaluation"
+          assert m["protocol_id"] == "independent_eval_v1"
+          assert m["historical_claim_reproduction"] is False
+          assert m["eligible_for_C05_C06_closure"] is False
+          assert m["eligible_for_IND_EVAL_V1_result_reporting"] is False
+          assert m["evidence_class"] == "software_verification"
+          print("independent sw contract ok", m["protocol_lock_sha256"][:12])
+          PY
+
+          set +e
+          python scripts/iac2026/build_independent_eval_split.py \
+            --input-manifest reproduction/iac2026/fixtures/independent_eval_sw_manifest.csv \
+            --output-manifest results/iac2026/reproduction/ci_indep_sw/split_out.csv \
+            --report-json results/iac2026/reproduction/ci_indep_sw/split_report.json
+          rc=$?
+          set -e
+          test "$rc" -eq 2
+
       - name: CLI dry-run — C07 software-verification
         run: |
           python scripts/benchmark_cv_core_speed.py \

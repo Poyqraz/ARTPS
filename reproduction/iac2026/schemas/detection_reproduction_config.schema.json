@@ -49,6 +49,12 @@
         "software_verification"
       ]
     },
+    "protocol_id": { "type": ["string", "null"] },
+    "protocol_lock_path": { "type": ["string", "null"] },
+    "protocol_lock_sha256": { "type": ["string", "null"] },
+    "annotation_version": { "type": ["string", "null"] },
+    "label_semantics": { "type": ["string", "null"] },
+    "image_score_aggregation": { "type": ["string", "null"] },
     "claim_ids": {
       "type": "array",
       "items": { "type": "string" },
@@ -163,6 +169,14 @@
         "required": ["evaluation_purpose"]
       },
       "then": {
+        "required": [
+          "protocol_id",
+          "protocol_lock_path",
+          "protocol_lock_sha256",
+          "annotation_version",
+          "label_semantics",
+          "image_score_aggregation"
+        ],
         "properties": {
           "claim_ids": {
             "type": "array",
@@ -172,7 +186,12 @@
           },
           "task_level": { "const": "image_binary" },
           "pr_metric_method": { "const": "average_precision" },
-          "threshold_policy": { "const": "validation_selected" }
+          "threshold_policy": { "const": "validation_selected" },
+          "protocol_id": { "const": "independent_eval_v1" },
+          "annotation_version": { "const": "independent_eval_v1" },
+          "label_semantics": { "const": "anomaly_binary" },
+          "image_score_aggregation": { "const": "max_valid_candidate_after_masks" },
+          "positive_label": { "const": 1 }
         }
       }
     }

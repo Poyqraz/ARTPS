@@ -7,6 +7,9 @@
     "claim_ids",
     "evidence_class",
     "eligible_for_claim_closure",
+    "eligible_for_C05_C06_closure",
+    "historical_claim_reproduction",
+    "evaluation_purpose",
     "task_level",
     "score_semantics",
     "test_sample_count",
@@ -32,6 +35,28 @@
       "enum": ["software_verification", "candidate_real_evidence"]
     },
     "eligible_for_claim_closure": { "type": "boolean" },
+    "eligible_for_C05_C06_closure": { "type": "boolean" },
+    "eligible_for_IND_EVAL_V1_result_reporting": { "type": "boolean" },
+    "historical_claim_reproduction": { "type": "boolean" },
+    "author_verified": { "type": "boolean" },
+    "protocol_id": { "type": ["string", "null"] },
+    "protocol_lock_sha256": { "type": ["string", "null"] },
+    "evaluation_purpose": {
+      "type": ["string", "null"],
+      "enum": [
+        "historical_claim_reproduction",
+        "current_reproducible_evaluation",
+        "software_verification",
+        null
+      ]
+    },
+    "annotation_version": { "type": ["string", "null"] },
+    "image_score_aggregation": { "type": ["string", "null"] },
+    "manifest_sha256": { "type": ["string", "null"] },
+    "predictions_sha256": { "type": ["string", "null"] },
+    "checkpoint_sha256": { "type": ["string", "null"] },
+    "git_head": { "type": ["string", "null"] },
+    "git_dirty": { "type": ["boolean", "null"] },
     "task_level": { "type": "string" },
     "score_semantics": { "type": "string" },
     "test_sample_count": { "type": "integer", "minimum": 0 },

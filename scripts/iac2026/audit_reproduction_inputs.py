@@ -30,6 +30,7 @@ from _common import (
     write_text,
 )
 from _config import ConfigValidationError, LoadedConfig, load_and_validate_config
+from independent_eval_contract import protocol_provenance_from_config
 
 
 @dataclass
@@ -47,6 +48,11 @@ class AuditResult:
     evidence_mode: Optional[str] = None
     claim_ids: List[str] = field(default_factory=list)
     config_id: Optional[str] = None
+    protocol_id: Optional[str] = None
+    protocol_lock_sha256: Optional[str] = None
+    evaluation_purpose: Optional[str] = None
+    annotation_version: Optional[str] = None
+    image_score_aggregation: Optional[str] = None
     class_balance_manifest: Dict[str, Any] = field(default_factory=dict)
     class_balance_predictions: Dict[str, Any] = field(default_factory=dict)
     details: Dict[str, Any] = field(default_factory=dict)
@@ -66,6 +72,10 @@ class AuditResult:
             "checkpoint_sha256": self.checkpoint_sha256,
             "git_head": self.git_head,
             "git_dirty": self.git_dirty,
+            "protocol_id": self.protocol_id,
+            "protocol_lock_sha256": self.protocol_lock_sha256,
+            "evaluation_purpose": self.evaluation_purpose,
+            "annotation_version": self.annotation_version,
         }
 
 
@@ -116,6 +126,13 @@ def audit_inputs(
         claim_ids=list(data.get("claim_ids") or []),
         config_id=str(data.get("config_id") or ""),
     )
+    prov = protocol_provenance_from_config(data)
+    result.protocol_id = prov.get("protocol_id")
+    result.protocol_lock_sha256 = prov.get("protocol_lock_sha256")
+    result.evaluation_purpose = prov.get("evaluation_purpose")
+    result.annotation_version = prov.get("annotation_version")
+    result.image_score_aggregation = prov.get("image_score_aggregation")
+    independent = data.get("evaluation_purpose") == "current_reproducible_evaluation"
     real = data.get("evidence_mode") == "real_evidence"
     errors = result.errors
     blockers = result.blockers
@@ -143,9 +160,39 @@ def audit_inputs(
     if manifest_path.is_file():
         manifest_rows = read_csv_dicts(manifest_path)
         result.manifest_sha256 = sha256_file(manifest_path)
-        errors.extend(
-            validate_rows(manifest_rows, load_json_schema("dataset_manifest.schema.json"), coerce_ints=["binary_label"])
+        schema_name = (
+            "independent_eval_manifest.schema.json"
+            if independent
+            else "dataset_manifest.schema.json"
         )
+        errors.extend(
+            validate_rows(manifest_rows, load_json_schema(schema_name), coerce_ints=["binary_label"])
+        )
+        if independent and manifest_rows:
+            for i, r in enumerate(manifest_rows):
+                if r.get("annotation_version") != "independent_eval_v1":
+                    errors.append(f"row {i}: annotation_version must be independent_eval_v1")
+                # Primary eval eligibility: scored rows must be included+resolved
+                split = r.get("split", "")
+                if split in ("validation", "test", "train"):
+                    if r.get("inclusion_status") != "included":
+                        errors.append(
+                            f"row {i}: independent primary eval requires inclusion_status=included "
+                            f"(got {r.get('inclusion_status')!r})"
+                        )
+                    if r.get("adjudication_status") != "resolved":
+                        errors.append(
+                            f"row {i}: independent primary eval requires adjudication_status=resolved "
+                            f"(got {r.get('adjudication_status')!r})"
+                        )
+            # Forbid inventing rows from historical aggregate counts in notes/source
+            banned = ("2847", "1247", "892", "708")
+            for i, r in enumerate(manifest_rows):
+                blob = " ".join(str(r.get(k, "")) for k in ("notes", "source_id", "sample_id"))
+                if any(b in blob for b in banned) and "aggregate" in blob.lower():
+                    errors.append(
+                        f"row {i}: inventing manifest rows from historical aggregate counts is forbidden"
+                    )
     if pred_path.is_file():
         pred_rows = read_csv_dicts(pred_path)
         result.predictions_sha256 = sha256_file(pred_path)

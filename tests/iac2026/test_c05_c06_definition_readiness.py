@@ -185,6 +185,10 @@ def _passing_audit(manifest_sha: str, predictions_sha: str) -> dict:
         "git_dirty": False,
         "blockers": [],
         "errors": [],
+        "protocol_id": None,
+        "protocol_lock_sha256": None,
+        "evaluation_purpose": "historical_claim_reproduction",
+        "annotation_version": None,
     }
 
 
