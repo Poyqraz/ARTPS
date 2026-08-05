@@ -1,6 +1,7 @@
 # Independent evaluation v1 — annotation guide
 
-**Annotation version:** `independent_eval_v1`  
+**Annotation version:** `independent_eval_v1`
+
 **Protocol:** [INDEPENDENT_EVALUATION_PROTOCOL.md](INDEPENDENT_EVALUATION_PROTOCOL.md)
 
 This guide defines human labels for the **current reproducible evaluation**. It does

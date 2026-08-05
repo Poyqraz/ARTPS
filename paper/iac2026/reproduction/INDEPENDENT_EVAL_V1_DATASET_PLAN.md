@@ -1,6 +1,7 @@
 # Independent evaluation v1 — dataset acquisition plan
 
-**Protocol:** [INDEPENDENT_EVALUATION_PROTOCOL.md](INDEPENDENT_EVALUATION_PROTOCOL.md)  
+**Protocol:** [INDEPENDENT_EVALUATION_PROTOCOL.md](INDEPENDENT_EVALUATION_PROTOCOL.md)
+
 **Annotation:** [INDEPENDENT_EVAL_V1_ANNOTATION_GUIDE.md](INDEPENDENT_EVAL_V1_ANNOTATION_GUIDE.md)
 
 This plan pins **how** a labeled, SHA-pinned set will be built. It does **not**
