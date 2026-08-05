@@ -1,0 +1,125 @@
+{
+  "builder_commit_sha": "b1ecf0e82488c5c7ae0472e9534137acdb4bcdf2",
+  "class_balance": {
+    "test": {
+      "0": 27,
+      "1": 27
+    },
+    "train": {
+      "0": 126,
+      "1": 126
+    },
+    "validation": {
+      "0": 27,
+      "1": 27
+    }
+  },
+  "group_fields": [
+    "sha256",
+    "duplicate_group_id",
+    "scene_group_id",
+    "source_id",
+    "sequence_id"
+  ],
+  "included_n": 360,
+  "input_manifest_sha256": "1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe",
+  "leakage_errors": [],
+  "mission_instrument_distribution": {
+    "instrument": {
+      "test": {
+        "Mastcam": 54
+      },
+      "train": {
+        "Mastcam": 252
+      },
+      "validation": {
+        "Mastcam": 54
+      }
+    },
+    "mission": {
+      "test": {
+        "Curiosity": 54
+      },
+      "train": {
+        "Curiosity": 252
+      },
+      "validation": {
+        "Curiosity": 54
+      }
+    }
+  },
+  "output_manifest_sha256": "1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe",
+  "passed": true,
+  "policy_ratios": [
+    0.7,
+    0.15,
+    0.15
+  ],
+  "protocol_id": "independent_eval_v1",
+  "protocol_lock_sha256": "7767f695746d0237803f57ffd2fef8f96a1434fca5d2f2ffaf2c799c3187dfe9",
+  "protocol_version": "1.1.0",
+  "split_method": "deterministic_group_aware",
+  "split_ratios": {
+    "test": 0.15,
+    "train": 0.7,
+    "validation": 0.15
+  },
+  "split_seed": 20260806,
+  "test_freeze_policy": "immutable_after_creation",
+  "test_sample_ids": [
+    "ie1_train_rocky_curiosity_1100_MAST_1093_jpg.rf.94553681ad05b96d80a9aa59b8234bc9.jpg_0f84392cc4a0",
+    "ie1_train_dusty_curiosity_100_MAST_325_jpg.rf.3a0df435627058b8d0181fa8cf03a20a.jpg_fb593c154368",
+    "ie1_train_flat_terrain_curiosity_100_MAST_299_jpg.rf.09f47cf320ca5dec2f7efdbd133f837_04d014f94707",
+    "ie1_train_dusty_curiosity_100_MAST_178_jpg.rf.7882a42c7acfbf59d7489b16f351413c.jpg_5cb6aa1dff6f",
+    "ie1_valid_flat_terrain_curiosity_100_MAST_214_jpg.rf.e5465465ea37095245b4f9d01f4bf05_bde1abbe362b",
+    "ie1_train_rocky_curiosity_1100_MAST_772_jpg.rf.a4af1dce8b2138fded70b97d372756d0.jpg_3b3a1189364b",
+    "ie1_train_boulder_curiosity_1100_MAST_1195_jpg.rf.f55d86c15be4bee5c355bf9481a0288c.j_8b9bdc02c25a",
+    "ie1_train_rocky_curiosity_1100_MAST_991_jpg.rf.49995e899f84d6c872811abfe4d26d37.jpg_498fba69ab66",
+    "ie1_valid_rocky_curiosity_1100_MAST_1483_jpg.rf.9b908a2f78a358cd0f9e7efb63c03d83.jpg_86055ca1c7c9",
+    "ie1_train_flat_terrain_curiosity_1100_MAST_787_jpg.rf.bec999b66ddcde2daabbf98b1efccd_3bf701b3bceb",
+    "ie1_train_boulder_curiosity_1100_MAST_856_jpg.rf.172efb5ec4bcd06b6365c40851e8f1a5.jp_e972b4e93eaf",
+    "ie1_train_boulder_curiosity_1100_MAST_1520_jpg.rf.4e9796f77c67409fcbdb6690bfe20d9b.j_1e7005d85d8b",
+    "ie1_train_boulder_curiosity_1100_MAST_699_jpg.rf.3d51ff51dd4357098c114f15a38fb773.jp_8aeb3fcfbe11",
+    "ie1_train_rocky_curiosity_1100_MAST_737_jpg.rf.c3fc9f022357eb4b2f7a9ce3438e9e3c.jpg_0ca385d1b74e",
+    "ie1_train_boulder_curiosity_1100_MAST_1531_jpg.rf.36ea1ce36fd0caf6c48bb18715d37730.j_49a694de7bb5",
+    "ie1_train_dusty_curiosity_100_MAST_345_jpg.rf.7d571fdd8cf86a97c8bd8613557f9409.jpg_51510b8beb13",
+    "ie1_valid_boulder_curiosity_1100_MAST_759_jpg.rf.b8adbd0cf78a3c5953c1b57c7147251f.jp_d822d1d7d7bc",
+    "ie1_train_rocky_curiosity_1100_MAST_778_jpg.rf.f5e5b0c5adc8a76a7fb81c066c1c1059.jpg_3a93df616cfe",
+    "ie1_train_dusty_curiosity_1100_MAST_1312_jpg.rf.3bba1a3e3db09b8509adf840c6eac6d8.jpg_546291e3f9cb",
+    "ie1_valid_rocky_curiosity_1100_MAST_863_jpg.rf.fab7154ab92424779467a69da97b0adc.jpg_426573f9ec2c",
+    "ie1_train_dusty_curiosity_100_MAST_301_jpg.rf.c4b508ec74f1660fb3fcdbd7aa325658.jpg_29959e68e6e9",
+    "ie1_train_flat_terrain_curiosity_1500_MAST_1734_jpg.rf.72fa9167aed611bdd06d72ccbeaea_28b051e9edf1",
+    "ie1_train_rocky_curiosity_1100_MAST_1478_jpg.rf.849a6042c7312a81a9d5d95e26e5b837.jpg_de16a0d22112",
+    "ie1_train_flat_terrain_curiosity_1100_MAST_1116_jpg.rf.dd29777f1a21f8861a5f9ebb946d5_77461e134ea8",
+    "ie1_train_rocky_curiosity_1100_MAST_1047_jpg.rf.73e0888b8f8a408fdb7d5ef85329ea37.jpg_81a4cc16a7d5",
+    "ie1_train_rocky_curiosity_1100_MAST_1084_jpg.rf.85bfb331494c8186ae1778c142e267e5.jpg_8489d9256095",
+    "ie1_train_rocky_curiosity_1100_MAST_1043_jpg.rf.0b34721e6729375bf2d852a685401f73.jpg_a5b307158b71",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_1147_jpg.rf.cc7f22a34e285802cac312af307_fd4a63c858c0",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_831_jpg.rf.b7b8db7aacfe2540b5ff03537ba4_3a44754cfed7",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_841_jpg.rf.34bd070274e4d4992f7cffa416fe_b39aadc42f72",
+    "ie1_train_rocky_curiosity_1100_MAST_919_jpg.rf.bab7440fa357cd5006d48d9e3f7ac99c.jpg_05cd054290d6",
+    "ie1_train_rocky_curiosity_1100_MAST_1353_jpg.rf.4ff18f1f3058baf73f84a4560b7f1187.jpg_fc2f2db4bde5",
+    "ie1_train_dusty_curiosity_1100_MAST_1272_jpg.rf.04362af5684fef56c61cf45c2a43ec87.jpg_4bbb9b168364",
+    "ie1_train_rocky_curiosity_1100_MAST_1291_jpg.rf.e7e88c27677231ff80f82a03e708921f.jpg_bb6868437a87",
+    "ie1_valid_boulder_curiosity_1100_MAST_820_jpg.rf.f841627a7951ce9c8ce9e2a8715cbdeb.jp_d13e4049eec1",
+    "ie1_valid_flat_terrain_curiosity_1100_MAST_1298_jpg.rf.ae5a4a6aed6ba2220af7fef01f5b0_04ee161d3f4b",
+    "ie1_valid_boulder_curiosity_1100_MAST_902_jpg.rf.59b470a2f73bc04a17490ff2dbcb173f.jp_9f9120fb2227",
+    "ie1_train_dusty_curiosity_1100_MAST_1248_jpg.rf.5700246fb76bc1248031c91d758facba.jpg_cfe6efdff4eb",
+    "ie1_train_flat_terrain_curiosity_1100_MAST_1154_jpg.rf.cea7d8e4205b91620383bac631dbe_dc982da10f95",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_1450_jpg.rf.db18c26d7708b5214b162c7a6e7_fb34778f3e49",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_813_jpg.rf.851b8fe2627392ce8ceb9a4a615e_90b0cfefd178",
+    "ie1_train_boulder_curiosity_100_MAST_250_jpg.rf.86dbc77cfe46d0c5243e40cbffe0785a.jpg_879bfe35b3fd",
+    "ie1_train_flat_terrain_curiosity_1100_MAST_1543_jpg.rf.992cdf7da18f456de20aea7a0d462_af3ec140393f",
+    "ie1_train_dusty_curiosity_1300_MAST_1576_jpg.rf.4c98fcf407313553e7d929c282bd55d4.jpg_1a6cded0136d",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_826_jpg.rf.16b73023bc20afd50766aa2cfa6e_a4e8960a9d29",
+    "ie1_train_dusty_curiosity_100_MAST_161_jpg.rf.fecdecdf4ff111ca65a0a58cc5659338.jpg_5d150e9997f4",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_1269_jpg.rf.38e7e00303ab4f198c465e7145e_376c72e074f9",
+    "ie1_train_rocky_curiosity_1100_MAST_1490_jpg.rf.4891b449bcd14af958b21e0b5c4ee565.jpg_e144b5e0bf5b",
+    "ie1_train_flat_terrain_curiosity_1100_MAST_825_jpg.rf.129929aa4eb0d74fff006d11ae81c1_cbc6971298ef",
+    "ie1_train_boulder_curiosity_1100_MAST_1487_jpg.rf.99f38dde2b1915ab8e1cdcd021af0ebe.j_7fa553d9fbd6",
+    "ie1_train_hills_or_ridge_curiosity_100_MAST_163_jpg.rf.fc06550ff10928229d7b5b23edb03_f9bcc043cbd9",
+    "ie1_train_boulder_curiosity_1100_MAST_1439_jpg.rf.8a17cd5834a3709ed33049b75d36a828.j_1096cc1607d3",
+    "ie1_train_hills_or_ridge_curiosity_1100_MAST_828_jpg.rf.facf0ebb4e6ae90ff6618dc3c353_b2910a54d6ae",
+    "ie1_valid_rocky_curiosity_100_MAST_259_jpg.rf.cd4fbd2d2203802082294f294440bbf4.jpg_83252c28b962"
+  ]
+}

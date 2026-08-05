@@ -28,7 +28,7 @@ from independent_eval_contract import (  # noqa: E402
 )
 
 
-LOCK_SHA = "f5e039df698d5ed4992d01c29f119400915d630906426f4c2510cd6d0bbef71d"
+LOCK_SHA = "7767f695746d0237803f57ffd2fef8f96a1434fca5d2f2ffaf2c799c3187dfe9"
 
 
 def _indep_cfg():
@@ -189,11 +189,12 @@ def test_baseline_train_positive_rejected():
 
 
 def test_split_ratios_pending_and_frozen_mutation():
-    lock, _, _ = load_protocol_lock()
+    pending_lock = {"split_ratios": {"value": None, "status": "PENDING_RATIO_SELECTION"}}
     with pytest.raises(SplitContractError, match="PENDING_RATIO_SELECTION"):
-        assert_ratios_selected(lock)
-    freeze = Path("unused")
-    # create temp freeze marker
+        assert_ratios_selected(pending_lock)
+    # Live lock should have ratios selected after primary benchmark pin.
+    live, _, _ = load_protocol_lock()
+    assert_ratios_selected(live)
     import tempfile
 
     with tempfile.TemporaryDirectory() as td:

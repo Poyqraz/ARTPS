@@ -4,9 +4,9 @@
 
 schema_version: 1
 protocol_id: independent_eval_v1
-protocol_version: "1.0.0"
-protocol_status: draft_pending_data
-created_before_dataset_labeling: true
+protocol_version: "1.1.0"
+protocol_status: draft_pending_metrics
+created_before_dataset_labeling: false
 created_before_model_evaluation: true
 supersedes: null
 evaluation_purpose: current_reproducible_evaluation
@@ -15,8 +15,9 @@ support_level: protocol_defined_pending_data
 protocol_doc: paper/iac2026/reproduction/INDEPENDENT_EVALUATION_PROTOCOL.md
 annotation_guide: paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_ANNOTATION_GUIDE.md
 dataset_plan: paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_DATASET_PLAN.md
+domain_selection: paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_DOMAIN_SELECTION.md
 manifest_template: reproduction/iac2026/manifests/independent_eval_v1.template.csv
-real_manifest_path: null
+real_manifest_path: reproduction/iac2026/manifests/independent_eval_v1.csv
 example_config: reproduction/iac2026/configs/independent_evaluation.example.yaml
 
 # Contract pins (values locked; data availability separate)
@@ -89,12 +90,15 @@ split_method:
   value: deterministic_group_aware
   status: LOCKED
 split_seed:
-  value: null
-  status: PENDING_RATIO_SELECTION
+  value: 20260806
+  status: LOCKED
 split_ratios:
-  value: null
-  status: PENDING_RATIO_SELECTION
-  notes: "Do not invent ratios from historical 2847/1247/892/708; set after labeled volume known and bump protocol version."
+  value:
+    train: 0.70
+    validation: 0.15
+    test: 0.15
+  status: LOCKED
+  notes: "Locked from included N=360 (>=360 => 70/15/15). Not derived from historical 2847/1247/892/708."
 stratification_fields:
   value: [binary_label, mission, instrument]
   status: LOCKED
@@ -186,11 +190,15 @@ primary_eval_row_filter:
   annotation_version: independent_eval_v1
   status: LOCKED
 
-# Data not invented in this pin
+# Labeled primary benchmark available; metrics still pending (no model runs in this pin).
 dataset_rows:
-  status: PENDING_DATA
+  status: AVAILABLE
+  path: reproduction/iac2026/manifests/independent_eval_v1.csv
 labels:
-  status: PENDING_DATA
+  status: AVAILABLE
+  label_source: workspace_visual_review
+  annotator_count: 1
+  independent_double_review: false
 historical_accepted_numbers:
   auroc_0_894: not_targeted_by_this_protocol
   auprc_0_847: not_targeted_by_this_protocol

@@ -1,0 +1,32 @@
+{
+  "annotation_complete": true,
+  "annotation_qc_complete": true,
+  "annotator_count": 1,
+  "claim_support_unchanged": {
+    "C05_C06_C07": "accepted_abstract_reproduction_pending",
+    "C08": "planned",
+    "IND_EVAL_V1": "protocol_defined_pending_data"
+  },
+  "class_balance": {
+    "n": 360,
+    "negatives": 180,
+    "positive_fraction": 0.5,
+    "positives": 180,
+    "within_40_60": true
+  },
+  "dataset_readiness": "ready",
+  "errors": [],
+  "excluded_sample_count": 527,
+  "file_hash_audit_passed": true,
+  "included_sample_count": 360,
+  "independent_double_review": false,
+  "label_source": "workspace_visual_review",
+  "leakage_audit_passed": true,
+  "leakage_errors": [],
+  "manifest_complete": true,
+  "primary_domain_locked": true,
+  "ready_for_model_runs": true,
+  "source_inventory_complete": true,
+  "split_frozen": true,
+  "uncertain_sample_count": 299
+}
