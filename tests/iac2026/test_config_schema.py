@@ -1,7 +1,6 @@
 """Config schema validation tests."""
 from __future__ import annotations
 
-import copy
 import sys
 from pathlib import Path
 
@@ -99,22 +98,9 @@ def test_independent_purpose_rejects_c05_claim_ids():
 
 
 def test_independent_sw_config_loads_when_purpose_ok(tmp_path):
-    raw = yaml.safe_load(
-        (REPO / "reproduction/iac2026/configs/detection_reproduction.synthetic.yaml").read_text(
-            encoding="utf-8"
-        )
+    cfg = load_and_validate_config(
+        REPO / "reproduction/iac2026/configs/independent_evaluation.synthetic.yaml"
     )
-    raw = copy.deepcopy(raw)
-    raw["evaluation_purpose"] = "current_reproducible_evaluation"
-    raw["claim_ids"] = ["IND_EVAL_V1"]
-    raw["task_level"] = "image_binary"
-    raw["threshold_policy"] = "validation_selected"
-    raw["threshold_selection_metric"] = "f1"
-    raw["threshold_tie_break"] = "highest_threshold"
-    raw["fixed_threshold"] = None
-    raw["pr_metric_method"] = "average_precision"
-    p = tmp_path / "indep_sw.yaml"
-    p.write_text(yaml.safe_dump(raw), encoding="utf-8")
-    cfg = load_and_validate_config(p)
     assert cfg["claim_ids"] == ["IND_EVAL_V1"]
     assert cfg["evaluation_purpose"] == "current_reproducible_evaluation"
+    assert cfg["protocol_id"] == "independent_eval_v1"

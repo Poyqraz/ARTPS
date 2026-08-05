@@ -58,11 +58,18 @@ def test_stale_audit_hash_rejected(tmp_path, monkeypatch):
         "passed": True,
         "blockers": [],
         "errors": [],
+        "claim_ids": ["C05"],
+        "config_id": "example",
+        "evidence_mode": "software_verification",
         "config_sha256": "0" * 64,
         "manifest_sha256": "1" * 64,
         "predictions_sha256": "2" * 64,
         "git_head": "deadbeef",
         "git_dirty": False,
+        "protocol_id": None,
+        "protocol_lock_sha256": None,
+        "evaluation_purpose": "software_verification",
+        "annotation_version": None,
     }
     ap = tmp_path / "audit.json"
     ap.write_text(json.dumps(audit), encoding="utf-8")
