@@ -1,0 +1,21 @@
+{
+  "annotation_version": "independent_eval_v1",
+  "blockers": [],
+  "checkpoint_sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2",
+  "claim_ids": [
+    "IND_EVAL_V1"
+  ],
+  "config_id": "artps_full_frozen_raw_clf_on_v1",
+  "config_sha256": "13d3c848c0bf7f9020ace1d60d93a26ee81cd4a8483dc51865fe48468542a248",
+  "errors": [],
+  "evaluation_purpose": "current_reproducible_evaluation",
+  "evidence_mode": "real_evidence",
+  "git_dirty": true,
+  "git_head": "60956685129cb601b76559d38a51e2b7655f9f9d",
+  "image_score_aggregation": "max_valid_candidate_after_masks",
+  "manifest_sha256": "1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe",
+  "passed": true,
+  "predictions_sha256": "bf046706fe959cab47c89de2d23696b3997123bace665fdce153ce8b1c030236",
+  "protocol_id": "independent_eval_v1",
+  "protocol_lock_sha256": "7767f695746d0237803f57ffd2fef8f96a1434fca5d2f2ffaf2c799c3187dfe9"
+}

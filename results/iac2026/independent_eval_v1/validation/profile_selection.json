@@ -1,0 +1,74 @@
+{
+  "amp_parity_status": "rejected",
+  "candidates": [
+    {
+      "config_id": "artps_full_frozen_raw_clf_on_v1",
+      "metrics": {
+        "auroc": 0.28600823045267487,
+        "average_precision": 0.3821756445670755,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54
+      },
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_raw_clf_on_v1/predictions.csv"
+    },
+    {
+      "config_id": "artps_full_frozen_raw_clf_off_v1",
+      "metrics": {
+        "auroc": 0.27503429355281206,
+        "average_precision": 0.37860804381276103,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54
+      },
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_raw_clf_off_v1/predictions.csv"
+    },
+    {
+      "config_id": "artps_full_frozen_mars_clf_on_v1",
+      "metrics": {
+        "auroc": 0.39231824417009603,
+        "average_precision": 0.45787682195218266,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54
+      },
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv"
+    },
+    {
+      "config_id": "artps_full_frozen_mars_clf_off_v1",
+      "metrics": {
+        "auroc": 0.3772290809327846,
+        "average_precision": 0.44902940307147243,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54
+      },
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_off_v1/predictions.csv"
+    }
+  ],
+  "eligible_for_manuscript_primary_results": false,
+  "evaluation_designation": "frozen-checkpoint current evaluation with unverified training provenance",
+  "not_final_test_result": true,
+  "primary_precision": "fp32",
+  "protocol_id": "independent_eval_v1",
+  "selected_config_id": "artps_full_frozen_mars_clf_on_v1",
+  "selected_metrics": {
+    "auroc": 0.39231824417009603,
+    "average_precision": 0.45787682195218266,
+    "selected_threshold": 0.0,
+    "validation_f1_at_threshold": 0.6666666666666666,
+    "validation_n": 54
+  },
+  "selected_predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv",
+  "selection_policy": {
+    "primary_metric": "average_precision",
+    "threshold_metric": "f1",
+    "threshold_tie_break": "highest_threshold",
+    "tie_breakers": [
+      "auroc",
+      "classifier_off",
+      "raw_rgb_v1"
+    ]
+  },
+  "selection_split": "validation"
+}

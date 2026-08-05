@@ -1,0 +1,10 @@
+{
+  "config_sha256": "b339af9361de3117539663defa79eac1aa1d39b0f7234aad6c071ac2847575ae",
+  "eligible_for_manuscript_primary_results": false,
+  "git_dirty": true,
+  "git_head": "60956685129cb601b76559d38a51e2b7655f9f9d",
+  "manifest_sha256": "1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe",
+  "not_final_test_result": true,
+  "predictions_sha256": "24df219b5f7dc1bf667a77a41f91dccaa875e4547fe4292892ec4244e13c45cf",
+  "profile_id": "artps_full_frozen_v1"
+}
