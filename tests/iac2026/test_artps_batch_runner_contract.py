@@ -11,11 +11,14 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts" / "iac2026"))
 
 from artps_full_profile_cache import (  # noqa: E402
+    PREDICTION_COLUMNS,
     build_metrics_config_snapshot,
+    filter_manifest_rows,
     profile_config_sha256,
     profile_to_frozen_kwargs,
 )
-from run_artps_frozen_full_profile import PREDICTION_COLUMNS, _filter_manifest_rows  # noqa: E402
+
+_filter_manifest_rows = filter_manifest_rows
 
 
 @pytest.fixture

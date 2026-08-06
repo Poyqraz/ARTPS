@@ -36,32 +36,18 @@ from _common import (  # noqa: E402
     write_text,
 )
 from artps_full_profile_cache import (  # noqa: E402
+    PREDICTION_COLUMNS,
     allowed_splits,
     build_cache_index,
     build_metrics_config_snapshot,
     cache_dir_for_profile,
     environment_snapshot_torch,
+    filter_manifest_rows,
     load_profile_yaml,
     profile_to_frozen_kwargs,
     verify_profile_registry,
 )
-from src.artps_inference import (  # noqa: E402
-    FrozenARTPSConfig,
-    load_frozen_artps_profile,
-    predict_image,
-)
 from test_split_embargo import assert_split_allowed  # noqa: E402
-
-
-PREDICTION_COLUMNS = (
-    "sample_id",
-    "split",
-    "y_true",
-    "anomaly_score",
-    "model_name",
-    "model_version",
-    "config_id",
-)
 
 
 def _dataset_root(profile: dict[str, Any]) -> Path:
@@ -82,18 +68,16 @@ def _write_predictions_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def _filter_manifest_rows(profile: dict[str, Any], rows: list[dict[str, str]]) -> list[dict[str, str]]:
-    splits = set(allowed_splits(profile))
-    out: list[dict[str, str]] = []
-    for row in rows:
-        split = str(row.get("split", ""))
-        if split not in splits:
-            continue
-        assert_split_allowed(split)
-        out.append(row)
-    return out
+    return filter_manifest_rows(profile, rows)
 
 
 def main(argv: list[str] | None = None) -> int:
+    from src.artps_inference import (  # local: torch not required for contract unit tests
+        FrozenARTPSConfig,
+        load_frozen_artps_profile,
+        predict_image,
+    )
+
     ap = argparse.ArgumentParser(description="Run frozen ARTPS full-profile batch inference")
     ap.add_argument("--profile", required=True, help="Profile YAML path")
     ap.add_argument("--run-id", default=None)

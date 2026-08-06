@@ -10,8 +10,9 @@ import yaml
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts" / "iac2026"))
 
-from artps_full_profile_cache import allowed_splits  # noqa: E402
-from run_artps_frozen_full_profile import _filter_manifest_rows  # noqa: E402
+from artps_full_profile_cache import allowed_splits, filter_manifest_rows  # noqa: E402
+
+_filter_manifest_rows = filter_manifest_rows
 
 
 def test_allowed_splits_excludes_test_by_embargo(monkeypatch):

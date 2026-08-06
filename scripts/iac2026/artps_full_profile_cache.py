@@ -184,6 +184,30 @@ def allowed_splits(profile: Mapping[str, Any]) -> list[str]:
     return out
 
 
+PREDICTION_COLUMNS = (
+    "sample_id",
+    "split",
+    "y_true",
+    "anomaly_score",
+    "model_name",
+    "model_version",
+    "config_id",
+)
+
+
+def filter_manifest_rows(profile: Mapping[str, Any], rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Keep only allowed splits; never scores test while embargo is closed."""
+    splits = set(allowed_splits(profile))
+    out: list[dict[str, str]] = []
+    for row in rows:
+        split = str(row.get("split", ""))
+        if split not in splits:
+            continue
+        assert_split_allowed(split)
+        out.append(row)
+    return out
+
+
 def _metadata_path(cache_dir: Path) -> Path:
     return cache_dir / "metadata.json"
 
