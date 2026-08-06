@@ -34,6 +34,8 @@ This document states what frozen ARTPS validation **can** and **cannot** establi
 
 Canonical anomaly implementations for this repository live under `src/models/anomaly/`. The `ARTPS/src/models/anomaly/` tree is a legacy mirror kept byte-aligned for historical imports; this PR does not refactor that duplication.
 
+Next authorized step (not opened yet): `reproduction/iac2026/test_freeze/FINAL_TEST_SCOPE.yaml` — single FP32 run of `artps_full_frozen_mars_clf_on_v1` at frozen validation threshold `0.0`. No new profiles or retuning.
+
 Do **not** describe this evaluation as leakage-free, independent training, unseen data, or external test unless later evidence establishes those statements.
 
 ## Operational constraints
