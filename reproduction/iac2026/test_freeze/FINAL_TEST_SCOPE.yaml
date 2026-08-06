@@ -1,48 +1,50 @@
-# Locked scope for the *next* independent_eval_v1 final-test PR.
-# This file does NOT open the test split. TEST_OPEN_STATUS.yaml remains closed
-# until that dedicated PR authorizes a single FP32 test run.
-#
-# Source of selection: results/iac2026/independent_eval_v1/validation/profile_selection.json
-# Merged via PR #25 (merge commit on main).
+# Locked / blocked scope for independent_eval_v1 final-test.
+# Test split remains CLOSED. Do not authorize final test while status is blocked.
 
 protocol_id: independent_eval_v1
-status: pending_final_test_authorization
+status: blocked_validation_sanity_review
 test_opened: false
+final_test_authorized: false
 
-# Frozen selection (do not retune on test)
-selected_config_id: artps_full_frozen_mars_clf_on_v1
-config_path: reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml
-preprocessing_profile: mars_enhancement_v1
-classifier_enabled: true
-precision_mode: fp32
-amp_primary_allowed: false
-selected_threshold: 0.0
-threshold_source: validation_f1_highest_threshold_tiebreak
+blockers:
+  - validation_auroc_below_chance
+  - validation_ap_below_balanced_prevalence
+  - degenerate_all_positive_threshold
+  - score_orientation_not_verified
+  - label_score_semantics_not_verified
+  - blind_review_pending
+  - classifier_class_semantics_unverified
+  - candidate_suppression_semantics_unverified
 
-validation_selection_artifact: results/iac2026/independent_eval_v1/validation/profile_selection.json
-validation_selection_artifact_sha256: 4763889cb35e2d1c9196379f7b4190222dac112f9384b5c16605d7416a1912bb
-selected_predictions_csv: results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv
+frozen_validation_selection:
+  selected_config_id: artps_full_frozen_mars_clf_on_v1
+  config_path: reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml
+  preprocessing_profile: mars_enhancement_v1
+  classifier_enabled: true
+  precision_mode: fp32
+  amp_primary_allowed: false
+  selected_threshold: 0.0
+  threshold_source: validation_f1_highest_threshold_tiebreak
+  validation_selection_artifact: results/iac2026/independent_eval_v1/validation/profile_selection.json
+  selection_artifact_sha256: 4763889cb35e2d1c9196379f7b4190222dac112f9384b5c16605d7416a1912bb
+  selected_predictions_csv: results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv
+  protocol_lock_sha256: 7767f695746d0237803f57ffd2fef8f96a1434fca5d2f2ffaf2c799c3187dfe9
+  pr25_merge_commit: 9e38f996cdd2d5b952dd2ee1c1927c587d8654b6
 
-protocol_lock_sha256: 7767f695746d0237803f57ffd2fef8f96a1434fca5d2f2ffaf2c799c3187dfe9
-pr25_merge_commit: 9e38f996cdd2d5b952dd2ee1c1927c587d8654b6
+authorization_status:
+  final_test_authorized: false
+  reason: validation_sanity_review_required
 
-allowed_in_final_test_pr:
-  - authorize_test_open_in_TEST_OPEN_STATUS
-  - single_fp32_inference_on_test_split_n54
-  - metrics_auroc_ap_f1_precision_recall_confusion
-  - provenance_prediction_config_checkpoint_shas
-  - evidence_registry_entry
-  - full_paper_results_and_discussion_integration
-  - ind_eval_v1_support_update_when_artifacts_ready
-
-forbidden_in_final_test_pr:
+forbidden_while_blocked:
+  - open_test_split
+  - run_test_inference
+  - write_test_predictions
+  - compute_test_metrics
   - new_validation_profiles
   - preprocessing_or_enhancement_changes
-  - realesrgan_enable
-  - amp_as_primary
-  - threshold_retune_or_test_peek_selection
-  - bank_rebuild_or_retraining
-  - claim_c05_c06_historical_number_equivalence
-  - funding_or_ai_declaration_edits
+  - threshold_retune
+  - promote_diagnostic_orientation
+  - manuscript_results_numbers
+  - claim_status_measured
 
-suggested_branch: experiments/independent-eval-v1-final-test
+suggested_next_branch_after_unblock: experiments/independent-eval-v1-final-test

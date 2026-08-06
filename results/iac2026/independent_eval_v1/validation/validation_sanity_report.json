@@ -1,0 +1,446 @@
+{
+  "protocol_id": "independent_eval_v1",
+  "status": "blocked_validation_sanity_review",
+  "selected_config_id": "artps_full_frozen_mars_clf_on_v1",
+  "selection_artifact": "results/iac2026/independent_eval_v1/validation/profile_selection.json",
+  "orientation_diagnostic_note": "Negated-score metrics are diagnostic and cannot be promoted unless the production score contract is objectively demonstrated to have the opposite orientation.",
+  "orientation_promoted": false,
+  "objective_bug_proven": false,
+  "metric_bug_detected": false,
+  "label_mapping_bug_detected": false,
+  "duplicate_prediction_bug_detected": false,
+  "processing_error_mass_failure_detected": false,
+  "score_semantics_fully_verified": false,
+  "classifier_class_semantics_verified": false,
+  "candidate_suppression_semantics_verified": false,
+  "annotation_quality_independently_verified": false,
+  "final_test_authorized": false,
+  "blockers": [
+    "validation_auroc_below_chance",
+    "validation_ap_below_balanced_prevalence",
+    "degenerate_all_positive_threshold",
+    "score_orientation_not_verified",
+    "label_score_semantics_not_verified",
+    "blind_review_pending",
+    "classifier_class_semantics_unverified",
+    "candidate_suppression_semantics_unverified"
+  ],
+  "profiles": [
+    {
+      "config_id": "artps_full_frozen_raw_clf_on_v1",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_raw_clf_on_v1/predictions.csv",
+      "n": 54,
+      "n_pos": 27,
+      "n_neg": 27,
+      "positive_prevalence": 0.5,
+      "positive_label": 1,
+      "higher_score_means_more_anomalous": true,
+      "decision_rule": "score >= threshold",
+      "validation_id_set_match": true,
+      "score_stats": {
+        "min": 0.0,
+        "max": 0.2731854195037129,
+        "mean": 0.10348636198445525,
+        "std": 0.08233926661116917,
+        "unique_count": 43,
+        "zero_count": 12,
+        "zero_fraction": 0.2222222222222222,
+        "mean_pos": 0.0706239639147925,
+        "mean_neg": 0.13634876005411803,
+        "median_pos": 0.06891906477713731,
+        "median_neg": 0.16551334907844825
+      },
+      "metrics_custom": {
+        "auroc": 0.28600823045267487,
+        "average_precision": 0.3821756445670755,
+        "selected_threshold": 0.0,
+        "f1_at_selected_threshold": 0.6666666666666666,
+        "confusion_matrix": {
+          "tn": 0,
+          "fp": 27,
+          "fn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "metrics_sklearn": {
+        "auroc": 0.28600823045267487,
+        "average_precision": 0.3821756445670754,
+        "error": null
+      },
+      "orientation_diagnostic": {
+        "note": "Negated-score metrics are diagnostic and cannot be promoted unless the production score contract is objectively demonstrated to have the opposite orientation.",
+        "promoted": false,
+        "raw": {
+          "auroc": 0.28600823045267487,
+          "average_precision": 0.3821756445670755
+        },
+        "negated": {
+          "auroc": 0.7139917695473251,
+          "average_precision": 0.6309147000492337
+        },
+        "one_minus": {
+          "auroc": 0.7139917695473251,
+          "average_precision": 0.6309147000492337
+        }
+      },
+      "selection_artifact_metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.28600823045267487,
+        "average_precision": 0.3821756445670755,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "zero_score_reasons": {
+        "unavailable_requires_instrumented_validation_rerun": 12
+      },
+      "y_true_audit": {
+        "mismatches": [],
+        "missing_in_manifest": []
+      },
+      "duplicate_sample_ids": [],
+      "flags": {
+        "all_positive_predictions": true,
+        "auroc_below_0_5": true,
+        "ap_below_positive_prevalence": true,
+        "score_collapse": false,
+        "excessive_zero_scores": false,
+        "class_score_order_reversed": true,
+        "degenerate_threshold_zero": true,
+        "metric_implementation_bug": false,
+        "y_true_mapping_bug": false,
+        "duplicate_sample_ids": false,
+        "processing_errors_present": false,
+        "n_not_54": false,
+        "not_balanced_27_27": false
+      },
+      "metric_crosscheck_notes": []
+    },
+    {
+      "config_id": "artps_full_frozen_raw_clf_off_v1",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_raw_clf_off_v1/predictions.csv",
+      "n": 54,
+      "n_pos": 27,
+      "n_neg": 27,
+      "positive_prevalence": 0.5,
+      "positive_label": 1,
+      "higher_score_means_more_anomalous": true,
+      "decision_rule": "score >= threshold",
+      "validation_id_set_match": true,
+      "score_stats": {
+        "min": 0.0,
+        "max": 0.2663838723548871,
+        "mean": 0.10380858822621818,
+        "std": 0.08311268642882301,
+        "unique_count": 43,
+        "zero_count": 12,
+        "zero_fraction": 0.2222222222222222,
+        "mean_pos": 0.06914637591402255,
+        "mean_neg": 0.13847080053841376,
+        "median_pos": 0.06564321285597052,
+        "median_neg": 0.1701463173718097
+      },
+      "metrics_custom": {
+        "auroc": 0.27503429355281206,
+        "average_precision": 0.37860804381276103,
+        "selected_threshold": 0.0,
+        "f1_at_selected_threshold": 0.6666666666666666,
+        "confusion_matrix": {
+          "tn": 0,
+          "fp": 27,
+          "fn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "metrics_sklearn": {
+        "auroc": 0.27503429355281206,
+        "average_precision": 0.378608043812761,
+        "error": null
+      },
+      "orientation_diagnostic": {
+        "note": "Negated-score metrics are diagnostic and cannot be promoted unless the production score contract is objectively demonstrated to have the opposite orientation.",
+        "promoted": false,
+        "raw": {
+          "auroc": 0.27503429355281206,
+          "average_precision": 0.37860804381276103
+        },
+        "negated": {
+          "auroc": 0.7249657064471879,
+          "average_precision": 0.6355658162614591
+        },
+        "one_minus": {
+          "auroc": 0.7249657064471879,
+          "average_precision": 0.6355658162614591
+        }
+      },
+      "selection_artifact_metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.27503429355281206,
+        "average_precision": 0.37860804381276103,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "zero_score_reasons": {
+        "unavailable_requires_instrumented_validation_rerun": 12
+      },
+      "y_true_audit": {
+        "mismatches": [],
+        "missing_in_manifest": []
+      },
+      "duplicate_sample_ids": [],
+      "flags": {
+        "all_positive_predictions": true,
+        "auroc_below_0_5": true,
+        "ap_below_positive_prevalence": true,
+        "score_collapse": false,
+        "excessive_zero_scores": false,
+        "class_score_order_reversed": true,
+        "degenerate_threshold_zero": true,
+        "metric_implementation_bug": false,
+        "y_true_mapping_bug": false,
+        "duplicate_sample_ids": false,
+        "processing_errors_present": false,
+        "n_not_54": false,
+        "not_balanced_27_27": false
+      },
+      "metric_crosscheck_notes": []
+    },
+    {
+      "config_id": "artps_full_frozen_mars_clf_on_v1",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv",
+      "n": 54,
+      "n_pos": 27,
+      "n_neg": 27,
+      "positive_prevalence": 0.5,
+      "positive_label": 1,
+      "higher_score_means_more_anomalous": true,
+      "decision_rule": "score >= threshold",
+      "validation_id_set_match": true,
+      "score_stats": {
+        "min": 0.0,
+        "max": 0.2833863100055038,
+        "mean": 0.11704610775154865,
+        "std": 0.070645502169381,
+        "unique_count": 50,
+        "zero_count": 5,
+        "zero_fraction": 0.09259259259259259,
+        "mean_pos": 0.10413673718296065,
+        "mean_neg": 0.12995547832013662,
+        "median_pos": 0.10996669384848601,
+        "median_neg": 0.14055872573207312
+      },
+      "metrics_custom": {
+        "auroc": 0.39231824417009603,
+        "average_precision": 0.45787682195218266,
+        "selected_threshold": 0.0,
+        "f1_at_selected_threshold": 0.6666666666666666,
+        "confusion_matrix": {
+          "tn": 0,
+          "fp": 27,
+          "fn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "metrics_sklearn": {
+        "auroc": 0.39231824417009603,
+        "average_precision": 0.45787682195218254,
+        "error": null
+      },
+      "orientation_diagnostic": {
+        "note": "Negated-score metrics are diagnostic and cannot be promoted unless the production score contract is objectively demonstrated to have the opposite orientation.",
+        "promoted": false,
+        "raw": {
+          "auroc": 0.39231824417009603,
+          "average_precision": 0.45787682195218266
+        },
+        "negated": {
+          "auroc": 0.607681755829904,
+          "average_precision": 0.574852414367572
+        },
+        "one_minus": {
+          "auroc": 0.607681755829904,
+          "average_precision": 0.574852414367572
+        }
+      },
+      "selection_artifact_metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.39231824417009603,
+        "average_precision": 0.45787682195218266,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "zero_score_reasons": {
+        "unavailable_requires_instrumented_validation_rerun": 5
+      },
+      "y_true_audit": {
+        "mismatches": [],
+        "missing_in_manifest": []
+      },
+      "duplicate_sample_ids": [],
+      "flags": {
+        "all_positive_predictions": true,
+        "auroc_below_0_5": true,
+        "ap_below_positive_prevalence": true,
+        "score_collapse": false,
+        "excessive_zero_scores": false,
+        "class_score_order_reversed": true,
+        "degenerate_threshold_zero": true,
+        "metric_implementation_bug": false,
+        "y_true_mapping_bug": false,
+        "duplicate_sample_ids": false,
+        "processing_errors_present": false,
+        "n_not_54": false,
+        "not_balanced_27_27": false
+      },
+      "metric_crosscheck_notes": []
+    },
+    {
+      "config_id": "artps_full_frozen_mars_clf_off_v1",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_off_v1/predictions.csv",
+      "n": 54,
+      "n_pos": 27,
+      "n_neg": 27,
+      "positive_prevalence": 0.5,
+      "positive_label": 1,
+      "higher_score_means_more_anomalous": true,
+      "decision_rule": "score >= threshold",
+      "validation_id_set_match": true,
+      "score_stats": {
+        "min": 0.0,
+        "max": 0.26996765799628486,
+        "mean": 0.11278295049949667,
+        "std": 0.06699808022328693,
+        "unique_count": 50,
+        "zero_count": 5,
+        "zero_fraction": 0.09259259259259259,
+        "mean_pos": 0.0997005752291668,
+        "mean_neg": 0.12586532576982656,
+        "median_pos": 0.10486516172264045,
+        "median_neg": 0.13377404365751142
+      },
+      "metrics_custom": {
+        "auroc": 0.3772290809327846,
+        "average_precision": 0.44902940307147243,
+        "selected_threshold": 0.0,
+        "f1_at_selected_threshold": 0.6666666666666666,
+        "confusion_matrix": {
+          "tn": 0,
+          "fp": 27,
+          "fn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "metrics_sklearn": {
+        "auroc": 0.3772290809327847,
+        "average_precision": 0.44902940307147243,
+        "error": null
+      },
+      "orientation_diagnostic": {
+        "note": "Negated-score metrics are diagnostic and cannot be promoted unless the production score contract is objectively demonstrated to have the opposite orientation.",
+        "promoted": false,
+        "raw": {
+          "auroc": 0.3772290809327846,
+          "average_precision": 0.44902940307147243
+        },
+        "negated": {
+          "auroc": 0.6227709190672154,
+          "average_precision": 0.5864518659506021
+        },
+        "one_minus": {
+          "auroc": 0.6227709190672154,
+          "average_precision": 0.5864518659506021
+        }
+      },
+      "selection_artifact_metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.3772290809327846,
+        "average_precision": 0.44902940307147243,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "zero_score_reasons": {
+        "unavailable_requires_instrumented_validation_rerun": 5
+      },
+      "y_true_audit": {
+        "mismatches": [],
+        "missing_in_manifest": []
+      },
+      "duplicate_sample_ids": [],
+      "flags": {
+        "all_positive_predictions": true,
+        "auroc_below_0_5": true,
+        "ap_below_positive_prevalence": true,
+        "score_collapse": false,
+        "excessive_zero_scores": false,
+        "class_score_order_reversed": true,
+        "degenerate_threshold_zero": true,
+        "metric_implementation_bug": false,
+        "y_true_mapping_bug": false,
+        "duplicate_sample_ids": false,
+        "processing_errors_present": false,
+        "n_not_54": false,
+        "not_balanced_27_27": false
+      },
+      "metric_crosscheck_notes": []
+    }
+  ],
+  "decision_text": "No metric-computation or manifest-to-prediction label-mapping defect was detected in the committed artifacts. Score-component semantics, classifier class ordering, candidate suppression behavior, and independent annotation quality remain unresolved.",
+  "asserts": {
+    "positive_label": 1,
+    "higher_score_means_more_anomalous": true,
+    "decision_operator": "score >= t",
+    "expected_n": 54,
+    "expected_balance": "27/27"
+  }
+}

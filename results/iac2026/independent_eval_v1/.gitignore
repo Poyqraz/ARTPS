@@ -4,6 +4,7 @@
 **/__pycache__/
 *.tmp
 val_*/
+blind_review_pack/
 !.gitignore
 !validation/
 !profile_selection.json
