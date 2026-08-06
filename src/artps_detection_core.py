@@ -237,8 +237,8 @@ def _fp_suppression_enabled() -> bool:
     return bool(_p("fp_suppression_enabled", True))
 
 
-def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool:
-    """Benchmark kaynakli hafif post-filter."""
+def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> tuple[bool, str]:
+    """Benchmark kaynakli hafif post-filter. Returns (keep, reason_code)."""
     h_img, w_img = image_shape[:2]
     y = int(det.get("y", 0))
     w = max(1, int(det.get("w", 1)))
@@ -259,57 +259,57 @@ def _should_keep_detection(det: dict, image_shape: tuple[int, int, int]) -> bool
     if feat is None:
         feat = compute_size_distance_features(w=w, h=h, img_hw=(h_img, w_img))
     if sd_on and should_reject_field_scale(feat, support):
-        return False
+        return False, "field_scale_rejection"
     near_top = y <= max(12, int(0.06 * h_img))
     very_wide = (w / max(1, h)) >= 8.0
     src = str(det.get("proposal_source", ""))
     if area_ratio >= 0.12 and support < 0.02:
-        return False
+        return False, "candidate_score_filtering"
     if near_top and very_wide and combined_pool < 0.18:
-        return False
+        return False, "border_mask"
     if src == "heuristic_merged":
         if area_ratio >= 0.10:
-            return False
+            return False, "size_distance_policy_rejection"
         if area_ratio >= 0.18 and y < int(0.20 * h_img):
-            return False
+            return False, "border_mask"
         if (w / max(1, h)) >= 5.0 and combined_pool < 0.04:
-            return False
+            return False, "candidate_score_filtering"
         if h >= int(0.5 * h_img) and support < 0.03:
-            return False
+            return False, "candidate_score_filtering"
     if src == "heuristic_detail_first":
         if (w / max(1, w_img)) > 0.85 and (h / max(1, h_img)) < 0.08:
-            return False
+            return False, "invalid_geometry"
         if y > int(0.80 * h_img) and (w / max(1, w_img)) > 0.70:
-            return False
+            return False, "border_mask"
         fine_proxy = edge_mean + comb_mean
         fine_local = float(det.get("fine_local", 0.0))
         recall_signal = max(fine_proxy, fine_local, float(det.get("score", 0.0)))
         if recall_signal >= 0.010 or support >= 0.003:
-            return True
-        return False
+            return True, "kept"
+        return False, "all_proposals_below_localization_threshold"
     if src == "heuristic_plateau":
         fill_ratio = float(det.get("fill_ratio", 1.0))
         if area_ratio >= 0.12 and fill_ratio < 0.70:
-            return False
+            return False, "invalid_geometry"
         if float(det.get("plateau_mass", 0.0)) > 0 and float(det.get("score", 0.0)) >= 0.006:
-            return True
+            return True, "kept"
     if src == "heuristic":
         far_small_ok = sd_on and feat.band == "far_small"
         if area_ratio < 0.003 and support < 0.035 and not far_small_ok:
-            return False
+            return False, "size_distance_policy_rejection"
         if near_top and area_ratio < 0.01 and support < 0.05:
-            return False
+            return False, "border_mask"
     if support < 0.015:
         fine_proxy = edge_mean + comb_mean
         if src in {"heuristic_relaxed", "heuristic_peaks", "heuristic_plateau", "heuristic_detail_first"} and (
             support >= 0.006 or fine_proxy >= 0.035
         ):
-            return True
+            return True, "kept"
         # far_small: weak-support soft keep (recall); do not harden
         if sd_on and feat.band == "far_small" and (support >= 0.004 or fine_proxy >= 0.025):
-            return True
-        return False
-    return True
+            return True, "kept"
+        return False, "candidate_score_filtering"
+    return True, "kept"
 
 
 def _boxes_axis_overlap_ratio(a: dict, b: dict) -> tuple[float, float]:
@@ -873,6 +873,7 @@ def _score_object_detections(
     padim_map: np.ndarray | None,
     patchcore_map: np.ndarray | None,
     global_known_value: float,
+    diagnostics_candidates: list | None = None,
 ) -> list:
     """Detector veya heuristic proposal'lari object-level anomaly/value skoruyla yeniden puanla."""
     if not detections:
@@ -906,7 +907,31 @@ def _score_object_detections(
             global_known_value=float(global_known_value),
         )
         det["score"] = det["score_raw"]
-        if _should_keep_detection(det, original_rgb_float.shape):
+        keep, reason = _should_keep_detection(det, original_rgb_float.shape)
+        det["keep_or_drop"] = "keep" if keep else "drop"
+        det["drop_reason"] = "" if keep else reason
+        det["mask_reason"] = reason if not keep else ""
+        if diagnostics_candidates is not None:
+            diagnostics_candidates.append(
+                {
+                    "x": int(det.get("x", 0)),
+                    "y": int(det.get("y", 0)),
+                    "w": int(det.get("w", 0)),
+                    "h": int(det.get("h", 0)),
+                    "combined_pool": float(det["combined_pool"]),
+                    "depth_pool": float(det["depth_pool"]),
+                    "detector_confidence": float(det["detector_conf"]),
+                    "padim_pool": float(det["padim_pool"]),
+                    "patchcore_pool": float(det["patchcore_pool"]),
+                    "local_value": float(det["object_value_score"]),
+                    "anomaly_score_before_gate": float(det["object_anomaly_score"]),
+                    "final_candidate_score": float(det["score"]),
+                    "keep_or_drop": det["keep_or_drop"],
+                    "drop_reason": det["drop_reason"],
+                    "mask_reason": det["mask_reason"],
+                }
+            )
+        if keep:
             kept.append(det)
 
     return sorted(kept, key=lambda d: float(d.get("score", 0.0)), reverse=True)

@@ -85,36 +85,43 @@ def test_orientation_diagnostic_not_promoted():
         assert p["orientation_diagnostic"]["promoted"] is False
 
 
-def test_zero_score_reason_unavailable_without_instrumentation():
+def test_zero_score_reason_from_instrumented_rerun():
     diag = VAL_ROOT / PRIMARY / "candidate_diagnostics.csv"
     assert diag.is_file()
     with diag.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
     zeros = [r for r in rows if float(r["image_score"]) == 0.0]
     assert zeros
-    assert any(
-        r["zero_score_reason"] == "unavailable_requires_instrumented_validation_rerun"
-        for r in zeros
-    )
-    assert not any(r["zero_score_reason"] == "processing_status_error" for r in zeros)
+    reasons = {r["zero_score_reason"] for r in zeros}
+    assert reasons <= {
+        "field_scale_rejection",
+        "size_distance_policy_rejection",
+        "candidate_score_filtering",
+        "border_mask",
+        "no_raw_proposal",
+        "processing_status_error",
+        "unavailable_requires_instrumented_validation_rerun",
+    }
+    assert "processing_status_error" not in reasons
+    assert any(r in reasons for r in (
+        "field_scale_rejection",
+        "size_distance_policy_rejection",
+        "candidate_score_filtering",
+    ))
 
 
-def test_component_diagnostics_v1_marks_unavailable():
+def test_component_diagnostics_v1_instrumented():
     path = VAL_ROOT / PRIMARY / "component_diagnostics_v1.csv"
     assert path.is_file()
     with path.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
     assert len(rows) == 54
-    assert any(
-        r["execution_path"] == "instrumented_rerun_not_executed" for r in rows
-    )
+    assert all(r["execution_path"] == "instrumented_validation_rerun" for r in rows)
+    assert all(str(r.get("score_parity_ok")).lower() in {"true", "1"} for r in rows)
     zeros = [r for r in rows if float(r["image_score"]) == 0.0]
     assert zeros
-    assert all(
-        r["no_valid_candidate_reason"]
-        == "unavailable_requires_instrumented_validation_rerun"
-        for r in zeros
-    )
+    assert all(int(r["raw_proposal_count"]) > 0 for r in zeros)
+    assert all(r["no_valid_candidate_reason"] for r in zeros)
 
 
 def test_silent_fallback_rejected_on_synthetic_error_status():
