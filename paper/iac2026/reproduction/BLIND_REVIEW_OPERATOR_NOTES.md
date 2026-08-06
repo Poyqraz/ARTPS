@@ -24,3 +24,6 @@ Do **not** commit pack images, `private_mapping.csv`, or filled reviewer fields.
 ## Freeze
 
 Final test remains closed (`blocked_validation_sanity_review`). This review does not open the test split.
+
+<!-- ci: retrigger PR27 checks -->
+
