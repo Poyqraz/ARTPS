@@ -12,6 +12,9 @@ blockers:
   - degenerate_all_positive_threshold
   - score_orientation_not_verified
   - label_score_semantics_not_verified
+  - blind_review_pending
+  - classifier_class_semantics_unverified
+  - candidate_suppression_semantics_unverified
 
 frozen_validation_selection:
   selected_config_id: artps_full_frozen_mars_clf_on_v1

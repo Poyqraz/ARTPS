@@ -55,6 +55,9 @@ def test_final_test_scope_blocked_sanity_review():
         "validation_auroc_below_chance",
         "degenerate_all_positive_threshold",
         "score_orientation_not_verified",
+        "blind_review_pending",
+        "classifier_class_semantics_unverified",
+        "candidate_suppression_semantics_unverified",
     ):
         assert key in scope["blockers"]
     assert "open_test_split" in scope["forbidden_while_blocked"]

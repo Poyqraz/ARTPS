@@ -7,8 +7,20 @@ Negated-score metrics are diagnostic and cannot be promoted unless the productio
 - Protocol: `independent_eval_v1`
 - Selected config (historical, immutable): `artps_full_frozen_mars_clf_on_v1`
 - Profiles audited: 4
-- Objective bug proven: `False`
+- Metric bug detected: `False`
+- Label mapping bug detected: `False`
 - Final test authorized: `False`
+
+## Scoped verification flags
+
+- `metric_bug_detected`: `False`
+- `label_mapping_bug_detected`: `False`
+- `duplicate_prediction_bug_detected`: `False`
+- `processing_error_mass_failure_detected`: `False`
+- `score_semantics_fully_verified`: `False`
+- `classifier_class_semantics_verified`: `False`
+- `candidate_suppression_semantics_verified`: `False`
+- `annotation_quality_independently_verified`: `False`
 
 ## Profile summary
 
@@ -26,8 +38,11 @@ Negated-score metrics are diagnostic and cannot be promoted unless the productio
 - `degenerate_all_positive_threshold`
 - `score_orientation_not_verified`
 - `label_score_semantics_not_verified`
+- `blind_review_pending`
+- `classifier_class_semantics_unverified`
+- `candidate_suppression_semantics_unverified`
 
 ## Decision
 
-No objective implementation bug proven from CSV/JSONL cross-checks; below-chance ranking and all-positive threshold=0.0 remain validation sanity blockers. `profile_selection.json` stays immutable. `final_test_authorized=false`; do not open the test split.
+No metric-computation or manifest-to-prediction label-mapping defect was detected in the committed artifacts. Score-component semantics, classifier class ordering, candidate suppression behavior, and independent annotation quality remain unresolved.
 

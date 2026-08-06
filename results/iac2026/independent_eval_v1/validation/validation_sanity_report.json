@@ -6,13 +6,24 @@
   "orientation_diagnostic_note": "Negated-score metrics are diagnostic and cannot be promoted unless the production score contract is objectively demonstrated to have the opposite orientation.",
   "orientation_promoted": false,
   "objective_bug_proven": false,
+  "metric_bug_detected": false,
+  "label_mapping_bug_detected": false,
+  "duplicate_prediction_bug_detected": false,
+  "processing_error_mass_failure_detected": false,
+  "score_semantics_fully_verified": false,
+  "classifier_class_semantics_verified": false,
+  "candidate_suppression_semantics_verified": false,
+  "annotation_quality_independently_verified": false,
   "final_test_authorized": false,
   "blockers": [
     "validation_auroc_below_chance",
     "validation_ap_below_balanced_prevalence",
     "degenerate_all_positive_threshold",
     "score_orientation_not_verified",
-    "label_score_semantics_not_verified"
+    "label_score_semantics_not_verified",
+    "blind_review_pending",
+    "classifier_class_semantics_unverified",
+    "candidate_suppression_semantics_unverified"
   ],
   "profiles": [
     {
@@ -93,7 +104,7 @@
         "validation_sample_count": 54
       },
       "zero_score_reasons": {
-        "no_valid_candidate": 12
+        "unavailable_requires_instrumented_validation_rerun": 12
       },
       "y_true_audit": {
         "mismatches": [],
@@ -195,7 +206,7 @@
         "validation_sample_count": 54
       },
       "zero_score_reasons": {
-        "no_valid_candidate": 12
+        "unavailable_requires_instrumented_validation_rerun": 12
       },
       "y_true_audit": {
         "mismatches": [],
@@ -297,7 +308,7 @@
         "validation_sample_count": 54
       },
       "zero_score_reasons": {
-        "no_valid_candidate": 5
+        "unavailable_requires_instrumented_validation_rerun": 5
       },
       "y_true_audit": {
         "mismatches": [],
@@ -399,7 +410,7 @@
         "validation_sample_count": 54
       },
       "zero_score_reasons": {
-        "no_valid_candidate": 5
+        "unavailable_requires_instrumented_validation_rerun": 5
       },
       "y_true_audit": {
         "mismatches": [],
@@ -424,7 +435,7 @@
       "metric_crosscheck_notes": []
     }
   ],
-  "decision_text": "No objective implementation bug proven from CSV/JSONL cross-checks; below-chance ranking and all-positive threshold=0.0 remain validation sanity blockers. `profile_selection.json` stays immutable. `final_test_authorized=false`; do not open the test split.",
+  "decision_text": "No metric-computation or manifest-to-prediction label-mapping defect was detected in the committed artifacts. Score-component semantics, classifier class ordering, candidate suppression behavior, and independent annotation quality remain unresolved.",
   "asserts": {
     "positive_label": 1,
     "higher_score_means_more_anomalous": true,

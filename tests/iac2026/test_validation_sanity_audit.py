@@ -85,16 +85,36 @@ def test_orientation_diagnostic_not_promoted():
         assert p["orientation_diagnostic"]["promoted"] is False
 
 
-def test_zero_score_reason_no_valid_candidate():
+def test_zero_score_reason_unavailable_without_instrumentation():
     diag = VAL_ROOT / PRIMARY / "candidate_diagnostics.csv"
     assert diag.is_file()
     with diag.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
     zeros = [r for r in rows if float(r["image_score"]) == 0.0]
     assert zeros
-    assert any(r["zero_score_reason"] == "no_valid_candidate" for r in zeros)
-    # Primary committed run should not be dominated by exception zeros
+    assert any(
+        r["zero_score_reason"] == "unavailable_requires_instrumented_validation_rerun"
+        for r in zeros
+    )
     assert not any(r["zero_score_reason"] == "processing_status_error" for r in zeros)
+
+
+def test_component_diagnostics_v1_marks_unavailable():
+    path = VAL_ROOT / PRIMARY / "component_diagnostics_v1.csv"
+    assert path.is_file()
+    with path.open(encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) == 54
+    assert any(
+        r["execution_path"] == "instrumented_rerun_not_executed" for r in rows
+    )
+    zeros = [r for r in rows if float(r["image_score"]) == 0.0]
+    assert zeros
+    assert all(
+        r["no_valid_candidate_reason"]
+        == "unavailable_requires_instrumented_validation_rerun"
+        for r in zeros
+    )
 
 
 def test_silent_fallback_rejected_on_synthetic_error_status():
@@ -139,9 +159,28 @@ def test_blind_queue_hides_labels_and_scores():
         rows = list(csv.DictReader(f))
     assert len(rows) == 54
     cols = set(rows[0].keys())
-    for banned in ("binary_label", "y_true", "anomaly_score", "image_score", "split"):
+    for banned in (
+        "binary_label",
+        "y_true",
+        "anomaly_score",
+        "image_score",
+        "split",
+        "sample_id",
+        "relative_path",
+    ):
         assert banned not in cols
     assert all(r["audit_status"] == "pending_independent_review" for r in rows)
+
+
+def test_scoped_bug_flags_and_decision_text():
+    report = _load_report()
+    assert report["metric_bug_detected"] is False
+    assert report["label_mapping_bug_detected"] is False
+    assert report["classifier_class_semantics_verified"] is False
+    assert report["candidate_suppression_semantics_verified"] is False
+    assert report["annotation_quality_independently_verified"] is False
+    assert "manifest-to-prediction label-mapping" in report["decision_text"]
+    assert "remain unresolved" in report["decision_text"]
 
 
 def test_claim_ledger_and_manuscript_results_untouched_paths():

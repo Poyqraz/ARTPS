@@ -22,6 +22,15 @@ from detection_metrics_lib import (  # noqa: E402
     f1_precision_recall,
     select_threshold_on_validation,
 )
+from validation_blind_review import (  # noqa: E402
+    BLIND_QUEUE_FIELDS,
+    BLIND_QUEUE_SEED,
+    DECISION_TEXT_SCOPED,
+    UNAVAILABLE_SUPPRESSION,
+    assert_public_row_blind,
+    build_blind_public_and_private,
+    is_included_resolved,
+)
 
 VAL_ROOT = REPO_ROOT / "results" / "iac2026" / "independent_eval_v1" / "validation"
 MANIFEST = REPO_ROOT / "reproduction" / "iac2026" / "manifests" / "independent_eval_v1.csv"
@@ -35,7 +44,10 @@ ORIENTATION_NOTE = (
     "score contract is objectively demonstrated to have the opposite orientation."
 )
 METRIC_TOL = 1e-6
-BLIND_QUEUE_SEED = 20260806
+
+
+def _is_included_resolved(row: dict[str, str]) -> bool:
+    return is_included_resolved(row)
 
 
 def _json_safe(obj: Any) -> Any:
@@ -192,12 +204,11 @@ def analyze_profile(
             zero_reasons["processing_status_error"] += 1
             error_count += 1
         elif int(jl.get("candidate_count") or 0) == 0 and status == "ok":
-            zero_reasons["no_valid_candidate"] += 1
+            zero_reasons[UNAVAILABLE_SUPPRESSION] += 1
         elif jl.get("warning_flags"):
             zero_reasons["ok_with_warnings"] += 1
         else:
-            zero_reasons["other_or_missing_jsonl"] += 1
-
+            zero_reasons[UNAVAILABLE_SUPPRESSION] += 1
     flags = {
         "all_positive_predictions": cm["tn"] == 0
         and cm["fn"] == 0
@@ -296,6 +307,7 @@ def write_candidate_diagnostics(config_id: str) -> Path:
         "processing_status",
         "warning_flags",
         "zero_score_reason",
+        "suppression_reason_detail",
         "classifier_score",
         "mask_fraction",
         "notes",
@@ -308,14 +320,20 @@ def write_candidate_diagnostics(config_id: str) -> Path:
         if score == 0.0:
             if status == "error":
                 reason = "processing_status_error"
+                detail = reason
             elif cand == 0 and status == "ok":
-                reason = "no_valid_candidate"
+                # Fine mask/proposal reason needs instrumented rerun
+                reason = UNAVAILABLE_SUPPRESSION
+                detail = UNAVAILABLE_SUPPRESSION
             elif r.get("warning_flags"):
                 reason = "ok_with_warnings"
+                detail = UNAVAILABLE_SUPPRESSION
             else:
-                reason = "other"
+                reason = UNAVAILABLE_SUPPRESSION
+                detail = UNAVAILABLE_SUPPRESSION
         else:
             reason = ""
+            detail = ""
         out_rows.append(
             {
                 "sample_id": r.get("sample_id"),
@@ -328,6 +346,7 @@ def write_candidate_diagnostics(config_id: str) -> Path:
                 "processing_status": status,
                 "warning_flags": "|".join(r.get("warning_flags") or []),
                 "zero_score_reason": reason,
+                "suppression_reason_detail": detail,
                 "classifier_score": "",
                 "mask_fraction": "",
                 "notes": unavailable,
@@ -335,6 +354,90 @@ def write_candidate_diagnostics(config_id: str) -> Path:
         )
     with out_csv.open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(out_rows)
+    return out_csv
+
+
+COMPONENT_DIAG_FIELDS = [
+    "sample_id",
+    "y_true",
+    "image_score",
+    "raw_proposal_count",
+    "scored_candidate_count",
+    "kept_candidate_count",
+    "suppressed_candidate_count",
+    "top_candidate_box",
+    "combined_pool",
+    "depth_pool",
+    "detector_confidence",
+    "classifier_argmax",
+    "classifier_logits_or_probabilities",
+    "classifier_known_value",
+    "padim_pool",
+    "patchcore_pool",
+    "local_value",
+    "anomaly_score_before_gate",
+    "final_candidate_score",
+    "keep_or_drop",
+    "drop_reason",
+    "mask_reason",
+    "no_valid_candidate_reason",
+    "execution_path",
+    "warning_flags",
+]
+
+
+def write_component_diagnostics_v1(config_id: str, pred_csv: Path) -> Path:
+    """Commit-time diagnostics from JSONL/CSV only (no GPU). Fine reasons unavailable."""
+    out_dir = VAL_ROOT / config_id
+    out_csv = out_dir / "component_diagnostics_v1.csv"
+    pred_rows = {r["sample_id"]: r for r in _read_csv(pred_csv)}
+    jsonl_rows = _read_jsonl(out_dir / "predictions.jsonl")
+    out_rows: list[dict[str, Any]] = []
+    for r in jsonl_rows:
+        sid = str(r.get("sample_id"))
+        pred = pred_rows.get(sid, {})
+        score = float(r.get("image_score") or 0.0)
+        status = str(r.get("processing_status") or "")
+        cand = int(r.get("candidate_count") or 0)
+        if status == "error":
+            no_cand_reason = "processing_status_error"
+        elif score == 0.0 and cand == 0:
+            no_cand_reason = UNAVAILABLE_SUPPRESSION
+        else:
+            no_cand_reason = ""
+        out_rows.append(
+            {
+                "sample_id": sid,
+                "y_true": pred.get("y_true", ""),
+                "image_score": score,
+                "raw_proposal_count": "",
+                "scored_candidate_count": cand,
+                "kept_candidate_count": r.get("valid_candidate_count", ""),
+                "suppressed_candidate_count": "",
+                "top_candidate_box": "",
+                "combined_pool": "",
+                "depth_pool": "",
+                "detector_confidence": "",
+                "classifier_argmax": "",
+                "classifier_logits_or_probabilities": "",
+                "classifier_known_value": "",
+                "padim_pool": "",
+                "patchcore_pool": "",
+                "local_value": "",
+                "anomaly_score_before_gate": "",
+                "final_candidate_score": r.get("top_candidate_score", ""),
+                "keep_or_drop": "",
+                "drop_reason": UNAVAILABLE_SUPPRESSION if score == 0.0 else "",
+                "mask_reason": UNAVAILABLE_SUPPRESSION if score == 0.0 else "",
+                "no_valid_candidate_reason": no_cand_reason,
+                "execution_path": "instrumented_rerun_not_executed",
+                "warning_flags": "|".join(r.get("warning_flags") or []),
+            }
+        )
+    with out_csv.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=COMPONENT_DIAG_FIELDS)
         w.writeheader()
         w.writerows(out_rows)
     return out_csv
@@ -351,40 +454,13 @@ def write_blind_review_queue(
         / "independent_eval_v1_validation_blind_review_queue.csv"
     )
     out.parent.mkdir(parents=True, exist_ok=True)
-    val = [
-        r
-        for r in manifest_rows
-        if str(r.get("split")).strip().lower() == "validation" and _is_included_resolved(r)
-    ]
-    rng = np.random.default_rng(seed)
-    order = rng.permutation(len(val))
-    fieldnames = [
-        "review_order",
-        "sample_id",
-        "relative_path",
-        "path_exists",
-        "audit_status",
-        "seed",
-    ]
-    rows_out: list[dict[str, Any]] = []
-    for i, idx in enumerate(order):
-        r = val[int(idx)]
-        rel = r.get("relative_path") or ""
-        path = REPO_ROOT / rel if rel and not Path(rel).is_absolute() else Path(rel)
-        rows_out.append(
-            {
-                "review_order": i,
-                "sample_id": r["sample_id"],
-                "relative_path": rel,
-                "path_exists": bool(path.is_file()) if rel else False,
-                "audit_status": "pending_independent_review",
-                "seed": seed,
-            }
-        )
+    public, _private = build_blind_public_and_private(manifest_rows, seed=seed)
+    for row in public:
+        assert_public_row_blind(row)
     with out.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w = csv.DictWriter(f, fieldnames=BLIND_QUEUE_FIELDS)
         w.writeheader()
-        w.writerows(rows_out)
+        w.writerows(public)
     return out
 
 
@@ -399,14 +475,33 @@ def render_md(report: dict[str, Any]) -> str:
         f"- Protocol: `{report['protocol_id']}`",
         f"- Selected config (historical, immutable): `{report['selected_config_id']}`",
         f"- Profiles audited: {len(report['profiles'])}",
-        f"- Objective bug proven: `{report['objective_bug_proven']}`",
+        f"- Metric bug detected: `{report.get('metric_bug_detected')}`",
+        f"- Label mapping bug detected: `{report.get('label_mapping_bug_detected')}`",
         f"- Final test authorized: `{report['final_test_authorized']}`",
         "",
-        "## Profile summary",
+        "## Scoped verification flags",
         "",
-        "| config_id | n | AUROC | AP | thr | CM (tn/fp/fn/tp) | flags |",
-        "|---|---:|---:|---:|---:|---|---|",
     ]
+    for key in (
+        "metric_bug_detected",
+        "label_mapping_bug_detected",
+        "duplicate_prediction_bug_detected",
+        "processing_error_mass_failure_detected",
+        "score_semantics_fully_verified",
+        "classifier_class_semantics_verified",
+        "candidate_suppression_semantics_verified",
+        "annotation_quality_independently_verified",
+    ):
+        lines.append(f"- `{key}`: `{report.get(key)}`")
+    lines.extend(
+        [
+            "",
+            "## Profile summary",
+            "",
+            "| config_id | n | AUROC | AP | thr | CM (tn/fp/fn/tp) | flags |",
+            "|---|---:|---:|---:|---:|---|---|",
+        ]
+    )
     for p in report["profiles"]:
         m = p["metrics_custom"]
         cm = m["confusion_matrix"]
@@ -459,12 +554,16 @@ def main(argv: list[str] | None = None) -> int:
             and cid == selection.get("selected_config_id")
         ):
             write_candidate_diagnostics(cid)
+            write_component_diagnostics_v1(cid, pred_path)
 
     if not args.skip_blind_queue:
         write_blind_review_queue(manifest_rows)
 
     any_metric_bug = any(p["flags"]["metric_implementation_bug"] for p in profiles_out)
     any_label_bug = any(p["flags"]["y_true_mapping_bug"] for p in profiles_out)
+    any_dup = any(p["flags"]["duplicate_sample_ids"] for p in profiles_out)
+    any_proc_err = any(p["flags"]["processing_errors_present"] for p in profiles_out)
+    # Kept for back-compat; do not treat as a clean bill of health alone.
     objective_bug = bool(any_metric_bug or any_label_bug)
 
     blockers = [
@@ -473,23 +572,22 @@ def main(argv: list[str] | None = None) -> int:
         "degenerate_all_positive_threshold",
         "score_orientation_not_verified",
         "label_score_semantics_not_verified",
+        "blind_review_pending",
+        "classifier_class_semantics_unverified",
+        "candidate_suppression_semantics_unverified",
     ]
     if any_metric_bug:
         blockers.append("metric_implementation_bug")
     if any_label_bug:
         blockers.append("y_true_mapping_bug")
 
-    decision_text = (
-        "No objective implementation bug proven from CSV/JSONL cross-checks; "
-        "below-chance ranking and all-positive threshold=0.0 remain validation "
-        "sanity blockers. `profile_selection.json` stays immutable. "
-        "`final_test_authorized=false`; do not open the test split."
-    )
+    decision_text = DECISION_TEXT_SCOPED
     if objective_bug:
         decision_text = (
-            "Objective bug flag(s) set — see profile flags. Corrected config "
-            "`…_v1_1` and revalidation are required before any final-test authorization; "
-            "this audit does not promote orientation transforms."
+            "Metric-computation or label-mapping defect flag(s) set — see profile flags. "
+            "Corrected config `…_v1_1` and revalidation are required before any final-test "
+            "authorization; this audit does not promote orientation transforms. "
+            + DECISION_TEXT_SCOPED
         )
 
     report = {
@@ -500,6 +598,14 @@ def main(argv: list[str] | None = None) -> int:
         "orientation_diagnostic_note": ORIENTATION_NOTE,
         "orientation_promoted": False,
         "objective_bug_proven": objective_bug,
+        "metric_bug_detected": any_metric_bug,
+        "label_mapping_bug_detected": any_label_bug,
+        "duplicate_prediction_bug_detected": any_dup,
+        "processing_error_mass_failure_detected": any_proc_err,
+        "score_semantics_fully_verified": False,
+        "classifier_class_semantics_verified": False,
+        "candidate_suppression_semantics_verified": False,
+        "annotation_quality_independently_verified": False,
         "final_test_authorized": False,
         "blockers": blockers,
         "profiles": profiles_out,
