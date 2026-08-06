@@ -43,13 +43,21 @@ class MiDaSDepthEstimator:
     Tek kamera görüntüsünden derinlik haritası üretir
     """
     
-    def __init__(self, model_type: str = "DPT_Large", device: str = "auto", enhancement_enabled: bool = True):
+    def __init__(
+        self,
+        model_type: str = "DPT_Large",
+        device: str = "auto",
+        enhancement_enabled: bool = True,
+        strict_local_only: bool = False,
+    ):
         """
         Args:
             model_type: MiDaS model tipi ("DPT_Large", "DPT_Hybrid", "MiDaS_small")
             device: Cihaz ("auto", "cuda", "cpu")
+            strict_local_only: True ise yalnizca yerel DPT_Large state_dict kabul edilir.
         """
         self.model_type = model_type
+        self.strict_local_only = bool(strict_local_only)
         self.device = torch.device('cuda' if torch.cuda.is_available() and device == "auto" else device)
         
         # HF boru hattı kullanılıyor mu?
@@ -171,12 +179,30 @@ class MiDaSDepthEstimator:
     def _load_midas_model(self) -> nn.Module:
         """MiDaS/DPT modelini yükle ve DPT_Large'ı zorla.
 
-        Sıra:
+        Sıra (strict_local_only=False):
         1) Yerel state_dict (.pt, git dışı raw_models/)
         2) Yerel TorchScript (.pt)
         3) PyTorch Hub (intel-isl/MiDaS)
         4) Basit CNN fallback
+
+        strict_local_only=True: yalnizca (1) local_state_dict; aksi halde RuntimeError.
         """
+        if self.strict_local_only:
+            if self.model_type != "DPT_Large":
+                raise RuntimeError(
+                    f"strict_local_only requires DPT_Large, got {self.model_type!r}"
+                )
+            local_path = self._local_dpt_path()
+            if not local_path.is_file():
+                raise RuntimeError(f"strict_local_only: missing local DPT weights at {local_path}")
+            local_model = self._load_local_dpt_weights(local_path)
+            if local_model is None or self.load_source != "local_state_dict":
+                raise RuntimeError(
+                    "strict_local_only: DPT_Large local_state_dict load failed "
+                    f"(load_source={self.load_source!r})"
+                )
+            return local_model
+
         try:
             if self.model_type == "DPT_Large":
                 local_path = self._local_dpt_path()

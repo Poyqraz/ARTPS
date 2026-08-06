@@ -1,0 +1,193 @@
+{
+  "amp_parity_status": "rejected",
+  "artifact_sha256": "4763889cb35e2d1c9196379f7b4190222dac112f9384b5c16605d7416a1912bb",
+  "candidates": [
+    {
+      "checkpoint_hashes": {
+        "autoencoder_sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2",
+        "classifier_sha256": "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457",
+        "depth_sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
+      },
+      "classifier_enabled": true,
+      "config_id": "artps_full_frozen_raw_clf_on_v1",
+      "config_path": "reproduction/iac2026/configs/independent_eval_artps_full_frozen.yaml",
+      "config_sha256": "13d3c848c0bf7f9020ace1d60d93a26ee81cd4a8483dc51865fe48468542a248",
+      "metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.28600823045267487,
+        "average_precision": 0.3821756445670755,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "precision_mode": "fp32",
+      "prediction_csv_sha256": "bf046706fe959cab47c89de2d23696b3997123bace665fdce153ce8b1c030236",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_raw_clf_on_v1/predictions.csv",
+      "preprocessing_profile": "raw_rgb_v1"
+    },
+    {
+      "checkpoint_hashes": {
+        "autoencoder_sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2",
+        "classifier_sha256": "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457",
+        "depth_sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
+      },
+      "classifier_enabled": false,
+      "config_id": "artps_full_frozen_raw_clf_off_v1",
+      "config_path": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_no_classifier.yaml",
+      "config_sha256": "d3279d6e4e6b1fc74f60eb2c8f15110e7c1a232e2f7d53ae68f0faa2a4b497a6",
+      "metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.27503429355281206,
+        "average_precision": 0.37860804381276103,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "precision_mode": "fp32",
+      "prediction_csv_sha256": "6b0bfce8c39be56166c4571630326c52d8193e4d0986eda34ad79e20e934457e",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_raw_clf_off_v1/predictions.csv",
+      "preprocessing_profile": "raw_rgb_v1"
+    },
+    {
+      "checkpoint_hashes": {
+        "autoencoder_sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2",
+        "classifier_sha256": "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457",
+        "depth_sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
+      },
+      "classifier_enabled": true,
+      "config_id": "artps_full_frozen_mars_clf_on_v1",
+      "config_path": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
+      "config_sha256": "b339af9361de3117539663defa79eac1aa1d39b0f7234aad6c071ac2847575ae",
+      "metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.39231824417009603,
+        "average_precision": 0.45787682195218266,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "precision_mode": "fp32",
+      "prediction_csv_sha256": "24df219b5f7dc1bf667a77a41f91dccaa875e4547fe4292892ec4244e13c45cf",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv",
+      "preprocessing_profile": "mars_enhancement_v1"
+    },
+    {
+      "checkpoint_hashes": {
+        "autoencoder_sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2",
+        "classifier_sha256": "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457",
+        "depth_sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
+      },
+      "classifier_enabled": false,
+      "config_id": "artps_full_frozen_mars_clf_off_v1",
+      "config_path": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars_no_classifier.yaml",
+      "config_sha256": "d93ff938a0ff762db93197834e7f2b3e1a33a526e7f6cc3df14d4912c45d3ae9",
+      "metrics": {
+        "F1": 0.6666666666666666,
+        "auroc": 0.3772290809327846,
+        "average_precision": 0.44902940307147243,
+        "confusion_matrix": {
+          "fn": 0,
+          "fp": 27,
+          "tn": 0,
+          "tp": 27
+        },
+        "precision": 0.5,
+        "recall": 1.0,
+        "selected_threshold": 0.0,
+        "validation_f1_at_threshold": 0.6666666666666666,
+        "validation_n": 54,
+        "validation_sample_count": 54
+      },
+      "precision_mode": "fp32",
+      "prediction_csv_sha256": "c1bc39a37098d34780d56200ff19e1eb0199f6607e390255e5cc7c4f43b15a6f",
+      "predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_off_v1/predictions.csv",
+      "preprocessing_profile": "mars_enhancement_v1"
+    }
+  ],
+  "eligible_for_manuscript_primary_results": false,
+  "evaluation_designation": "frozen-checkpoint current evaluation with unverified training provenance",
+  "mars_enhancement_snapshot": {
+    "clahe_clip": 1.5,
+    "denoise_h": 5,
+    "detail_enhance": false,
+    "enable_awb": false,
+    "enable_clahe": true,
+    "enable_denoise": true,
+    "enable_gamma": true,
+    "enable_realesrgan": false,
+    "enable_sharpen": true,
+    "enable_upscale": true,
+    "sharpen_radius": 2,
+    "sharpen_strength": 0.35,
+    "target_long_side": 1024,
+    "target_mean": 115.0
+  },
+  "not_final_test_result": true,
+  "primary_precision": "fp32",
+  "protocol_id": "independent_eval_v1",
+  "selected_config_id": "artps_full_frozen_mars_clf_on_v1",
+  "selected_metrics": {
+    "F1": 0.6666666666666666,
+    "auroc": 0.39231824417009603,
+    "average_precision": 0.45787682195218266,
+    "confusion_matrix": {
+      "fn": 0,
+      "fp": 27,
+      "tn": 0,
+      "tp": 27
+    },
+    "precision": 0.5,
+    "recall": 1.0,
+    "selected_threshold": 0.0,
+    "validation_f1_at_threshold": 0.6666666666666666,
+    "validation_n": 54,
+    "validation_sample_count": 54
+  },
+  "selected_predictions_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/predictions.csv",
+  "selected_threshold": 0.0,
+  "selection_policy": {
+    "primary_metric": "average_precision",
+    "threshold_metric": "f1",
+    "threshold_tie_break": "highest_threshold",
+    "tie_breakers": [
+      "auroc",
+      "classifier_off",
+      "raw_rgb_v1"
+    ]
+  },
+  "selection_rule": [
+    "highest_validation_average_precision",
+    "tie_highest_validation_auroc",
+    "tie_simpler_classifier_off",
+    "tie_raw_rgb_v1"
+  ],
+  "selection_split": "validation",
+  "test_opened": false
+}

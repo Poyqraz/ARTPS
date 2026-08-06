@@ -1,0 +1,27 @@
+{
+  "amp_accepted": false,
+  "amp_predictions_csv": "C:\\Users\\cancor\\Desktop\\Repos\\project_mars\\results\\iac2026\\independent_eval_v1\\validation\\artps_full_frozen_mars_clf_on_amp_v1\\predictions.csv",
+  "compared_rows": 54,
+  "decision": "reject_amp_keep_fp32",
+  "errors": [
+    "score parity fail ('ie1_train_dusty_curiosity_300_MAST_469_jpg.rf.a446c71341ae1f04a2a35a47fde68dd9.jpg_f1fb6a5979a0', 'validation'): diff=0.000109273 > 0.0001",
+    "score parity fail ('ie1_train_rocky_curiosity_300_MAST_450_jpg.rf.43d64f094a30d7e0fd157dfa2253a251.jpg_e66d50a1afce', 'validation'): diff=0.000484466 > 0.0001",
+    "score parity fail ('ie1_train_dusty_curiosity_100_MAST_131_jpg.rf.dcdb2cfac3f33663d0a857f053b6b391.jpg_56ae1340e898', 'validation'): diff=0.0101428 > 0.0001",
+    "score parity fail ('ie1_train_dusty_curiosity_1500_MAST_1780_jpg.rf.145cbec6847cf785e2859396d5c90253.jpg_e3763b2b3bfc', 'validation'): diff=0.000271346 > 0.0001",
+    "AP parity fail: fp32=0.45787682195218266 amp=0.4587381483949044",
+    "AUROC parity fail: fp32=0.39231824417009603 amp=0.3950617283950617"
+  ],
+  "fp32_predictions_csv": "C:\\Users\\cancor\\Desktop\\Repos\\project_mars\\results\\iac2026\\independent_eval_v1\\validation\\artps_full_frozen_mars_clf_on_v1\\predictions.csv",
+  "gates": {
+    "metric_abs_tolerance": 0.0001,
+    "score_abs_tolerance": 0.0001
+  },
+  "max_abs_score_diff": 0.010142811172208194,
+  "passed": false,
+  "primary_precision": "fp32",
+  "split": "validation",
+  "validation_auroc_amp": 0.3950617283950617,
+  "validation_auroc_fp32": 0.39231824417009603,
+  "validation_average_precision_amp": 0.4587381483949044,
+  "validation_average_precision_fp32": 0.45787682195218266
+}

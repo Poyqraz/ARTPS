@@ -1,0 +1,14 @@
+{
+  "cuda_available": true,
+  "cuda_device_count": 1,
+  "cuda_device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "cwd": "C:\\Users\\cancor\\Desktop\\Repos\\project_mars",
+  "dataset_root": "C:\\Users\\cancor\\Desktop\\Repos\\project_mars\\mars_images",
+  "git_head": "60956685129cb601b76559d38a51e2b7655f9f9d",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "python": "3.12.3 | packaged by conda-forge | (main, Apr 15 2024, 18:20:11) [MSC v.1938 64 bit (AMD64)]",
+  "repo_root": "C:\\Users\\cancor\\Desktop\\Repos\\project_mars",
+  "timestamp_utc": "2026-08-05T20:31:51.978016+00:00",
+  "torch_version": "2.12.0+cu126"
+}

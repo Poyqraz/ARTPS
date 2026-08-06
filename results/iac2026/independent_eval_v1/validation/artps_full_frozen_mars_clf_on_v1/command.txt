@@ -1,0 +1,1 @@
+scripts\iac2026\run_artps_frozen_full_profile.py --profile reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml --split validation --run-id val_mars_clf_on_v1

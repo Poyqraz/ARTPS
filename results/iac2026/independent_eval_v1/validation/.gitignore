@@ -1,0 +1,3 @@
+﻿# Keep pinned profile outputs; ignore ephemeral run-id dirs if nested later
+val_*/
+*.tmp

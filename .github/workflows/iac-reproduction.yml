@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -53,7 +53,14 @@ jobs:
           pip install -r reproduction/iac2026/requirements-ci.txt
 
       - name: Trailing whitespace check
-        run: git diff --check HEAD^ HEAD || git diff --check origin/main...HEAD
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git diff --check \
+              "${{ github.event.pull_request.base.sha }}" \
+              "${{ github.event.pull_request.head.sha }}"
+          else
+            git diff --check HEAD^ HEAD
+          fi
 
       - name: Validate JSON schemas (Draft 2020-12)
         run: |
@@ -150,6 +157,54 @@ jobs:
           assert s["learned_depth_enabled"] is False
           assert s["autoencoder_enabled"] is False
           print("c07 dry-run ok", s.get("pipeline_id"), s.get("headline_fps"))
+          PY
+
+      - name: Guard — no large checkpoint cache arrays committed
+        run: |
+          set -e
+          tracked_heavy=$(git ls-files 'results/iac2026/independent_eval_v1/**/*.npy' \
+            'results/iac2026/independent_eval_v1/**/*.npz' \
+            'results/iac2026/independent_eval_v1/**/*.pth' \
+            'results/iac2026/independent_eval_v1/**/*.pt' || true)
+          if [ -n "$tracked_heavy" ]; then
+            echo "ERROR: heavy weight/cache arrays must not be committed:"
+            echo "$tracked_heavy"
+            exit 1
+          fi
+          if [ -d results/iac2026/independent_eval_v1/cache ]; then
+            if find results/iac2026/independent_eval_v1/cache -type f \( -name '*.pth' -o -name '*.pt' -o -name '*.npz' -o -name '*.npy' \) | grep -q .; then
+              echo "ERROR: large cache arrays or weights under independent_eval_v1/cache"
+              find results/iac2026/independent_eval_v1/cache -type f \( -name '*.pth' -o -name '*.pt' -o -name '*.npz' -o -name '*.npy' \)
+              exit 1
+            fi
+          fi
+          echo "OK: no committed cache weight/array files"
+
+      - name: Guard — test split embargo on validation artifacts
+        run: |
+          set -e
+          python - <<'PY'
+          import csv, sys
+          from pathlib import Path
+          import yaml
+          status = yaml.safe_load(Path("reproduction/iac2026/test_freeze/TEST_OPEN_STATUS.yaml").read_text(encoding="utf-8"))
+          assert status.get("test_opened") is False, status
+          root = Path("results/iac2026/independent_eval_v1/validation")
+          if not root.is_dir():
+              print("OK: no validation dir")
+              sys.exit(0)
+          bad = []
+          for p in root.rglob("predictions.csv"):
+              with p.open(encoding="utf-8", newline="") as f:
+                  for row in csv.DictReader(f):
+                      if row.get("split") == "test":
+                          bad.append(str(p))
+                          break
+          if bad:
+              print("ERROR: test-split predictions found:")
+              print("\n".join(bad))
+              sys.exit(1)
+          print("OK: test embargo intact")
           PY
 
       - name: Guard — no download/GPU hooks in executable harness sources

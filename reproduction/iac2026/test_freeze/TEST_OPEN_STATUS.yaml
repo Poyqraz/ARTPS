@@ -1,0 +1,11 @@
+# independent_eval_v1 test-split embargo marker.
+# Scripts in the frozen-checkpoint PR must refuse split=test while test_opened is false.
+
+protocol_id: independent_eval_v1
+test_opened: false
+opened_at: null
+opened_by: null
+selected_config_id: null
+selected_threshold: null
+validation_selection_artifact_sha256: null
+reason: pending_final_test_authorization

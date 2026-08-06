@@ -1,0 +1,10 @@
+﻿cache/
+**/*.npy
+**/*.npz
+**/__pycache__/
+*.tmp
+val_*/
+!.gitignore
+!validation/
+!profile_selection.json
+!precision_parity.json

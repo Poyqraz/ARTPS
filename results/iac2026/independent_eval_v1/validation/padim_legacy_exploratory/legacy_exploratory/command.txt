@@ -1,0 +1,1 @@
+scripts\iac2026\run_legacy_baseline_exploratory.py --config reproduction/iac2026/configs/independent_eval_padim_legacy_exploratory.yaml

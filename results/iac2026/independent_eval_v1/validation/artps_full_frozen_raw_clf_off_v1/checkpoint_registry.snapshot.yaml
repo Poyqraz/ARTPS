@@ -1,0 +1,181 @@
+# Frozen checkpoint inventory for independent_eval_v1 validation.
+# Availability does not establish historical training provenance.
+# All local_legacy_artifact checkpoints: training_dataset_provenance=unverified,
+# historical_claim_linkage=unverified.
+
+schema_version: 1
+protocol_id: independent_eval_v1
+registry_id: frozen_checkpoint_registry_v1
+checkpoint_origin_default: local_legacy_artifact
+training_dataset_provenance_default: unverified
+historical_claim_linkage_default: unverified
+
+checkpoints:
+  - checkpoint_id: ae_curiosity_extended
+    path: results/optimized_autoencoder_curiosity_extended.pth
+    size_bytes: 204708474
+    sha256: 8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2
+    model_type: OptimizedAutoencoder
+    expected_architecture:
+      class_name: OptimizedAutoencoder
+      input_channels: 3
+      latent_dim: 1024
+      input_resolution: 128
+      top_level_keys: [model_state_dict, optimizer_state_dict]
+      state_dict_key: model_state_dict
+      required_state_dict_prefixes: [encoder., latent_projection., decoder.]
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: ARTPS full-profile autoencoder
+    primary_or_exploratory: primary
+    notes: Primary canonical autoencoder for artps_full_frozen profiles.
+
+  - checkpoint_id: ae_optimized_model
+    path: results/optimized_autoencoder_model.pth
+    size_bytes: 204707382
+    sha256: 07f69766c465200c148f017dca74a9971678b45fb7e355db65333e78c9cef609
+    model_type: OptimizedAutoencoder
+    expected_architecture:
+      class_name: OptimizedAutoencoder
+      input_channels: 3
+      latent_dim: 1024
+      input_resolution: 128
+      top_level_keys: [model_state_dict, optimizer_state_dict]
+      state_dict_key: model_state_dict
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: inventory_only_alternate_autoencoder
+    primary_or_exploratory: exploratory
+    notes: Inventory only; not used in predeclared validation profiles.
+
+  - checkpoint_id: ae_curiosity_data
+    path: results/optimized_autoencoder_curiosity_data.pth
+    size_bytes: 204708138
+    sha256: 1d0dd1f6984f40a1894569a9879dfe7430966a52b2f4aeadec62bbe73b335fbe
+    model_type: OptimizedAutoencoder
+    expected_architecture:
+      class_name: OptimizedAutoencoder
+      input_channels: 3
+      latent_dim: 1024
+      input_resolution: 128
+      top_level_keys: [model_state_dict, optimizer_state_dict]
+      state_dict_key: model_state_dict
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: inventory_only_alternate_autoencoder
+    primary_or_exploratory: exploratory
+    notes: Inventory only; not used in predeclared validation profiles.
+
+  - checkpoint_id: dpt_large_384
+    path: raw_models/dpt_large_384.pt
+    size_bytes: 1376378527
+    sha256: 2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69
+    model_type: DPT_Large
+    expected_architecture:
+      class_name: MiDaSDepthEstimator
+      model_type: DPT_Large
+      load_source: local_state_dict
+      min_param_count: 100000000
+      forbid_fallback: true
+      forbid_hub_download_for_primary: true
+      semantics: relative_depth_only
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: pretrained relative-depth estimator
+    primary_or_exploratory: primary
+    notes: Primary frozen DPT_Large weights; relative depth only (not metric).
+
+  - checkpoint_id: depth_enhanced_classifier
+    path: results/depth_enhanced_classifier.pth
+    size_bytes: 8475494
+    sha256: 83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457
+    model_type: DepthEnhancedClassifier
+    expected_architecture:
+      class_name: DepthEnhancedClassifier
+      num_classes: 5
+      rgb_features: 1024
+      depth_features: 14
+      top_level_keys: [model_state_dict, optimizer_state_dict, epoch, val_loss, accuracy]
+      state_dict_key: model_state_dict
+      required_state_dict_prefixes:
+        - rgb_feature_extractor.
+        - depth_feature_extractor.
+        - classifier.
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: optional full-profile component
+    primary_or_exploratory: primary
+    notes: Enable only after exact architecture/load contract verification.
+
+  - checkpoint_id: padim_stats_legacy
+    path: results/padim_stats.pth
+    size_bytes: 9444976
+    sha256: 3f6068d6dc4a2b383716df7fc542b564bd7893f271790209509c5c134e962cc2
+    model_type: PaDiM
+    expected_architecture:
+      class_name: PaDiM
+      top_level_keys: [mean, cov_inv, spatial, cfg]
+      cfg:
+        backbone: wide_resnet50_2
+        layers: [layer2, layer3]
+        image_size: 256
+      mean_shape: [1536]
+      cov_inv_shape: [1536, 1536]
+      spatial: [16, 16]
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: legacy exploratory baseline
+    primary_or_exploratory: exploratory
+    notes: >
+      Not a current train-negative baseline; not associated with historical 0.856.
+      eligible_for_primary_baseline_table=false; eligible_for_C06_reproduction=false.
+
+  - checkpoint_id: patchcore_bank_legacy
+    path: results/patchcore_bank.pth
+    size_bytes: 55576258
+    sha256: 73dd9e9ab1b88be47bed02292140014d8828b4db277b0491040dd89228914945
+    model_type: PatchCore
+    expected_architecture:
+      class_name: PatchCore
+      top_level_keys: [bank, spatial, cfg, proj_w]
+      cfg:
+        backbone: wide_resnet50_2
+        layers: [layer2, layer3]
+        image_size: 256
+        feature_dim: 256
+        coreset_pct: 0.1
+        nn_k: 5
+      bank_feature_dim: 256
+      proj_w_shape: [1536, 256]
+      spatial: [16, 16]
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: legacy exploratory baseline
+    primary_or_exploratory: exploratory
+    notes: >
+      Not a current train-negative baseline; not associated with historical 0.856.
+      eligible_for_primary_baseline_table=false; eligible_for_C06_reproduction=false.
+
+  - checkpoint_id: torchvision_wide_resnet50_2
+    path: null
+    path_env_hint: TORCH_HOME/hub/checkpoints/wide_resnet50_2-9ba9bcbe.pth
+    local_cache_path_windows: "%USERPROFILE%/.cache/torch/hub/checkpoints/wide_resnet50_2-9ba9bcbe.pth"
+    size_bytes: 275905729
+    sha256: 9ba9bcbebc349d733a72eb7608143fd754e4689ac8d8ce2916ca0bdff6443950
+    model_type: torchvision_backbone
+    expected_architecture:
+      class_name: wide_resnet50_2
+      weights_id: Wide_ResNet50_2_Weights.DEFAULT
+    load_status: pending_verify
+    training_dataset_provenance: unverified
+    historical_claim_linkage: unverified
+    intended_role: dependency for exploratory PaDiM/PatchCore
+    primary_or_exploratory: exploratory
+    notes: Required offline backbone for legacy exploratory baselines; no download in CI.
