@@ -1,4 +1,4 @@
-"""UI wrapper vs headless shared-core equivalence (synthetic, no large weights)."""
+"""UI wrapper vs headless shared-core equivalence (CI-safe without torch)."""
 from __future__ import annotations
 
 import ast
@@ -11,9 +11,6 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
-
-from src import artps_detection_core as adc  # noqa: E402
-
 
 TOL = 1e-7
 
@@ -35,7 +32,6 @@ def test_app_uses_shared_detection_core_wrapper():
     assert "from src.artps_detection_core import" in src
     assert "from src import artps_detection_core as _adc" in src
     assert "_adc.compute_combined_anomaly_map" in src
-    # Ensure the wrapper function still exists and delegates
     tree = ast.parse(src)
     wrapper = None
     for node in tree.body:
@@ -48,6 +44,9 @@ def test_app_uses_shared_detection_core_wrapper():
 
 
 def test_shared_fusion_deterministic_on_fixture():
+    torch = pytest.importorskip("torch")
+    from src import artps_detection_core as adc
+
     rng = np.random.default_rng(0)
     h, w = 64, 64
     original = rng.random((h, w, 3), dtype=np.float64).astype(np.float32)
@@ -85,9 +84,11 @@ def test_shared_fusion_deterministic_on_fixture():
         assert float(a.get("score", a.get("score_raw", 0))) == pytest.approx(
             float(b.get("score", b.get("score_raw", 0))), abs=TOL
         )
+    assert torch is not None
 
 
 def test_preprocess_hash_stable_for_raw_profile(tmp_path):
+    pytest.importorskip("torch")
     from PIL import Image
 
     from src.artps_inference import _preprocess_image

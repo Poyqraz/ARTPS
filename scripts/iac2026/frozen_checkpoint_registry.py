@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-import torch
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -82,6 +81,8 @@ def verify_registry_entry(entry: Mapping[str, Any], *, load_models: bool = False
     state_key = str(arch.get("state_dict_key", "model_state_dict"))
 
     try:
+        import torch  # local: CI software-verification does not install torch
+
         if model_type == "OptimizedAutoencoder":
             from src.models.optimized_autoencoder import OptimizedAutoencoder
 
