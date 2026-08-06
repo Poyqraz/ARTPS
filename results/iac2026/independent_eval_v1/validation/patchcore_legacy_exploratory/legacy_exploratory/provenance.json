@@ -1,10 +1,12 @@
 {
   "checkpoint_sha256": "73dd9e9ab1b88be47bed02292140014d8828b4db277b0491040dd89228914945",
   "eligible_for_C06_reproduction": false,
+  "eligible_for_claim_closure": false,
   "eligible_for_manuscript_primary_results": false,
   "eligible_for_primary_baseline_table": false,
   "evaluation_role": "secondary_exploratory",
   "not_final_test_result": true,
   "predictions_sha256": "b14bef1310775ba75d47e9538a1f3036e85f7ffd0126758c12d98965b8aa52f4",
-  "score_aggregation": "max_anomaly_map_exploratory"
+  "score_aggregation": "max_anomaly_map_exploratory",
+  "training_provenance": "unverified"
 }

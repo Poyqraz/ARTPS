@@ -8,4 +8,4 @@ opened_by: null
 selected_config_id: null
 selected_threshold: null
 validation_selection_artifact_sha256: null
-reason: pending_validation_selection
+reason: pending_final_test_authorization

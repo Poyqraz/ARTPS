@@ -205,10 +205,12 @@ def main(argv: list[str] | None = None) -> int:
         {
             "evaluation_role": config.get("evaluation_role"),
             "score_aggregation": config.get("score_aggregation"),
+            "training_provenance": "unverified",
             "not_final_test_result": bool(config.get("not_final_test_result", True)),
             "eligible_for_manuscript_primary_results": False,
             "eligible_for_primary_baseline_table": False,
             "eligible_for_C06_reproduction": False,
+            "eligible_for_claim_closure": False,
             "checkpoint_sha256": expected_sha,
             "predictions_sha256": sha256_file(pred_csv),
         },

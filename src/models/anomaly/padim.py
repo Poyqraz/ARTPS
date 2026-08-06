@@ -181,5 +181,3 @@ class PaDiM(AnomalyModel):
         amap = m.reshape(H, W).cpu().numpy()
         amap = cv2.resize(amap, (image_rgb_uint8.shape[1], image_rgb_uint8.shape[0]), interpolation=cv2.INTER_CUBIC)
         return _normalize_map(amap)
-
-

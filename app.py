@@ -313,16 +313,16 @@ def load_models(device_preference: str | None = None):
 
 def calculate_anomaly_score(autoencoder, image, device):
     """Görüntü için anomali skoru hesapla - GPU Optimizasyonu"""
-    
+
     try:
         # Görüntüyü işle
         image = image.resize((128, 128), Image.LANCZOS)
         image_array = np.array(image, dtype=np.float32) / 255.0
-        
+
         # Tensor'a çevir ve GPU'ya taşı
         input_tensor = torch.from_numpy(image_array).float()
         input_tensor = input_tensor.permute(2, 0, 1).unsqueeze(0).to(device)
-        
+
         # Model tahmini (AMP ile hızlandırma)
         with torch.no_grad():
             if device.type == 'cuda':
@@ -330,16 +330,16 @@ def calculate_anomaly_score(autoencoder, image, device):
                     reconstructed, latent = autoencoder(input_tensor)
             else:
                 reconstructed, latent = autoencoder(input_tensor)
-        
+
         # CPU'ya geri taşı ve numpy'a çevir
         reconstructed = reconstructed.squeeze(0).permute(1, 2, 0).cpu().numpy()
         latent = latent.squeeze().cpu().numpy()
-        
+
         # MSE hesapla (anomali skoru)
         mse = np.mean((image_array - reconstructed) ** 2)
-        
+
         return mse, image_array, reconstructed, latent
-        
+
     except Exception as e:
         st.error(t("analysis.anomaly_calc_error", error=e))
         return None, None, None, None
@@ -702,19 +702,19 @@ def apply_operational_target_policy(
 
 def calculate_known_value_score(classifier, depth_estimator, image_array, latent_features, device):
     """Dinamik bilinen değer skoru hesapla - GPU Optimizasyonu"""
-    
+
     try:
         # Derinlik tahmini
         depth_map, depth_metadata = depth_estimator.estimate_depth(image_array)
-        
+
         # Derinlik özelliklerini çıkar
         depth_features = depth_estimator.extract_depth_features(depth_map)
         depth_vec = MiDaSDepthEstimator.vectorize_depth_features(depth_features)
         depth_features_tensor = torch.tensor(depth_vec, dtype=torch.float32).unsqueeze(0).to(device)
-        
+
         # RGB latent features
         rgb_features_tensor = torch.tensor(latent_features, dtype=torch.float32).unsqueeze(0).to(device)
-        
+
         # Sınıflandırma tahmini (AMP)
         with torch.no_grad():
             if device.type == 'cuda':
@@ -724,31 +724,31 @@ def calculate_known_value_score(classifier, depth_estimator, image_array, latent
                 predictions = classifier(rgb_features_tensor, depth_features_tensor)
             predicted_class = torch.argmax(predictions, dim=1).item()
             confidence = torch.max(predictions).item()
-        
+
         # Sınıf değerlerini normalize et (0-1 arası)
         value_score = predicted_class / 4.0  # 0-4 arası sınıfları 0-1 arasına çevir
-        
+
         return value_score, confidence, predicted_class, depth_map, depth_features
-        
+
     except Exception as e:
         st.warning(t("analysis.known_value_error", error=e))
         return 0.5, 0.0, 2, None, {}  # Fallback değerler
 
 def analyze_mars_image(models, image):
     """Mars görüntüsünü kapsamlı analiz et - GPU Optimizasyonu"""
-    
+
     # Son analiz sonuçlarını yeniden çalıştırmada kaybetmemek için session_state'ten çek
     results = st.session_state.get("results", {})
     device = models.get('device', torch.device('cpu'))
     set_runtime_params(_ui_detection_params())
-    
+
     # 1. Anomali skoru hesapla
     mse, original, reconstructed, latent = calculate_anomaly_score(models['autoencoder'], image, device)
     results['anomaly_score'] = mse
     results['original'] = original
     results['reconstructed'] = reconstructed
     results['latent'] = latent
-    
+
     # 2. Bilinen değer skoru hesapla (hibrit model varsa)
     if 'classifier' in models and 'depth_estimator' in models:
         value_score, confidence, predicted_class, depth_map, depth_features = calculate_known_value_score(
@@ -766,7 +766,7 @@ def analyze_mars_image(models, image):
         results['predicted_class'] = 2
         results['depth_map'] = None
         results['depth_features'] = {}
-    
+
     # 3. Derinlik mevcutsa, görüntü + derinlik tabanlı birleşik anomali haritası üret
     try:
         depth_map_for_fusion = None
@@ -954,7 +954,7 @@ def analyze_mars_image(models, image):
         except Exception:
             results['focus_tiles'] = []
         results['viz_quality'] = _evaluate_depth_viz_quality(results)
-    
+
     # 4. Curiosity skoru: tek yerden, seçilebilir bileşenlerle hesapla
     try:
         scorer = models.get('curiosity_scorer')
@@ -1023,7 +1023,7 @@ def main():
     ]
     with hero_slot:
         render_hero(telemetry=_telemetry)
-    
+
     # Model durumu
     model_status = []
     if 'autoencoder' in models:
@@ -1057,12 +1057,12 @@ def main():
     if 'detector_info' in models:
         det_info = models['detector_info']
         st.sidebar.caption(t("sidebar.detector_active", backend=det_info.get("backend", "unknown")))
-    
+
     st.sidebar.success(t("sidebar.models_loaded_prefix") + "\n".join(model_status))
-    
+
     # Parametre ayarları
     st.sidebar.subheader(t("sidebar.params_settings"))
-    
+
     alpha = st.sidebar.slider(
         t("params.alpha.label"), 0.0, 1.0, 0.4, 0.1,
         help=t("params.alpha.help"),
@@ -1083,7 +1083,7 @@ def main():
         t("params.w_rough.label"), 0.0, 1.0, 0.0, 0.05,
         help=t("params.w_rough.help"),
     )
-    
+
     anomaly_threshold = st.sidebar.slider(
         t("params.anomaly_threshold.label"),
         min_value=0.0,
@@ -1246,7 +1246,7 @@ def main():
         except Exception:
             pass
         globals()['use_loaded_weights'] = bool(use_loaded)
-    
+
     # Ana içerik
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         t("tabs.image_analysis"),
@@ -1255,30 +1255,30 @@ def main():
         t("tabs.demo"),
         t("tabs.about"),
     ])
-    
+
     with tab1:
         section_header(t("section.image_analysis"))
-        
+
         # Dosya yükleme
         uploaded_file = st.file_uploader(
             t("analysis.upload_label"),
             type=['jpg', 'jpeg', 'png']
         )
-        
+
         if uploaded_file is not None:
             # Görüntüyü yükle
             image = Image.open(uploaded_file).convert('RGB')
 
             # Otomatik görüntü iyileştirme (Mars-safe panel)
             image = render_enhance_panel(image)
-            
+
             # İki sütunlu layout
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 st.subheader(t("analysis.original_header"))
                 st.image(image, caption=t("analysis.original_caption"), use_container_width=True)
-            
+
             # Analiz butonu
             clicked = st.button(t("analysis.analyze_btn"), type="primary")
             if clicked:
@@ -1322,7 +1322,7 @@ def main():
                     st.session_state["results"] = results
                     if results.get("depth_map_full") is not None:
                         st.session_state["last_depth_map"] = results["depth_map_full"]
-                    
+
                     if results['anomaly_score'] is not None:
                         # Sonuçları göster
                         with col2:
@@ -1332,16 +1332,16 @@ def main():
                                 caption=t("analysis.anomaly_caption", score=results['anomaly_score']),
                                 use_container_width=True,
                             )
-                        
+
                         # Sonuç analizi
                         st.subheader(t("analysis.results_header"))
-                        
+
                         # Metrikler
                         col1, col2, col3, col4, col5 = st.columns(5)
-                        
+
                         with col1:
                             st.metric(t("analysis.metric.anomaly_mse"), f"{results['anomaly_score']:.6f}")
-                        
+
                         with col2:
                             # Birleşik anomali skoru (derinlik + rekonstrüksiyon)
                             if results.get('combined_anomaly_score') is not None:
@@ -1357,22 +1357,22 @@ def main():
                                 t("analysis.metric.anomaly_status"),
                                 t("analysis.status.anomaly") if is_anomaly else t("analysis.status.normal"),
                             )
-                        
+
                         with col3:
                             st.metric(t("analysis.metric.known_value"), f"{results['known_value_score']:.3f}")
-                        
+
                         with col4:
                             # İlginçlik puanı (modüler skorlayıcıdan)
                             curiosity_score = results.get('curiosity_score')
                             if curiosity_score is None:
                                 curiosity_score = alpha * results['known_value_score'] + beta * results['anomaly_score']
                             st.metric(t("analysis.metric.curiosity"), f"{curiosity_score:.6f}")
-                        
+
                         with col5:
                             if 'predicted_class' in results:
                                 predicted_name = class_label(results['predicted_class'])
                                 st.metric(t("analysis.metric.predicted_class"), predicted_name)
-                        
+
                         # Fark görüntüsü + birleşik anomali haritası
                         st.subheader(t("analysis.diff_header"))
                         diff = np.abs(results['original'] - results['reconstructed'])
@@ -1775,7 +1775,7 @@ def main():
 
                     # Öneriler
                     st.subheader(t("analysis.recommendations_header"))
-                    
+
                     if is_anomaly and results['known_value_score'] > 0.6:
                         st.success(t("analysis.reco.high"))
                     elif is_anomaly:
@@ -1784,15 +1784,15 @@ def main():
                         st.info(t("analysis.reco.low_known"))
                     else:
                         st.info(t("analysis.reco.low_normal"))
-    
+
     with tab2:
         section_header(t("section.depth"))
-        
+
         if uploaded_file is not None and 'depth_estimator' in models:
             depth_model_info = models['depth_model_info']
             _dq = t("models.quality.high") if depth_model_info['is_real_dpt'] else t("models.quality.simple")
             st.subheader(t("depth.map_header", model_type=depth_model_info['model_type'], quality=_dq))
-            
+
             # Kullanıcı seçenekleri: çözünürlük ve iyileştirme
             col_opts1, col_opts2, col_opts3 = st.columns(3)
             with col_opts1:
@@ -1820,7 +1820,7 @@ def main():
             image = st.session_state.get("enhanced_image_for_analysis", image)
             # Seçilen çözünürlükte işle
             image_array = np.array(image.resize((target_resolution, target_resolution), Image.LANCZOS), dtype=np.float32) / 255.0
-            
+
             try:
                 # İyileştirme açık/kapalı seçenekleri
                 t0 = time.perf_counter()
@@ -1835,30 +1835,30 @@ def main():
                 )
                 t1 = time.perf_counter()
                 infer_ms = (t1 - t0) * 1000.0
-                
+
                 # Derinlik görselleştirmesi
                 col1, col2 = st.columns(2)
-                
+
                 with col1:
                     st.image(image, caption=t("depth.original_caption"), use_container_width=True)
-                
+
                 with col2:
                     # Geliştirilmiş derinlik görselleştirmesi
                     fig, ax = plt.subplots(figsize=(10, 8))
-                    
+
                     # Daha iyi colormap ve kontrast (turbo daha kontrastlı)
                     im = ax.imshow(depth_map, cmap='turbo', interpolation='bilinear')
                     ax.set_title(t("depth.map_title"), fontsize=14, fontweight='bold')
                     ax.axis('off')
-                    
+
                     # Geliştirilmiş colorbar
                     cbar = plt.colorbar(im, ax=ax, shrink=0.8, aspect=20)
                     cbar.set_label(t("depth.colorbar_label"), fontsize=12)
                     cbar.ax.tick_params(labelsize=10)
-                    
+
                     # Grid ekle
                     ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
-                    
+
                     plt.tight_layout()
                     st.pyplot(fig)
 
@@ -1876,7 +1876,7 @@ def main():
                     axc2.axis('off')
                     plt.tight_layout()
                     st.pyplot(fig_cmp)
-                    
+
                 # Derinlik analizi bilgileri ve süre
                 st.info(t(
                     "depth.summary",
@@ -1891,7 +1891,7 @@ def main():
                     "depth.relative_notice",
                     load_source=depth_model_info.get('load_source', 'unknown'),
                 ))
-                
+
                 # İnce ayar paneli
                 with st.expander(t("depth.tuning_expander"), expanded=False):
                     colp1, colp2, colp3 = st.columns(3)
@@ -1932,71 +1932,71 @@ def main():
                     ["turbo", "plasma", "inferno", "magma", "viridis", "cividis"],
                     index=0,
                 )
-                
+
                 # Seçilen colormap ile yeniden çiz
                 fig2, ax2 = plt.subplots(figsize=(10, 8))
                 im2 = ax2.imshow(depth_map, cmap=colormap_option, interpolation='bilinear')
                 ax2.set_title(f"{t('depth.map_title')} ({colormap_option})", fontsize=14, fontweight='bold')
                 ax2.axis('off')
-                
+
                 cbar2 = plt.colorbar(im2, ax=ax2, shrink=0.8, aspect=20)
                 cbar2.set_label(t("depth.colorbar_label"), fontsize=12)
                 cbar2.ax.tick_params(labelsize=10)
-                
+
                 ax2.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
                 plt.tight_layout()
                 st.pyplot(fig2)
-                
+
                 # Derinlik özelliklerini çıkar
                 depth_features = models['depth_estimator'].extract_depth_features(depth_map)
-                
+
                 # Derinlik özellikleri
                 st.subheader(t("depth.features_header"))
-                
+
                 # Özellikleri göster (daha detaylı)
                 col1, col2, col3, col4 = st.columns(4)
-                
+
                 with col1:
                     st.metric(t("depth.metric.mean"), f"{depth_features.get('depth_mean', 0):.3f}")
                     st.metric(t("depth.metric.std"), f"{depth_features.get('depth_std', 0):.3f}")
                     st.metric(t("depth.metric.variance"), f"{depth_features.get('depth_variance', 0):.3f}")
-                
+
                 with col2:
                     st.metric(t("depth.metric.min"), f"{depth_features.get('depth_min', 0):.3f}")
                     st.metric(t("depth.metric.max"), f"{depth_features.get('depth_max', 0):.3f}")
                     st.metric(t("depth.metric.median"), f"{depth_features.get('depth_median', 0):.3f}")
-                
+
                 with col3:
                     st.metric(t("depth.metric.complexity"), f"{depth_features.get('surface_complexity', 0):.3f}")
                     st.metric(t("depth.metric.grad_mean"), f"{depth_features.get('depth_gradient_mean', 0):.3f}")
                     st.metric(t("depth.metric.grad_std"), f"{depth_features.get('depth_gradient_std', 0):.3f}")
-                
+
                 with col4:
                     st.metric(t("depth.metric.skewness"), f"{depth_features.get('depth_skewness', 0):.3f}")
                     st.metric(t("depth.metric.kurtosis"), f"{depth_features.get('depth_kurtosis', 0):.3f}")
                     st.metric(t("depth.metric.p75_p25"), f"{depth_features.get('depth_percentile_75', 0) - depth_features.get('depth_percentile_25', 0):.3f}")
-                
+
                 # Derinlik metadata ve ek analizler
                 st.subheader(t("depth.metadata_header"))
                 st.json(metadata)
-                
+
                 # Derinlik histogramı
                 st.subheader(t("depth.distribution_header"))
                 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-                
+
                 # Histogram
                 ax1.hist(depth_map.flatten(), bins=50, alpha=0.7, color='skyblue', edgecolor='black')
                 ax1.set_title(t("depth.plot.histogram_title"))
                 ax1.set_xlabel(t("depth.plot.depth_value"))
                 ax1.set_ylabel(t("depth.plot.frequency"))
                 ax1.grid(True, alpha=0.3)
-                
+
                 # 3D yüzey plot (küçük örnek)
                 try:
                     sample_size = min(50, depth_map.shape[0], depth_map.shape[1])
                     sample_depth = depth_map[::depth_map.shape[0]//sample_size, ::depth_map.shape[1]//sample_size]
                     y, x = np.mgrid[0:sample_depth.shape[0], 0:sample_depth.shape[1]]
-                    
+
                     surf = ax2.plot_surface(x, y, sample_depth, cmap='viridis', alpha=0.8)
                     ax2.set_title(t("depth.plot.surface_3d"))
                     ax2.set_xlabel(t("depth.plot.axis_x"))
@@ -2008,20 +2008,20 @@ def main():
                     ax2.set_title(t("depth.plot.contour_2d"))
                     ax2.set_xlabel(t("depth.plot.axis_x"))
                     ax2.set_ylabel(t("depth.plot.axis_y"))
-                
+
                 plt.tight_layout()
                 st.pyplot(fig)
-                
+
                 # Derinlik kalitesi değerlendirmesi
                 st.subheader(t("depth.quality_header"))
-                
+
                 # Kalite metrikleri
                 depth_contrast = depth_map.std()
                 depth_range = depth_map.max() - depth_map.min()
                 depth_smoothness = 1.0 / (1.0 + depth_features.get('surface_complexity', 0))
-                
+
                 col1, col2, col3 = st.columns(3)
-                
+
                 with col1:
                     if depth_contrast > 0.1:
                         st.success(t("depth.contrast.high", value=depth_contrast))
@@ -2029,7 +2029,7 @@ def main():
                         st.warning(t("depth.contrast.medium", value=depth_contrast))
                     else:
                         st.error(t("depth.contrast.low", value=depth_contrast))
-                
+
                 with col2:
                     if depth_range > 0.5:
                         st.success(t("depth.range.wide", value=depth_range))
@@ -2037,7 +2037,7 @@ def main():
                         st.warning(t("depth.range.medium", value=depth_range))
                     else:
                         st.error(t("depth.range.narrow", value=depth_range))
-                
+
                 with col3:
                     if depth_smoothness > 0.7:
                         st.success(t("depth.surface.smooth", value=depth_smoothness))
@@ -2045,55 +2045,55 @@ def main():
                         st.warning(t("depth.surface.medium", value=depth_smoothness))
                     else:
                         st.error(t("depth.surface.rough", value=depth_smoothness))
-                
+
             except Exception as e:
                 st.error(t("depth.analysis_error", error=e))
         else:
             st.info(t("depth.upload_first"))
-    
+
     with tab3:
         section_header(t("section.system"))
-        
+
         # Model bilgileri
         st.subheader(t("system.model_info"))
-        
+
         if 'autoencoder' in models:
             total_params = sum(p.numel() for p in models['autoencoder'].parameters())
             model_size_mb = total_params * 4 / (1024 * 1024)
-            
+
             col1, col2, col3 = st.columns(3)
-            
+
             with col1:
                 st.metric(t("system.ae_params"), f"{total_params:,}")
-            
+
             with col2:
                 st.metric(t("system.ae_size"), f"{model_size_mb:.2f} MB")
-            
+
             with col3:
                 st.metric(t("system.latent_size"), "1024")
-        
+
         if 'classifier' in models:
             classifier_params = sum(p.numel() for p in models['classifier'].parameters())
             classifier_size_mb = classifier_params * 4 / (1024 * 1024)
-            
+
             col1, col2, col3 = st.columns(3)
-            
+
             with col1:
                 st.metric(t("system.clf_params"), f"{classifier_params:,}")
-            
+
             with col2:
                 st.metric(t("system.clf_size"), f"{classifier_size_mb:.2f} MB")
-            
+
             with col3:
                 st.metric(t("system.class_count"), "5")
-        
+
         # Eğitim verisi analizi
         st.subheader(t("system.training_data"))
-        
+
         data_dir = Path("mars_images")
         categories = {}
         total_images = 0
-        
+
         if data_dir.exists():
             for split in ['train', 'valid']:
                 split_dir = data_dir / split
@@ -2104,13 +2104,13 @@ def main():
                             image_count = len(list(category_dir.glob("*.jpg"))) + len(list(category_dir.glob("*.png")))
                             categories[category] = categories.get(category, 0) + image_count
                             total_images += image_count
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.metric(t("system.total_images"), total_images)
             st.metric(t("system.category_count"), len(categories))
-        
+
         with col2:
             # Kategori dağılımı grafiği
             if categories:
@@ -2120,17 +2120,17 @@ def main():
                     title=t("system.pie_title"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
-    
+
     with tab4:
         section_header(t("section.demo"))
-        
+
         # Demo görüntüleri
         st.subheader(t("system.test_images"))
-        
+
         # Curiosity verilerinden örnekler
         data_dir = Path("mars_images/valid")
         demo_images = []
-        
+
         if data_dir.exists():
             for category_dir in data_dir.iterdir():
                 if category_dir.is_dir():
@@ -2139,16 +2139,16 @@ def main():
                         demo_images.append((category_dir.name, str(image_files[0])))
                         if len(demo_images) >= 6:
                             break
-        
+
         if demo_images:
             # Demo görüntülerini göster
             cols = st.columns(3)
-            
+
             for i, (category, img_path) in enumerate(demo_images):
                 with cols[i % 3]:
                     image = Image.open(img_path)
                     st.image(image, caption=category_label(category), use_container_width=True)
-                    
+
                     # Hızlı analiz butonu
                     if st.button(t("demo.analyze_btn", category=category_label(category)), key=f"demo_{i}"):
                         with st.spinner(t("demo.spinner", category=category_label(category))):
@@ -2156,15 +2156,15 @@ def main():
                             if results['anomaly_score'] is not None:
                                 st.success(t("demo.anomaly_result", score=results['anomaly_score']))
                                 st.success(t("demo.known_result", score=results['known_value_score']))
-                                
+
                                 # İlginçlik puanı
                                 curiosity_score = alpha * results['known_value_score'] + beta * results['anomaly_score']
                                 st.metric(t("demo.curiosity_metric"), f"{curiosity_score:.6f}")
-    
+
     with tab5:
         section_header(t("section.about"))
-        
+
         st.markdown(t("about.markdown"))
 
 if __name__ == "__main__":
-    main() 
+    main()

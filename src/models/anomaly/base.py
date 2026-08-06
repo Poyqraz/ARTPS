@@ -34,5 +34,3 @@ class AnomalyModel(ABC):
         Returns:
             (H,W) float32 0..1
         """
-
-

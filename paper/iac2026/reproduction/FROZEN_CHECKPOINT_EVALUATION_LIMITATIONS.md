@@ -32,6 +32,8 @@ This document states what frozen ARTPS validation **can** and **cannot** establi
 | Primary manuscript results before test embargo opens | All validation artifacts carry `not_final_test_result: true` |
 | Legacy PaDiM/PatchCore as primary baselines | `evaluation_role: secondary_exploratory`; not associated with historical 0.856 |
 
+Canonical anomaly implementations for this repository live under `src/models/anomaly/`. The `ARTPS/src/models/anomaly/` tree is a legacy mirror kept byte-aligned for historical imports; this PR does not refactor that duplication.
+
 Do **not** describe this evaluation as leakage-free, independent training, unseen data, or external test unless later evidence establishes those statements.
 
 ## Operational constraints
