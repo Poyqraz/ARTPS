@@ -45,4 +45,3 @@ Negated-score metrics are diagnostic and cannot be promoted unless the productio
 ## Decision
 
 No metric-computation or manifest-to-prediction label-mapping defect was detected in the committed artifacts. Score-component semantics, classifier class ordering, candidate suppression behavior, and independent annotation quality remain unresolved.
-

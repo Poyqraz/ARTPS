@@ -517,8 +517,8 @@ def render_md(report: dict[str, Any]) -> str:
     lines.extend(["", "## Blockers", ""])
     for b in report["blockers"]:
         lines.append(f"- `{b}`")
-    lines.extend(["", "## Decision", "", report["decision_text"], ""])
-    return "\n".join(lines) + "\n"
+    lines.extend(["", "## Decision", "", report["decision_text"]])
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def main(argv: list[str] | None = None) -> int:
