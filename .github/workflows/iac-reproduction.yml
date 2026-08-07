@@ -1,4 +1,5 @@
 name: IAC reproduction harness
+# ci: retrigger PR27 checks
 
 # Smoke-only guard for accidental download/GPU hooks in executable harness
 # Python sources. This is NOT a security or data-exfiltration guarantee.

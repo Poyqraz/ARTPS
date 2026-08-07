@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, MutableMapping
@@ -252,6 +253,8 @@ def _known_value_score(
     bundle: FrozenARTPS,
     image_array: np.ndarray,
     latent: np.ndarray,
+    *,
+    diagnostics_out: MutableMapping[str, Any] | None = None,
 ) -> float:
     if bundle.classifier is None:
         raise RuntimeError("classifier required for known_value_score but not loaded")
@@ -267,6 +270,12 @@ def _known_value_score(
         else:
             predictions = bundle.classifier(rgb_t, depth_t)
         predicted_class = int(torch.argmax(predictions, dim=1).item())
+        if diagnostics_out is not None:
+            probs = torch.softmax(predictions.float(), dim=1).squeeze(0).detach().cpu().tolist()
+            diagnostics_out["classifier_argmax"] = predicted_class
+            diagnostics_out["classifier_logits_or_probabilities"] = "|".join(
+                f"{float(p):.6f}" for p in probs
+            )
     return float(predicted_class / 4.0)
 
 
@@ -293,11 +302,13 @@ def predict_image(
     *,
     sample_id: str | None = None,
     split: str | None = None,
+    diagnostics_out: MutableMapping[str, Any] | None = None,
 ) -> PredictionRecord:
     cfg = config or model_bundle.config
     path = Path(image_path)
     warnings: list[str] = []
     status = "ok"
+    cand_diags: list[dict[str, Any]] = []
 
     try:
         pil = _preprocess_image(path, cfg.preprocessing_profile)
@@ -310,11 +321,17 @@ def predict_image(
             ae_resize=cfg.ae_resize,
             use_amp=cfg.use_amp,
         )
+        clf_diag: dict[str, Any] = {}
         if cfg.enable_classifier and model_bundle.classifier is not None:
-            known_value = _known_value_score(model_bundle, original, latent)
+            known_value = _known_value_score(
+                model_bundle, original, latent, diagnostics_out=clf_diag if diagnostics_out is not None else None
+            )
         else:
             known_value = 0.5
             warnings.append("classifier_disabled_known_value_fallback_0.5")
+            if diagnostics_out is not None:
+                clf_diag["classifier_argmax"] = ""
+                clf_diag["classifier_logits_or_probabilities"] = ""
         depth_map = _depth_for_fusion(model_bundle, pil)
         protrusion_map = _compute_protrusion_map(depth_map)
 
@@ -344,6 +361,7 @@ def predict_image(
             padim_map=None,
             patchcore_map=None,
             global_known_value=known_value,
+            diagnostics_candidates=cand_diags if diagnostics_out is not None else None,
         )
 
         if scored:
@@ -364,6 +382,75 @@ def predict_image(
             for d in scored
         ]
 
+        if diagnostics_out is not None:
+            kept_n = len(scored)
+            raw_n = len(detections)
+            suppressed_n = max(0, len(cand_diags) - kept_n) if cand_diags else max(0, raw_n - kept_n)
+            top = scored[0] if scored else (cand_diags[0] if cand_diags else None)
+            drop_reasons = [c["drop_reason"] for c in cand_diags if c.get("drop_reason")]
+            if status == "ok" and kept_n == 0:
+                if raw_n == 0:
+                    no_cand = "no_raw_proposal"
+                elif drop_reasons:
+                    no_cand = Counter(drop_reasons).most_common(1)[0][0]
+                else:
+                    no_cand = "no_valid_candidate"
+            else:
+                no_cand = ""
+            diagnostics_out.clear()
+            diagnostics_out.update(
+                {
+                    "raw_proposal_count": raw_n,
+                    "scored_candidate_count": len(cand_diags) if cand_diags else raw_n,
+                    "kept_candidate_count": kept_n,
+                    "suppressed_candidate_count": suppressed_n,
+                    "top_candidate_box": (
+                        f"{top.get('x')},{top.get('y')},{top.get('w')},{top.get('h')}"
+                        if top
+                        else ""
+                    ),
+                    "combined_pool": float(top["combined_pool"]) if top and "combined_pool" in top else "",
+                    "depth_pool": float(top["depth_pool"]) if top and "depth_pool" in top else "",
+                    "detector_confidence": (
+                        float(top.get("detector_confidence", top.get("detector_conf", "")))
+                        if top
+                        else ""
+                    ),
+                    "classifier_argmax": clf_diag.get("classifier_argmax", ""),
+                    "classifier_logits_or_probabilities": clf_diag.get(
+                        "classifier_logits_or_probabilities", ""
+                    ),
+                    "classifier_known_value": known_value,
+                    "padim_pool": float(top["padim_pool"]) if top and "padim_pool" in top else 0.0,
+                    "patchcore_pool": (
+                        float(top["patchcore_pool"]) if top and "patchcore_pool" in top else 0.0
+                    ),
+                    "local_value": (
+                        float(top.get("local_value", top.get("object_value_score", "")))
+                        if top
+                        else ""
+                    ),
+                    "anomaly_score_before_gate": (
+                        float(
+                            top.get(
+                                "anomaly_score_before_gate",
+                                top.get("object_anomaly_score", ""),
+                            )
+                        )
+                        if top
+                        else ""
+                    ),
+                    "final_candidate_score": top_candidate_score,
+                    "keep_or_drop": "keep" if kept_n else "drop",
+                    "drop_reason": no_cand if kept_n == 0 else "",
+                    "mask_reason": no_cand if kept_n == 0 else "",
+                    "no_valid_candidate_reason": no_cand,
+                    "execution_path": "instrumented_validation_rerun",
+                    "warning_flags": "|".join(warnings),
+                    "candidates_detail": cand_diags,
+                }
+            )
+
     except Exception as exc:
         status = "error"
         warnings.append(str(exc))
@@ -372,6 +459,35 @@ def predict_image(
         scored = []
         candidates = []
         mse = None
+        if diagnostics_out is not None:
+            diagnostics_out.clear()
+            diagnostics_out.update(
+                {
+                    "raw_proposal_count": 0,
+                    "scored_candidate_count": 0,
+                    "kept_candidate_count": 0,
+                    "suppressed_candidate_count": 0,
+                    "top_candidate_box": "",
+                    "combined_pool": "",
+                    "depth_pool": "",
+                    "detector_confidence": "",
+                    "classifier_argmax": "",
+                    "classifier_logits_or_probabilities": "",
+                    "classifier_known_value": "",
+                    "padim_pool": "",
+                    "patchcore_pool": "",
+                    "local_value": "",
+                    "anomaly_score_before_gate": "",
+                    "final_candidate_score": 0.0,
+                    "keep_or_drop": "drop",
+                    "drop_reason": "processing_error",
+                    "mask_reason": "processing_error",
+                    "no_valid_candidate_reason": "processing_error",
+                    "execution_path": "instrumented_validation_rerun",
+                    "warning_flags": "|".join(warnings),
+                    "candidates_detail": [],
+                }
+            )
 
     record: MutableMapping[str, Any] = {
         "sample_id": sample_id or path.stem,

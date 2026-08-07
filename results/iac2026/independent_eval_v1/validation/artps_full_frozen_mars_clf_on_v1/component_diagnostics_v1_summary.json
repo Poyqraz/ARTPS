@@ -1,0 +1,8 @@
+{
+  "n": 54,
+  "score_parity_mismatches": [],
+  "predictions_csv_sha256": "24df219b5f7dc1bf667a77a41f91dccaa875e4547fe4292892ec4244e13c45cf",
+  "out_csv": "results/iac2026/independent_eval_v1/validation/artps_full_frozen_mars_clf_on_v1/component_diagnostics_v1.csv",
+  "final_test_authorized": false,
+  "split": "validation"
+}
