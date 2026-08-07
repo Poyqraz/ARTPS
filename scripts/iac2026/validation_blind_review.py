@@ -1,9 +1,13 @@
 """Blind validation review queue schema (no labels/paths/scores in public view)."""
 from __future__ import annotations
 
-from typing import Any, Iterable
+import csv
+import hashlib
+from pathlib import Path
+from typing import Any, Iterable, Mapping
 
 BLIND_QUEUE_SEED = 20260806
+EXPECTED_VALIDATION_N = 54
 
 BLIND_QUEUE_FIELDS = [
     "review_order",
@@ -26,6 +30,33 @@ PRIVATE_MAPPING_FIELDS = [
     "image_sha256",
     "split",
 ]
+
+# Canonical export (raw preserved separately; never overwrite queue raw in place).
+BLIND_RESULTS_FIELDS = [
+    "review_id",
+    "reviewer_label_raw",
+    "reviewer_label",
+    "reviewer_confidence",
+    "reviewer_decision",
+    "reviewer_notes",
+    "review_timestamp",
+    "reviewer_role",
+]
+
+CANONICAL_LABELS = frozenset({"0", "1", "uncertain", "exclude"})
+RAW_UI_LABELS = frozenset({"positive", "negative", "uncertain", "exclude", "0", "1"})
+
+LABEL_NORMALIZE = {
+    "positive": "1",
+    "negative": "0",
+    "uncertain": "uncertain",
+    "exclude": "exclude",
+    "0": "0",
+    "1": "1",
+}
+
+REVIEWER_ROLE_REPEAT_AUTHOR = "repeat_author_review"
+REVIEW_TYPE_REPEAT_AUTHOR = "repeat_author_blind_review"
 
 FORBIDDEN_VISIBLE_SUBSTRINGS = (
     "train",
@@ -50,6 +81,25 @@ FORBIDDEN_VISIBLE_COLUMNS = (
     "candidate_count",
 )
 
+# Committed sanitized provenance: no path/sample/original-label/model data.
+SANITIZED_REVIEW_FIELDS = [
+    "review_id",
+    "reviewer_label",
+    "reviewer_confidence",
+    "reviewer_decision",
+    "reviewer_role",
+]
+
+# Comparison must never ingest model outputs.
+FORBIDDEN_COMPARISON_COLUMNS = (
+    "anomaly_score",
+    "image_score",
+    "prediction",
+    "y_pred",
+    "score",
+    "candidate_count",
+)
+
 UNAVAILABLE_SUPPRESSION = "unavailable_requires_instrumented_validation_rerun"
 
 DECISION_TEXT_SCOPED = (
@@ -58,6 +108,13 @@ DECISION_TEXT_SCOPED = (
     "class ordering, candidate suppression behavior, and independent annotation "
     "quality remain unresolved."
 )
+
+ANNOTATION_VERSION_V1 = "independent_eval_v1"
+ANNOTATION_VERSION_V1_1 = "independent_eval_v1_1"
+
+# Decision thresholds for compare_blind_review_labels (label-only; no scores).
+EXCESSIVE_UNCERTAIN_OR_EXCLUDE_RATE = 0.25
+SYSTEMATIC_DISAGREEMENT_RATE = 0.20
 
 
 def is_included_resolved(row: dict[str, str]) -> bool:
@@ -77,6 +134,110 @@ def validation_rows(manifest_rows: Iterable[dict[str, str]]) -> list[dict[str, s
         for r in manifest_rows
         if str(r.get("split")).strip().lower() == "validation" and is_included_resolved(r)
     ]
+
+
+def normalize_reviewer_label(raw: str | None) -> str:
+    """Map UI/raw label to canonical reviewer_label. Empty raw stays empty."""
+    text = str(raw or "").strip()
+    if not text:
+        return ""
+    key = text.lower()
+    if key not in LABEL_NORMALIZE:
+        raise ValueError(f"unknown reviewer_label_raw: {raw!r}")
+    return LABEL_NORMALIZE[key]
+
+
+def build_results_row(
+    *,
+    review_id: str,
+    reviewer_label_raw: str,
+    reviewer_confidence: str,
+    reviewer_notes: str,
+    review_timestamp: str,
+    reviewer_role: str = REVIEWER_ROLE_REPEAT_AUTHOR,
+) -> dict[str, str]:
+    canonical = normalize_reviewer_label(reviewer_label_raw)
+    return {
+        "review_id": review_id,
+        "reviewer_label_raw": reviewer_label_raw,
+        "reviewer_label": canonical,
+        "reviewer_confidence": reviewer_confidence,
+        "reviewer_decision": canonical,
+        "reviewer_notes": reviewer_notes,
+        "review_timestamp": review_timestamp,
+        "reviewer_role": reviewer_role,
+    }
+
+
+def write_blind_review_results(path: Path, rows: list[Mapping[str, Any]]) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=BLIND_RESULTS_FIELDS)
+        w.writeheader()
+        for row in rows:
+            w.writerow({k: row.get(k, "") for k in BLIND_RESULTS_FIELDS})
+    tmp.replace(path)
+
+
+def results_from_queue_rows(
+    queue_rows: Iterable[Mapping[str, Any]],
+    *,
+    timestamps: Mapping[str, str] | None = None,
+    reviewer_role: str = REVIEWER_ROLE_REPEAT_AUTHOR,
+) -> list[dict[str, str]]:
+    """Build canonical results for rows that have a non-empty raw label."""
+    out: list[dict[str, str]] = []
+    ts_map = timestamps or {}
+    for row in queue_rows:
+        raw = str(row.get("reviewer_label") or "").strip()
+        if not raw:
+            continue
+        rid = str(row["review_id"])
+        out.append(
+            build_results_row(
+                review_id=rid,
+                reviewer_label_raw=raw,
+                reviewer_confidence=str(row.get("reviewer_confidence") or ""),
+                reviewer_notes=str(row.get("reviewer_notes") or ""),
+                review_timestamp=str(ts_map.get(rid) or row.get("review_timestamp") or ""),
+                reviewer_role=reviewer_role,
+            )
+        )
+    return out
+
+
+def assert_results_complete(rows: list[Mapping[str, Any]], *, n: int = EXPECTED_VALIDATION_N) -> None:
+    ids = [str(r.get("review_id") or "") for r in rows]
+    if len(ids) != n:
+        raise ValueError(f"expected {n} review results, got {len(ids)}")
+    if len(set(ids)) != n:
+        raise ValueError("review_id values must be unique")
+    for row in rows:
+        raw = str(row.get("reviewer_label_raw") or "").strip()
+        canon = str(row.get("reviewer_label") or "").strip()
+        if not raw:
+            raise ValueError(f"empty reviewer_label_raw for {row.get('review_id')}")
+        if canon not in CANONICAL_LABELS:
+            raise ValueError(f"invalid canonical label {canon!r} for {row.get('review_id')}")
+        if normalize_reviewer_label(raw) != canon:
+            raise ValueError(
+                f"raw/canonical mismatch for {row.get('review_id')}: {raw!r} vs {canon!r}"
+            )
+
+
+def refuse_mutate_annotation_version(
+    *,
+    current_version: str,
+    requested_version: str | None,
+) -> None:
+    """Label edits require a new annotation_version; old manifest stays immutable."""
+    cur = (current_version or "").strip()
+    req = (requested_version or "").strip() if requested_version is not None else ""
+    if not req or req == cur:
+        raise ValueError(
+            "annotation change requires new annotation_version "
+            f"(current={cur!r}; proposed={ANNOTATION_VERSION_V1_1!r})"
+        )
 
 
 def build_blind_public_and_private(
@@ -139,3 +300,49 @@ def assert_public_row_blind(row: dict[str, Any]) -> None:
     for col in FORBIDDEN_VISIBLE_COLUMNS:
         if col in row:
             raise ValueError(f"forbidden column {col!r} in public blind row")
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def build_sanitized_review_rows(results_rows: Iterable[Mapping[str, Any]]) -> list[dict[str, str]]:
+    """Committed provenance rows: only review_id/label/confidence/decision/role."""
+    out: list[dict[str, str]] = []
+    for row in results_rows:
+        sanitized = {k: str(row.get(k, "")) for k in SANITIZED_REVIEW_FIELDS}
+        for banned in ("sample_id", "relative_path", "neutral_filename", "image_sha256"):
+            if banned in row:
+                raise ValueError(f"sanitized artifact must not carry {banned!r}")
+        out.append(sanitized)
+    return out
+
+
+def write_sanitized_review_csv(path: Path, results_rows: Iterable[Mapping[str, Any]]) -> None:
+    rows = build_sanitized_review_rows(results_rows)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=SANITIZED_REVIEW_FIELDS)
+        w.writeheader()
+        w.writerows(rows)
+
+
+def repeat_author_review_meta(**extra: Any) -> dict[str, Any]:
+    meta = {
+        "review_type": REVIEW_TYPE_REPEAT_AUTHOR,
+        "independent_annotator": False,
+        "independent_review_status": "pending",
+        "model_blind": True,
+        "existing_label_hidden": True,
+        "terrain_hidden": True,
+        "source_partition_hidden": True,
+        "comparison_status": "pending_review_completion",
+        "repeat_author_review": True,
+        "note": "Not an independent second annotation. private_mapping.csv must never load in UI.",
+    }
+    meta.update(extra)
+    return meta

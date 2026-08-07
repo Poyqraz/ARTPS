@@ -2,6 +2,8 @@
 Model-blind Streamlit annotator for validation blind-review pack.
 
 Shows neutral image + guide only. Never loads private_mapping or inference.
+Raw UI labels (positive/negative/…) stay in review_queue.csv; canonical
+blind_review_results.csv keeps reviewer_label_raw + normalized reviewer_label.
 """
 from __future__ import annotations
 
@@ -20,7 +22,11 @@ from validation_blind_review import (  # noqa: E402
     BLIND_QUEUE_FIELDS,
     FORBIDDEN_VISIBLE_COLUMNS,
     FORBIDDEN_VISIBLE_SUBSTRINGS,
+    REVIEWER_ROLE_REPEAT_AUTHOR,
     assert_public_row_blind,
+    repeat_author_review_meta,
+    results_from_queue_rows,
+    write_blind_review_results,
 )
 
 GUIDE_PATH = (
@@ -33,6 +39,7 @@ GUIDE_PATH = (
 DEFAULT_PACK = (
     REPO_ROOT / "results" / "iac2026" / "independent_eval_v1" / "blind_review_pack"
 )
+# Raw UI values; never overwrite with canonical 0/1 in the queue.
 LABELS = ("positive", "negative", "uncertain", "exclude")
 
 
@@ -72,23 +79,23 @@ def save_public_queue(path: Path, rows: List[Dict[str, str]]) -> None:
     tmp.replace(path)
 
 
-def write_review_meta(
-    path: Path,
-    *,
-    independent_annotator: bool,
-    repeat_author_review: bool,
-) -> None:
-    meta = {
-        "independent_review_status": "pending",
-        "independent_annotator": bool(independent_annotator),
-        "repeat_author_review": bool(repeat_author_review),
-        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "note": "private_mapping.csv must never be loaded by this UI",
-    }
+def export_results_csv(pack_dir: Path, rows: List[Dict[str, str]], timestamps: Dict[str, str]) -> None:
+    results = results_from_queue_rows(
+        rows,
+        timestamps=timestamps,
+        reviewer_role=REVIEWER_ROLE_REPEAT_AUTHOR,
+    )
+    write_blind_review_results(pack_dir / "blind_review_results.csv", results)
+
+
+def write_review_meta(path: Path) -> None:
+    meta = repeat_author_review_meta(
+        updated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    )
     path.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
 
 
-def run_streamlit(pack_dir: Path, *, repeat_author_review: bool) -> None:
+def run_streamlit(pack_dir: Path) -> None:
     import streamlit as st
     from PIL import Image
 
@@ -101,20 +108,21 @@ def run_streamlit(pack_dir: Path, *, repeat_author_review: bool) -> None:
         raise RuntimeError("refusing to open private_mapping as queue")
 
     st.set_page_config(page_title="validation blind review", layout="wide")
-    st.title("Validation blind review")
-    st.caption("Neutral image only. No paths, scores, splits, or model outputs.")
+    st.title("Validation blind review (repeat author)")
+    st.caption(
+        "Neutral image only. No paths, scores, splits, terrain, or prior labels. "
+        "Not an independent second annotation."
+    )
 
     if "queue_rows" not in st.session_state:
         st.session_state.queue_rows = load_public_queue(queue_path)
+    if "timestamps" not in st.session_state:
+        st.session_state.timestamps = {}
     rows: List[Dict[str, str]] = st.session_state.queue_rows
     if "idx" not in st.session_state:
         st.session_state.idx = 0
 
-    write_review_meta(
-        pack_dir / "review_meta.json",
-        independent_annotator=not repeat_author_review,
-        repeat_author_review=repeat_author_review,
-    )
+    write_review_meta(pack_dir / "review_meta.json")
 
     col_img, col_side = st.columns([2, 1])
     idx = int(st.session_state.idx)
@@ -134,14 +142,17 @@ def run_streamlit(pack_dir: Path, *, repeat_author_review: bool) -> None:
 
         def _save(label: str) -> None:
             updated = dict(row)
-            updated["reviewer_label"] = label
+            updated["reviewer_label"] = label  # raw UI value; do not normalize here
             updated["reviewer_confidence"] = conf
             updated["reviewer_notes"] = notes
             updated["audit_status"] = "reviewed_local"
             rows[idx] = updated
+            ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            st.session_state.timestamps[str(updated["review_id"])] = ts
             save_public_queue(queue_path, rows)
+            export_results_csv(pack_dir, rows, st.session_state.timestamps)
             st.session_state.queue_rows = rows
-            st.success("saved")
+            st.success("saved (raw queue + canonical results)")
 
         for lab in LABELS:
             if st.button(lab):
@@ -161,14 +172,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--repeat-author-review",
         action="store_true",
-        help="Mark meta as author repeat (independent_annotator=false)",
+        required=True,
+        help="Required. Marks meta as author repeat (independent_annotator=false).",
     )
     args = p.parse_args(argv)
     if not args.pack_dir.is_dir():
         raise SystemExit(
             f"pack dir missing: {args.pack_dir} (run build_validation_blind_review_pack.py)"
         )
-    run_streamlit(args.pack_dir, repeat_author_review=args.repeat_author_review)
+    run_streamlit(args.pack_dir)
     return 0
 
 
