@@ -28,6 +28,3 @@ def test_component_runner_refuses_test_split_in_source():
     assert 'refusing non-validation split' in src
     tree = ast.parse(src)
     assert tree is not None
-
-# ci: retrigger PR27 checks
-

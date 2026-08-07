@@ -38,7 +38,7 @@ Fine reasons are now filled (no longer `unavailable_requires_instrumented_valida
 
 ## Blind annotation
 
-Independent second-annotator review is **not** complete (`independent_review_status: pending`).  
+Independent second-annotator review is **not** complete (`independent_review_status: pending`).
 No `annotation_version` bump and no label edits from this phase.
 
 ## Decision gate (this phase)
