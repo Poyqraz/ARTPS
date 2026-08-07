@@ -19,14 +19,17 @@ It is not a validity audit of the historical ARTPS manuscript / accepted IAC res
 (AUROC 0.894, AUPRC 0.847, F1 0.823, baseline AUROC 0.856, 28.1 FPS). Those values
 are **not** invalidated, deleted, or declared wrong by this work.
 
-## Provenance SHAs (pinned at audit time)
+## Provenance SHAs (pinned at audit time, LF-normalized)
+
+SHAs are computed on LF-normalized content so they match on both CRLF (Windows worktree)
+and LF (git blob / CI) checkouts.
 
 | Artifact | SHA256 |
 |---|---|
-| `reproduction/iac2026/manifests/independent_eval_v1.csv` | `1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe` |
-| `reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.csv` | `18a7b38b8f0e24c018bd4ab3f81365fb29b2d4e97d860824d738156afc8e72d6` |
-| `reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.meta.json` | `3826fba251648fec1273ca6758b2c304ca9742114dcfbedd8c1596cb647948f4` |
-| `paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_ANNOTATION_GUIDE.md` | `ffba4a618d3ad894059802c4ffbf8cc5c5cac69b84fc18bdec6767353e118436` |
+| `reproduction/iac2026/manifests/independent_eval_v1.csv` | `9f953dc07286738b82a07b6a4311ceaf6cc64de361893af3a04ee3279a45d408` |
+| `reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.csv` | `e237fdd8dcf8340c2324d00e1b3c5d3d9e93ed8ac1ed30a5bc8e5339a8dd479f` |
+| `reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.meta.json` | `1f0cb955c6cb704ca6ee8acce89ec4354a37687e5ab80fe20afd1fe951922153` |
+| `paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_ANNOTATION_GUIDE.md` | `5b4baa407a388a3f5b36b2331a4f1e718d0cd854371929e73d10a37fcb868beb` |
 
 ## Repository state at audit
 

@@ -92,10 +92,8 @@ def test_heuristic_label_not_promoted_to_reviewed():
 
 
 def test_v1_manifest_immutable_sha_pinned():
-    import hashlib
-
-    digest = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
-    assert digest == v11man.V1_MANIFEST_SHA256
+    # LF-normalized hash so it matches on CRLF (Windows) and LF (CI) checkouts.
+    assert v11man._sha256_file(MANIFEST) == v11man.V1_MANIFEST_SHA256
     # guard raises if v1 ever changes
     v11man.assert_v1_immutable(MANIFEST)
 

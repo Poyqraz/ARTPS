@@ -43,13 +43,14 @@ DEFAULT_OUT = (
     REPO_ROOT / "reproduction" / "iac2026" / "manifests" / "independent_eval_v1_1.csv"
 )
 # Pinned at audit time (INDEPENDENT_EVAL_V1_1_LABEL_AUDIT.md). v1 must stay immutable.
-V1_MANIFEST_SHA256 = "1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe"
+# LF-normalized so the guard matches on both CRLF (Windows worktree) and LF (CI/git blob).
+V1_MANIFEST_SHA256 = "9f953dc07286738b82a07b6a4311ceaf6cc64de361893af3a04ee3279a45d408"
 
 
 def _sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    h.update(path.read_bytes())
-    return h.hexdigest()
+    """Hash with line endings normalized to LF (CRLF-agnostic immutability guard)."""
+    data = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
