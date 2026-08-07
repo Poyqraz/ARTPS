@@ -5,7 +5,9 @@
 *.tmp
 val_*/
 blind_review_pack/
+remaining_review_pack/
 blind_review_analysis/
+v1_1_review_analysis/
 !.gitignore
 !validation/
 !profile_selection.json

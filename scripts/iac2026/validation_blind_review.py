@@ -8,6 +8,9 @@ from typing import Any, Iterable, Mapping
 
 BLIND_QUEUE_SEED = 20260806
 EXPECTED_VALIDATION_N = 54
+EXPECTED_REMAINING_N = 306
+EXPECTED_TOTAL_N = 360
+REMAINING_ID_OFFSET = 54
 
 BLIND_QUEUE_FIELDS = [
     "review_order",
@@ -116,6 +119,43 @@ ANNOTATION_VERSION_V1_1 = "independent_eval_v1_1"
 EXCESSIVE_UNCERTAIN_OR_EXCLUDE_RATE = 0.25
 SYSTEMATIC_DISAGREEMENT_RATE = 0.20
 
+# independent_eval_v1_1 full-360 manifest (per-row provenance; v1 stays immutable).
+V1_1_MANIFEST_FIELDS = [
+    "sample_id",
+    "split",
+    "previous_label",
+    "reviewed_label",
+    "final_label",
+    "review_source",
+    "reviewer_role",
+    "reviewer_confidence",
+    "review_status",
+    "annotation_version",
+    "scene_group_id",
+    "duplicate_group_id",
+    "raw_sha256",
+]
+
+REVIEW_SOURCE_VALIDATION_PR28 = "repeat_author_blind_review_pr28"
+REVIEW_SOURCE_REMAINING = "repeat_author_blind_review_v1_1"
+
+
+def final_label_from_review(reviewed_label: str) -> str:
+    """Binary 0/1 passes through; uncertain/exclude are excluded from primary eval."""
+    r = str(reviewed_label or "").strip()
+    return r if r in {"0", "1"} else ""
+
+
+def review_status_from_label(reviewed_label: str) -> str:
+    r = str(reviewed_label or "").strip()
+    if r in {"0", "1"}:
+        return "reviewed"
+    if r == "uncertain":
+        return "reviewed_uncertain"
+    if r == "exclude":
+        return "reviewed_exclude"
+    return "pending_manual_review"
+
 
 def is_included_resolved(row: dict[str, str]) -> bool:
     incl = str(row.get("inclusion_status") or row.get("included") or "").strip().lower()
@@ -133,6 +173,15 @@ def validation_rows(manifest_rows: Iterable[dict[str, str]]) -> list[dict[str, s
         r
         for r in manifest_rows
         if str(r.get("split")).strip().lower() == "validation" and is_included_resolved(r)
+    ]
+
+
+def non_validation_rows(manifest_rows: Iterable[dict[str, str]]) -> list[dict[str, str]]:
+    """Train + test included/resolved rows (the 306 pending manual review)."""
+    return [
+        r
+        for r in manifest_rows
+        if str(r.get("split")).strip().lower() in ("train", "test") and is_included_resolved(r)
     ]
 
 
@@ -240,34 +289,38 @@ def refuse_mutate_annotation_version(
         )
 
 
-def build_blind_public_and_private(
-    manifest_rows: list[dict[str, str]],
+def build_blind_queue_for_rows(
+    rows: list[dict[str, str]],
     *,
     seed: int = BLIND_QUEUE_SEED,
+    id_offset: int = 0,
     permutation: list[int] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Deterministic blind queue + private mapping. permutation overrides RNG when provided."""
+    """Deterministic blind queue + private mapping for an arbitrary row set.
+
+    review_id numbering starts at id_offset + 1 (continuation-safe). Split is only
+    recorded in the private mapping, never in the public queue.
+    """
     import numpy as np
 
-    val = validation_rows(manifest_rows)
     if permutation is None:
         rng = np.random.default_rng(seed)
-        order = [int(i) for i in rng.permutation(len(val))]
+        order = [int(i) for i in rng.permutation(len(rows))]
     else:
         order = list(permutation)
-        if sorted(order) != list(range(len(val))):
+        if sorted(order) != list(range(len(rows))):
             raise ValueError("permutation must be a permutation of range(n)")
 
     public: list[dict[str, Any]] = []
     private: list[dict[str, Any]] = []
     for i, idx in enumerate(order):
-        r = val[idx]
-        review_id = f"review_{i + 1:04d}"
+        r = rows[idx]
+        review_id = f"review_{id_offset + i + 1:04d}"
         neutral = f"{review_id}.jpg"
         sha = (r.get("sha256") or r.get("raw_sha256") or "").strip()
         public.append(
             {
-                "review_order": i,
+                "review_order": id_offset + i,
                 "review_id": review_id,
                 "neutral_filename": neutral,
                 "image_sha256": sha,
@@ -281,7 +334,7 @@ def build_blind_public_and_private(
         private.append(
             {
                 "review_id": review_id,
-                "review_order": i,
+                "review_order": id_offset + i,
                 "neutral_filename": neutral,
                 "sample_id": r["sample_id"],
                 "relative_path": r.get("relative_path") or "",
@@ -290,6 +343,21 @@ def build_blind_public_and_private(
             }
         )
     return public, private
+
+
+def build_blind_public_and_private(
+    manifest_rows: list[dict[str, str]],
+    *,
+    seed: int = BLIND_QUEUE_SEED,
+    permutation: list[int] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Deterministic validation blind queue (review_0001..). Unchanged behavior."""
+    return build_blind_queue_for_rows(
+        validation_rows(manifest_rows),
+        seed=seed,
+        id_offset=0,
+        permutation=permutation,
+    )
 
 
 def assert_public_row_blind(row: dict[str, Any]) -> None:
