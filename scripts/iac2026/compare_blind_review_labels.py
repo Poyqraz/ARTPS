@@ -120,6 +120,17 @@ def compare(
     excluded_count = 0
     pos_to_neg = 0
     neg_to_pos = 0
+    original_positive_count = 0
+    original_negative_count = 0
+    reviewed_positive_count = 0
+    reviewed_negative_count = 0
+    # label_review_confusion_matrix (NOT a model prediction confusion matrix)
+    matrix = {
+        "original_0_review_0": 0,
+        "original_0_review_1": 0,
+        "original_1_review_0": 0,
+        "original_1_review_1": 0,
+    }
     conf_dist: Counter[str] = Counter()
 
     for row in results_rows:
@@ -146,6 +157,16 @@ def compare(
         if review not in {"0", "1"} or original not in {"0", "1"}:
             raise ValueError(f"non-binary comparable labels: orig={original!r} rev={review!r}")
 
+        matrix[f"original_{original}_review_{review}"] += 1
+        if original == "1":
+            original_positive_count += 1
+        else:
+            original_negative_count += 1
+        if review == "1":
+            reviewed_positive_count += 1
+        else:
+            reviewed_negative_count += 1
+
         if review == original:
             agreement_count += 1
         else:
@@ -168,6 +189,7 @@ def compare(
     n_reviewed = len(results_rows)
     comparable = agreement_count + disagreement_count
     agreement_rate = (agreement_count / comparable) if comparable else None
+    disagreement_rate = (disagreement_count / comparable) if comparable else None
     decision = decide(
         n_reviewed=n_reviewed,
         uncertain_count=uncertain_count,
@@ -184,6 +206,12 @@ def compare(
         "uncertain_count": uncertain_count,
         "excluded_count": excluded_count,
         "agreement_rate": agreement_rate,
+        "disagreement_rate": disagreement_rate,
+        "original_positive_count": original_positive_count,
+        "original_negative_count": original_negative_count,
+        "reviewed_positive_count": reviewed_positive_count,
+        "reviewed_negative_count": reviewed_negative_count,
+        "label_review_confusion_matrix": matrix,
         "original_positive_to_review_negative": pos_to_neg,
         "original_negative_to_review_positive": neg_to_pos,
         "confidence_distribution": dict(conf_dist),
@@ -215,10 +243,22 @@ def render_md(summary: dict[str, Any]) -> str:
         f"- uncertain_count: {summary['uncertain_count']}",
         f"- excluded_count: {summary['excluded_count']}",
         f"- agreement_rate: {summary['agreement_rate']}",
+        f"- disagreement_rate: {summary['disagreement_rate']}",
+        f"- original_positive_count: {summary['original_positive_count']}",
+        f"- original_negative_count: {summary['original_negative_count']}",
+        f"- reviewed_positive_count: {summary['reviewed_positive_count']}",
+        f"- reviewed_negative_count: {summary['reviewed_negative_count']}",
         f"- original_positive_to_review_negative: {summary['original_positive_to_review_negative']}",
         f"- original_negative_to_review_positive: {summary['original_negative_to_review_positive']}",
         f"- confidence_distribution: `{summary['confidence_distribution']}`",
         f"- decision: `{summary['decision']}`",
+        "",
+        "## label_review_confusion_matrix (NOT a model prediction confusion matrix)",
+        "",
+        "| original \\ review | review 0 | review 1 |",
+        "|---|---|---|",
+        f"| original 0 | {summary['label_review_confusion_matrix']['original_0_review_0']} | {summary['label_review_confusion_matrix']['original_0_review_1']} |",
+        f"| original 1 | {summary['label_review_confusion_matrix']['original_1_review_0']} | {summary['label_review_confusion_matrix']['original_1_review_1']} |",
         "",
         "Manifest was not modified. Model scores were not included.",
         "",

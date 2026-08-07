@@ -1,0 +1,13 @@
+{
+  "review_type": "repeat_author_blind_review",
+  "independent_annotator": false,
+  "n_reviewed": 54,
+  "review_results_sha256": "48ea79912bc23c9ad54c3779596b5ffb3402bb1e9d7d996d1a162cb749cfcb37",
+  "blind_pack_manifest_sha256": "8db12214abb2b69dbe4738ba5f90b6ebffdf9755938bd2a3fb734634abb83e9e",
+  "source_manifest_sha256": "1f27e5d74bbf07b47ba8014204328f46a055c31ba4a6f31fb170cf41a910b5fe",
+  "annotation_guide_sha256": "ffba4a618d3ad894059802c4ffbf8cc5c5cac69b84fc18bdec6767353e118436",
+  "git_commit": "9dcb7e8347be2603800107f92edcc190e69e5d7d",
+  "completed_at": "2026-08-07T21:24:05Z",
+  "model_scores_visible": false,
+  "original_labels_visible": false
+}

@@ -246,11 +246,106 @@ def test_no_test_artifact_in_blind_private_mapping():
     assert len(private) == 54
 
 
-def test_report_stub_exists_pending():
+def test_report_complete_repeat_author():
     report = REPO / "paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_BLIND_REVIEW_REPORT.md"
     text = report.read_text(encoding="utf-8")
-    assert "status: review_pending" in text
+    assert "status: complete" in text
     assert "review_type: repeat_author_blind_review" in text
     assert "independent_annotator: false" in text
-    assert "reviewed: 0/54" in text
-    assert "comparison_status: pending_review_completion" in text
+    assert "reviewed: 54/54" in text
+    assert "decision: systematic_label_issue_detected" in text
+    # never over-claim
+    assert "ground truth was wrong" not in text.lower()
+    # next-PR audit note present
+    assert "360-sample" in text
+
+
+def test_sanitized_committed_artifact_is_label_only():
+    csv_path = (
+        REPO
+        / "reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.csv"
+    )
+    rows = _read_csv(csv_path)
+    assert len(rows) == EXPECTED_VALIDATION_N
+    assert list(rows[0].keys()) == [
+        "review_id",
+        "reviewer_label",
+        "reviewer_confidence",
+        "reviewer_decision",
+        "reviewer_role",
+    ]
+    banned = {
+        "sample_id",
+        "relative_path",
+        "neutral_filename",
+        "image_sha256",
+        "binary_label",
+        "anomaly_score",
+        "image_score",
+        "prediction",
+        "split",
+    }
+    for row in rows:
+        assert banned.isdisjoint(row.keys())
+        assert row["reviewer_label"] in {"0", "1"}
+        assert row["reviewer_role"] == "repeat_author_review"
+
+
+def test_sanitized_meta_flags():
+    meta = json.loads(
+        (
+            REPO
+            / "reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.meta.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert meta["review_type"] == "repeat_author_blind_review"
+    assert meta["independent_annotator"] is False
+    assert meta["n_reviewed"] == EXPECTED_VALIDATION_N
+    assert meta["model_scores_visible"] is False
+    assert meta["original_labels_visible"] is False
+    for key in (
+        "review_results_sha256",
+        "blind_pack_manifest_sha256",
+        "source_manifest_sha256",
+    ):
+        assert len(meta[key]) == 64
+
+
+def test_confusion_matrix_totals_54_and_distribution():
+    public, private = build_blind_public_and_private(_read_csv(MANIFEST))
+    man_by = {r["sample_id"]: r for r in _read_csv(MANIFEST)}
+    committed = _read_csv(
+        REPO
+        / "reproduction/iac2026/annotations/independent_eval_v1_repeat_author_blind_review.csv"
+    )
+    label_by_id = {r["review_id"]: r["reviewer_label"] for r in committed}
+    results = []
+    for pub, priv in zip(public, private):
+        rev = label_by_id[pub["review_id"]]
+        results.append(
+            {
+                "review_id": pub["review_id"],
+                "reviewer_label_raw": "positive" if rev == "1" else "negative",
+                "reviewer_label": rev,
+                "reviewer_confidence": "high",
+                "reviewer_decision": rev,
+                "reviewer_notes": "",
+                "review_timestamp": "t",
+                "reviewer_role": "repeat_author_review",
+            }
+        )
+    payload = compare(
+        results_rows=results,
+        private_rows=[{k: str(v) for k, v in p.items()} for p in private],
+        manifest_rows=_read_csv(MANIFEST),
+    )
+    s = payload["summary"]
+    m = s["label_review_confusion_matrix"]
+    assert sum(m.values()) == EXPECTED_VALIDATION_N
+    assert s["reviewed_positive_count"] == 46
+    assert s["reviewed_negative_count"] == 8
+    assert s["decision"] == "systematic_label_issue_detected"
+    assert s["disagreement_rate"] >= 0.20
+    assert s["manifest_mutated"] is False
+    assert s["annotation_version_changed"] is False
+    assert s["model_scores_included"] is False

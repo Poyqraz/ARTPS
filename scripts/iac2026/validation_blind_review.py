@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -79,6 +80,15 @@ FORBIDDEN_VISIBLE_COLUMNS = (
     "split",
     "candidate_count",
 )
+
+# Committed sanitized provenance: no path/sample/original-label/model data.
+SANITIZED_REVIEW_FIELDS = [
+    "review_id",
+    "reviewer_label",
+    "reviewer_confidence",
+    "reviewer_decision",
+    "reviewer_role",
+]
 
 # Comparison must never ingest model outputs.
 FORBIDDEN_COMPARISON_COLUMNS = (
@@ -290,6 +300,35 @@ def assert_public_row_blind(row: dict[str, Any]) -> None:
     for col in FORBIDDEN_VISIBLE_COLUMNS:
         if col in row:
             raise ValueError(f"forbidden column {col!r} in public blind row")
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def build_sanitized_review_rows(results_rows: Iterable[Mapping[str, Any]]) -> list[dict[str, str]]:
+    """Committed provenance rows: only review_id/label/confidence/decision/role."""
+    out: list[dict[str, str]] = []
+    for row in results_rows:
+        sanitized = {k: str(row.get(k, "")) for k in SANITIZED_REVIEW_FIELDS}
+        for banned in ("sample_id", "relative_path", "neutral_filename", "image_sha256"):
+            if banned in row:
+                raise ValueError(f"sanitized artifact must not carry {banned!r}")
+        out.append(sanitized)
+    return out
+
+
+def write_sanitized_review_csv(path: Path, results_rows: Iterable[Mapping[str, Any]]) -> None:
+    rows = build_sanitized_review_rows(results_rows)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=SANITIZED_REVIEW_FIELDS)
+        w.writeheader()
+        w.writerows(rows)
 
 
 def repeat_author_review_meta(**extra: Any) -> dict[str, Any]:
