@@ -30,13 +30,29 @@ def test_v1_1_supplementary_table_and_auroc_headline():
     assert "tab:indep-v11" in results
     assert "Supplementary Human-Reviewed Evaluation" in results
     assert "0.772" in results
+    assert "0.956" in results
+    assert "0.852" in results
     assert "principal ranking" in results.lower() or "principal ranking-oriented" in results.lower()
-    # F1 0.920 only with all-positive / prevalence / threshold 0.0 caveat nearby.
-    f1_idx = results.find("0.920")
-    assert f1_idx >= 0
-    window = results[max(0, f1_idx - 800) : f1_idx + 800].lower()
-    assert "0.0" in window or "threshold" in window
-    assert "all-positive" in window or "prevalence" in window
+    flat = " ".join(results.lower().split())
+    assert "all-positive" in flat
+    assert "not treated as" in flat and "performance measures" in flat
+    assert "0.920" not in results
+    assert "0/8/0/46" not in results
+    assert "threshold $0.0$" not in results
+    assert "$0.0$" not in results
+
+
+def test_v1_1_audit_artifacts_keep_degenerate_f1():
+    report = (REPO / "paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_1_REPORT.md").read_text(
+        encoding="utf-8"
+    )
+    evidence = (REPO / "paper/iac2026/reproduction/INDEPENDENT_EVAL_V1_1_EVIDENCE_MAP.md").read_text(
+        encoding="utf-8"
+    )
+    blob = report + "\n" + evidence
+    assert "0.920" in blob
+    assert "0.0" in blob
+    assert "0/8/0/46" in blob
 
 
 def test_declaration_and_funding_absent():
@@ -76,6 +92,7 @@ def test_limitations_and_discussion_present():
     disc = DISCUSSION.read_text(encoding="utf-8").lower()
     assert "repeat-author" in lim or "not an independent second annotation" in lim
     assert "20" in lim and "8" in lim and "2" in lim
+    assert "operating-threshold calibration unstable" in lim or "calibration unstable" in lim
     assert "no final test" in lim or "test was opened" in lim
     assert "heuristic" in disc and "180/180" in disc.replace(" ", "")
     assert "0.772" in disc

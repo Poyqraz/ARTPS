@@ -8,7 +8,7 @@ Do **not** invent final Result numbers in LaTeX until ledger support is closed. 
 |----|-------|----------|--------|--------|
 | Table 1 | Reported results from the accepted IAC abstract | Yes (`tab:accepted-abstract`) | C05–C07 | abstract reference + reproduction-pending footnote |
 | Table 2 | Independent eval detection (AUROC/AUPRC/F1) | No — plan only | IND_EVAL_V1 | protocol_defined_pending_data (test closed) |
-| Table 2s | Supplementary v1→v1_1 label audit + frozen-score validation | Yes (`tab:indep-v11`) | IND_EVAL_V1_1 | measured validation-only; AUROC 0.772 principal; F1 0.920 prevalence-dependent/all-positive; no test |
+| Table 2s | Supplementary v1→v1_1 label audit + frozen-score validation | Yes (`tab:indep-v11`) | IND_EVAL_V1_1 | measured validation-only; AUROC 0.772 principal; AP prevalence-contextual; F1 not a table metric; no test |
 | Table 3 | Independent eval vs PaDiM/PatchCore baselines | No — plan only | IND_EVAL_V1 | pending metrics |
 | Table 4 | Workstation FPS / latency by resolution | No — plan only | C07 / C08 | reproduction-pending / planned |
 | Table 5 | Shadow / FP proxy OFF vs ON | No — plan only | C09–C10 | preliminary proxy (non-headline) |

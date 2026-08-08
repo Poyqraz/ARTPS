@@ -61,16 +61,15 @@ v1\_1 human-reviewed labels (pos./neg.) & $340$ / $20$ \\
 \multicolumn{2}{@{}l}{\emph{Frozen validation relabel ($46$ pos.\ / $8$ neg.)}} \\
 AUROC (principal ranking metric) & $0.772$ \\
 AP (val.\ prevalence $46/54 \approx 0.852$) & $0.956$ \\
-F1 at threshold $0.0$\textsuperscript{*} & $0.920$ \\
-Confusion (TN/FP/FN/TP) & $0/8/0/46$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent\textsuperscript{*}F1 was obtained at the predeclared validation-selected threshold
-of $0.0$, corresponding to an all-positive operating point; because the validation subset
-contains $46$ positive and $8$ negative samples, this value is strongly prevalence-dependent
-and is not treated as the primary discriminative performance measure.
+The predeclared F1-based validation threshold selection collapsed to an
+all-positive operating point.
+Consequently, threshold-dependent classification metrics are not treated as
+performance measures in this supplementary evaluation; AUROC is used as the
+principal ranking-oriented metric.
 
 \subsection{Proxy analyses}
 Preliminary proxy analyses (shadow/FP gates; size--distance policy) may be discussed
