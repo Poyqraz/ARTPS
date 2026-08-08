@@ -36,6 +36,8 @@ def test_v1_1_supplementary_table_and_auroc_headline():
     flat = " ".join(results.lower().split())
     assert "all-positive" in flat
     assert "not treated as" in flat and "performance measures" in flat
+    assert "max_valid_candidate_after_masks" in results or "max\\_valid\\_candidate\\_after\\_masks" in results
+    assert "curiosity" in flat and "not applied" in flat
     assert "0.920" not in results
     assert "0/8/0/46" not in results
     assert "threshold $0.0$" not in results
@@ -93,6 +95,7 @@ def test_limitations_and_discussion_present():
     assert "repeat-author" in lim or "not an independent second annotation" in lim
     assert "20" in lim and "8" in lim and "2" in lim
     assert "operating-threshold calibration unstable" in lim or "calibration unstable" in lim
+    assert "curiosity" in lim and "priority buffer" in lim
     assert "no final test" in lim or "test was opened" in lim
     assert "heuristic" in disc and "180/180" in disc.replace(" ", "")
     assert "0.772" in disc
@@ -100,6 +103,11 @@ def test_limitations_and_discussion_present():
     assert "historical" in disc_flat and "same issue" in disc_flat
     assert "planetary imagery as a whole" in disc_flat
     assert "naturally high" not in disc_flat
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8").lower()
+    assert "entropy" in methods and "fixed-weight" in methods
+    assert "c(r)" in methods.replace(" ", "") or "c(r)" in methods
+    intro = (REPO / "paper/iac2026/sections/introduction.tex").read_text(encoding="utf-8").lower()
+    assert "fixed-weight" in intro or "fixed-weight multi-cue" in intro
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
     res = RESULTS.read_text(encoding="utf-8").lower()
     assert "compatibility" in exp and "dataset and validation artifacts now exist" in exp

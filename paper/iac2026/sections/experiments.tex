@@ -47,8 +47,10 @@ and operational modules.
 Baseline comparison tables appear only after \texttt{independent\_eval\_v1} metrics exist.
 
 \subsection{Metrics and statistics}
-Named metrics for the current track include AUROC, AUPRC, F1, and throughput (FPS) where
-protocol profiles request them.
+Named metrics for the current protocol include AUROC, AUPRC, F1, and throughput (FPS) where
+profiles request them.
+For the supplementary \texttt{independent\_eval\_v1\_1} validation, AUROC is the principal
+reported metric and threshold-dependent F1 is not treated as a performance measure.
 Bootstrap confidence intervals are \emph{planned} once frozen metrics exist; this draft does
 not invent interval values.
 % TODO(results): fill bootstrap CIs after independent\_eval\_v1 run artifacts.
