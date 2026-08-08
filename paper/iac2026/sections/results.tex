@@ -27,21 +27,24 @@ FPS @ $256\times256$ (lightweight core) & $28.1$ \\
 \end{tabular}
 \end{table}
 
-\subsection{Independent evaluation (\texttt{independent\_eval\_v1})}
+\subsection{Current protocol pin (\texttt{independent\_eval\_v1})}
 The frozen \texttt{independent\_eval\_v1} heuristic-label artifact remains a separate
-protocol pin.
+protocol pin, not a supplementary validation result.
 Headline \texttt{IND\_EVAL\_V1} support stays \texttt{protocol\_defined\_pending\_data}
 for compatibility: dataset and validation artifacts exist, but final-test evidence and
 claim closure remain pending because the test split is not authorized.
-Numeric supplementary audit below uses the human-reviewed annotation version only.
+Numeric supplementary validation below uses the human-reviewed annotation version only.
 
 \subsection{Supplementary Human-Reviewed Evaluation}
 Table~\ref{tab:indep-v11} reports a validation-only audit under
 \texttt{independent\_eval\_v1\_1}.
-Frozen ARTPS scores from \texttt{artps\_full\_frozen\_mars\_clf\_on\_v1} (FP32) were
-relabeled; no tuning and no inference rerun were performed.
+Frozen ARTPS image scores from \texttt{artps\_full\_frozen\_mars\_clf\_on\_v1} (FP32) are
+\texttt{max\_valid\_candidate\_after\_masks}; labels were remapped with no tuning and no
+inference rerun.
+Curiosity ranking, diversity penalty, and the Priority Buffer were not applied on these
+scores.
 This subsection is explicitly distinct from Table~\ref{tab:accepted-abstract}.
-AUROC is the principal ranking-oriented metric for this supplementary audit.
+AUROC is the principal ranking-oriented metric for this supplementary validation.
 
 \begin{table}[t]
 \centering

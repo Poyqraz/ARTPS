@@ -4,39 +4,41 @@ ARTPS is best read as an operational architecture: anomaly cues and relative dep
 fusion, localization, suppression, diversity, and buffering under fail-closed gates.
 The design goal is structured prioritization under rover constraints, not unconstrained
 claim of superior detection in all regimes.
-
-Relative depth is an ordering cue~\citep{ranftl2021dpt}; interpreting it as metric distance
-would overstate what monocular estimation provides.
-Operational suppressions address common imagery distractors, but residual false positives
-remain an open operational risk on the still-closed independent test split.
+Anomaly-only policies miss that a high cue is not automatically a science-interest target
+and that distractors (shadows, hardware, borders) inflate responses.
+Relative depth supplies near/far structure for apparent-size policy without metric
+distance~\citep{ranftl2021dpt}.
+Diversity management reduces redundant near-duplicates under limited downlink slots;
+the Priority Buffer keeps high-anomaly candidates that the similarity penalty would otherwise
+drop irreversibly.
+These ranking mechanisms are specified for onboard selection; they are not part of the
+frozen supplementary validation scores.
 
 % TODO(results): discuss accepted-abstract reproduction only if C05--C07 close beyond pending.
 % Avoid ``outperforms'' / ``demonstrate'' language until evidence gates allow.
 
-The separation between historical accepted-abstract claims and the current independent-eval
-track is intentional: conflating them would misrepresent evidence status.
+The entropy-weighted fusion rule remains the architectural specification; the current frozen
+evaluation uses fixed-weight multi-cue fusion.
+The separation between historical accepted-abstract claims and the current supplementary
+validation is intentional: conflating them would misrepresent evidence status.
 The initial \texttt{independent\_eval\_v1} binary labels were produced by a classical-image
 heuristic with forced $180/180$ class balance.
-A model-blind repeat-author review changed the semantic distribution substantially
-($340$ positive / $20$ negative).
+A model-blind repeat-author review produced $340$ positive / $20$ negative labels.
 \texttt{independent\_eval\_v1\_1} more directly reflects the adopted human annotation
 definition than the initial heuristic label layer.
-The human-reviewed annotation produces a strongly imbalanced class distribution
-($340$ positive / $20$ negative) in this selected benchmark.
 This observed prevalence is specific to the sampled Curiosity Mastcam domain and the
 adopted science-interest annotation definition; it should not be generalized to
 planetary imagery as a whole.
-Frozen-score AUROC~$0.772$ indicates useful ranking separation.
+Frozen-score AUROC~$0.772$ indicates ranking separation under that definition, not an
+operating-point classification result.
 Threshold-based F1 is not informative here because the predeclared operating point is
 all-positive.
 A future balanced challenge set or harder negative set may be useful for operating-point
 evaluation.
-This label-audit finding is confined to the supplementary independent-eval benchmark; it
+This label-audit finding is confined to the supplementary validation benchmark; it
 does not imply that the historical accepted-abstract ARTPS experiment suffered the same
 issue.
 Proxy analyses remain secondary and must not migrate into abstract headlines.
 
-Safety language stays bounded: ARTPS is safety-aware software on a flight-readiness-oriented
-path; it is not flight-qualified and does not assert universal safety guarantees.
 Hardware timing (including planned Jetson profiles) is engineering measurement, not
 certification evidence.
