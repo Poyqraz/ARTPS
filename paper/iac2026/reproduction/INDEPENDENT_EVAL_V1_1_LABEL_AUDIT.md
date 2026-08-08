@@ -1,11 +1,11 @@
 # independent_eval_v1_1 — label audit (research + review plan)
 
-status: research_complete_review_pending
+status: complete
 review_type: repeat_author_blind_review
 independent_annotator: false
-reviewed: 54/360
-pending_manual_review: 306/360
-comparison_status: pending_review_completion
+reviewed: 360/360
+pending_manual_review: 0/360
+comparison_status: complete
 
 This document records a research-first audit of the `independent_eval_v1` label
 semantics and defines the full-360 human review that produces `independent_eval_v1_1`.
@@ -93,9 +93,10 @@ label-semantics mismatch in the new benchmark, not evidence about the historical
 
 ### 6. Label provenance for the 306 non-validation samples — VERIFIED
 
-Of 360 samples, only the 54 validation images carry genuine human (repeat-author)
-review (PR #28). The remaining **306 (252 train + 54 test)** carry only the automated
-heuristic provenance. Their true human labels are **UNKNOWN** -> `pending_manual_review`.
+At research time, only the 54 validation images carried genuine human (repeat-author)
+review (PR #28). The remaining **306 (252 train + 54 test)** were heuristic-only →
+`pending_manual_review`. After this PR they are human-reviewed (`review_0055`..`review_0360`);
+see `INDEPENDENT_EVAL_V1_1_REPORT.md`.
 
 ### 7. Is v1_1 evidence-justified? — VERIFIED (yes)
 
@@ -106,18 +107,15 @@ audit, not from ARTPS metric weakness. Therefore a new annotation version
 `independent_eval_v1_1` built from genuine full human review is warranted. The original
 `independent_eval_v1` remains immutable.
 
-## Plan (agent assigns no labels)
+## Completion (360/360)
 
-1. Build a neutral review pack for the 306 non-validation samples with continuation IDs
-   `review_0055`..`review_0360` (the 54 validation reviews from PR #28 stay immutable).
-2. Author reviews all 306 model-blind in Streamlit (`--repeat-author-review`).
-3. Fail-closed gate: no `independent_eval_v1_1` manifest and no validation rerun until
-   360/360 genuine human reviews exist.
-4. After 360/360: full original-vs-review comparison (label-only, no model scores),
-   then freeze `independent_eval_v1_1` with per-row provenance; real class distribution
-   (no forced balance).
-5. Re-run the frozen `artps_full_frozen_mars_clf_on_v1` profile (FP32) on v1_1 validation
-   only; test stays embargoed.
+1. Neutral pack built for 306 non-validation samples (`review_0055`..`review_0360`).
+2. Author completed 306 model-blind reviews in Streamlit (`--repeat-author-review`).
+3. Fail-closed 360 comparison + `independent_eval_v1_1` manifest frozen (340/20, no forced
+   balance). Split assignments unchanged; no single-class split; no leakage.
+4. Frozen `artps_full_frozen_mars_clf_on_v1` FP32 scores remapped to v1_1 validation labels
+   (no inference rerun, no test inference). See `INDEPENDENT_EVAL_V1_1_REPORT.md`.
+5. `final_test_recommendation: keep_closed`. Test embargo unchanged.
 
 ## Invariants
 

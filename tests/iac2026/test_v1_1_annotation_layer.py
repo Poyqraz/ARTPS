@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import csv
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -14,6 +16,7 @@ sys.path.insert(0, str(REPO / "scripts" / "iac2026"))
 import build_independent_eval_v1_1_manifest as v11man  # noqa: E402
 import build_remaining_review_pack as rempack  # noqa: E402
 import compare_full_review_labels as cmp360  # noqa: E402
+import eval_v1_1_frozen_validation as relabel  # noqa: E402
 from validation_blind_review import (  # noqa: E402
     BLIND_QUEUE_FIELDS,
     EXPECTED_REMAINING_N,
@@ -144,3 +147,65 @@ def test_test_split_embargo_intact():
     freeze = yaml.safe_load(FREEZE.read_text(encoding="utf-8"))
     assert freeze["test_opened"] is False
     assert freeze["final_test_authorized"] is False
+    assert freeze["status"] == "blocked_validation_sanity_review"
+
+
+def test_v1_1_manifest_frozen_360_no_forced_balance():
+    path = REPO / "reproduction/iac2026/manifests/independent_eval_v1_1.csv"
+    assert path.is_file()
+    rows = _read_csv(path)
+    assert len(rows) == 360
+    assert all(r["annotation_version"] == "independent_eval_v1_1" for r in rows)
+    by_split: dict[str, dict[str, int]] = {}
+    for r in rows:
+        d = by_split.setdefault(r["split"], {"0": 0, "1": 0})
+        d[r["final_label"]] += 1
+    assert set(by_split) == {"train", "validation", "test"}
+    for split, counts in by_split.items():
+        assert counts["0"] > 0 and counts["1"] > 0, split
+    # Natural imbalance, not forced 180/180.
+    total_pos = sum(c["1"] for c in by_split.values())
+    total_neg = sum(c["0"] for c in by_split.values())
+    assert (total_pos, total_neg) != (180, 180)
+    assert total_pos + total_neg == 360
+
+
+def test_v1_1_provenance_is_label_only():
+    path = REPO / "reproduction/iac2026/annotations/independent_eval_v1_1_review_provenance.csv"
+    rows = _read_csv(path)
+    assert len(rows) == 360
+    banned = {"sample_id", "relative_path", "split", "binary_label", "anomaly_score", "prediction"}
+    assert banned.isdisjoint(rows[0].keys())
+    assert {r["reviewer_role"] for r in rows} == {"repeat_author_review"}
+
+
+def test_v1_historical_results_and_manuscript_unchanged():
+    sel_rel = "results/iac2026/independent_eval_v1/validation/profile_selection.json"
+    diff = subprocess.run(
+        ["git", "diff", "--", sel_rel],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert diff.stdout == "", "v1 profile_selection.json must not be mutated"
+    sel = json.loads((REPO / sel_rel).read_text(encoding="utf-8"))
+    mars = next(c for c in sel["candidates"] if c["config_id"] == "artps_full_frozen_mars_clf_on_v1")
+    assert abs(float(mars["metrics"]["auroc"]) - 0.39231824417009603) < 1e-12
+    results_tex = (REPO / "paper/iac2026/sections/results.tex").read_text(encoding="utf-8")
+    assert "0.894" in results_tex
+    ledger = (REPO / "paper/iac2026/CLAIM_EVIDENCE_LEDGER.md").read_text(encoding="utf-8")
+    assert "accepted_abstract_reproduction_pending" in ledger
+
+
+def test_v1_1_relabel_eval_forbids_test_and_inference_import(tmp_path):
+    src = relabel.__file__
+    text = Path(src).read_text(encoding="utf-8")
+    imports = "\n".join(
+        ln for ln in text.splitlines() if ln.strip().startswith(("import ", "from "))
+    )
+    assert "artps_inference" not in imports
+    assert "predict_image" not in text
+    fake = [{"sample_id": "x", "split": "test", "anomaly_score": "0.1", "y_true": "0"}]
+    with pytest.raises(SystemExit, match="test-split"):
+        relabel.remetrics(pred_rows=fake, v11=[{"sample_id": "x", "split": "validation", "final_label": "1"}])
