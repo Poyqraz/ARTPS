@@ -213,7 +213,7 @@ Unresolved: Estlin ISAIRAS 2014 = UNVERIFIED_METADATA (no DOI/pages; not added).
 TODO_CITATIONS: PDF-visible = 0; comment-only = 7
 (1× methods AE/FastFlow/CFA planning cite; 4× `% TODO(results)`; 1× author email; 1× declaration slot)
 
-EMAIL: author_action_required (`CORRESPONDING_EMAIL_TBD` unchanged)
+EMAIL: complete (`poyrazbaydemir@gmail.com`; author-supplied)
 
 P0: 0
 

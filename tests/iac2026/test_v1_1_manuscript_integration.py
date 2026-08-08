@@ -159,6 +159,7 @@ def test_camera_ready_figure_and_bibliography():
         assert doi in bib
     assert "Tara and others" not in bib
     assert "Increased Mars Rover Autonomy" not in bib
-    assert "CORRESPONDING_EMAIL_TBD" in MAIN.read_text(encoding="utf-8") or r"CORRESPONDING\_EMAIL\_TBD" in MAIN.read_text(
-        encoding="utf-8"
-    )
+    main = MAIN.read_text(encoding="utf-8")
+    assert "poyrazbaydemir@gmail.com" in main
+    assert "CORRESPONDING_EMAIL_TBD" not in main
+    assert r"CORRESPONDING\_EMAIL\_TBD" not in main
