@@ -2,6 +2,8 @@
 
 Do **not** invent final Result numbers in LaTeX until ledger support is closed. Accepted-abstract numbers (C05–C07) stay `accepted_abstract_reproduction_pending`. Independent eval (`IND_EVAL_V1`) stays `protocol_defined_pending_data` until the test split is opened. Supplementary `IND_EVAL_V1_1` validation audit is a separate table (`tab:indep-v11`), not a substitute for Table 2. Pending tables stay **plan-only** (no empty numeric cells in TeX).
 
+Legacy 32p figure/table gate: [`LEGACY_EXTENDED_MANUSCRIPT_ASSET_AUDIT.md`](LEGACY_EXTENDED_MANUSCRIPT_ASSET_AUDIT.md) — **pending author review** before any extra IAC figure (recommended decision **B**: architecture Fig.~1 only).
+
 ## Tables (full-paper v0.1 map)
 
 | ID | Title | TeX now? | Ledger | Status |
