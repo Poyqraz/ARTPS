@@ -225,3 +225,5 @@ P2: remaining 3
 CAMERA_READY: ready_except_author_email
 
 Tables 2–6 / Figs 2–5: DEFER (no invented values). Table 1 + Table 2s KEEP.
+
+Legacy extended-MS assets: see [`LEGACY_EXTENDED_MANUSCRIPT_ASSET_AUDIT.md`](LEGACY_EXTENDED_MANUSCRIPT_ASSET_AUDIT.md). Recommended decision **B** (architecture figure only) pending author review. No TeX/figure change in that audit PR.
