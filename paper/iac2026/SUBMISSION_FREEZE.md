@@ -97,5 +97,5 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 
 ## CI
 
-- IAC paper build: pending pull request
-- IAC reproduction harness: will trigger (`tests/iac2026/**` path filter); pending pull request
+- IAC paper build: PASS ([run 31278095264](https://github.com/Poyqraz/ARTPS/actions/runs/31278095264))
+- IAC reproduction harness: PASS ([run 31278095266](https://github.com/Poyqraz/ARTPS/actions/runs/31278095266)); triggered by `tests/iac2026/**`
