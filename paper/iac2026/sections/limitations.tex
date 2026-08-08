@@ -3,10 +3,9 @@
 Monocular depth in ARTPS is \emph{relative}, not metric: near/far ordering does not yield
 metres, physical object size, or calibrated 3D reconstruction~\citep{ranftl2021dpt}.
 
-Historical accepted-abstract detection and speed numbers remain pending repository-level
-reproduction; they must not be read as independently re-run results in this draft.
-The \texttt{independent\_eval\_v1} protocol pin remains test-closed
-(\texttt{protocol\_defined\_pending\_data}).
+The historical evaluation was not independently reconstructed from the present repository
+snapshot.
+The \texttt{independent\_eval\_v1} held-out test partition was not opened.
 The supplementary \texttt{independent\_eval\_v1\_1} audit is a repeat-author review, not an
 independent second annotation.
 The human-reviewed set contains only $20$ negatives among $360$ images ($8$ validation,
@@ -14,7 +13,7 @@ $2$ test); it is therefore unsuitable for a strong independent final-test classi
 claim.
 The present human-reviewed validation subset contains only eight negative
 examples, making operating-threshold calibration unstable.
-The frozen independent-eval image score does not include curiosity ranking, diversity
+The frozen image-level score does not include curiosity ranking, diversity
 penalty, or the Priority Buffer.
 Frozen checkpoint training provenance is unverified relative to this dataset.
 No final test was opened and no embedded/Jetson result is added here.

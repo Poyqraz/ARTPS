@@ -1,7 +1,8 @@
 \section{Discussion}
 \label{sec:discussion}
 ARTPS is best read as an operational architecture: anomaly cues and relative depth feed
-fusion, localization, suppression, diversity, and buffering under fail-closed gates.
+fusion, localization, suppression, diversity, and buffering, with explicit no-selection
+when evidence is insufficient.
 The design goal is structured prioritization under rover constraints, not unconstrained
 claim of superior detection in all regimes.
 Anomaly-only policies miss that a high cue is not automatically a science-interest target
@@ -19,8 +20,8 @@ frozen supplementary validation scores.
 
 The entropy-weighted fusion rule remains the architectural specification; the current frozen
 evaluation uses fixed-weight multi-cue fusion.
-The separation between historical accepted-abstract claims and the current supplementary
-validation is intentional: conflating them would misrepresent evidence status.
+The separation between historical accepted-abstract results and the current supplementary
+validation is intentional: conflating them would mix two distinct evaluation protocols.
 The initial \texttt{independent\_eval\_v1} binary labels were produced by a classical-image
 heuristic with forced $180/180$ class balance.
 A model-blind repeat-author review produced $340$ positive / $20$ negative labels.

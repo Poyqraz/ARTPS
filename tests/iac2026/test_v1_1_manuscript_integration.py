@@ -36,7 +36,8 @@ def test_v1_1_supplementary_table_and_auroc_headline():
     flat = " ".join(results.lower().split())
     assert "all-positive" in flat
     assert "not treated as" in flat and "performance measures" in flat
-    assert "max_valid_candidate_after_masks" in results or "max\\_valid\\_candidate\\_after\\_masks" in results
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
+    assert "max_valid_candidate_after_masks" in methods or "max\\_valid\\_candidate\\_after\\_masks" in methods
     assert "curiosity" in flat and "not applied" in flat
     assert "0.920" not in results
     assert "0/8/0/46" not in results
@@ -110,8 +111,10 @@ def test_limitations_and_discussion_present():
     assert "fixed-weight" in intro or "fixed-weight multi-cue" in intro
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
     res = RESULTS.read_text(encoding="utf-8").lower()
-    assert "compatibility" in exp and "dataset and validation artifacts now exist" in exp
-    assert "claim closure remain" in res or "claim closure remains" in res
+    assert "held-out test" in exp and "not opened" in exp
+    assert "historical" in exp and "supplementary" in exp
+    assert "validation-only" in res or "validation only" in res
+    assert "held-out test" in res and "unopened" in res
     assert "data are still pending" not in res and "data still pending" not in res
 
 
