@@ -105,5 +105,5 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 ## Reviewer-facing polish
 
 - `reviewer_facing_polish_complete: true`
-- polish_commit: `PENDING`
+- polish_commit: `8f07a9432ee36c22ba2936bc7ed91c7cdf9e3cea`
 - Scientific freeze snapshot above unchanged (metrics, Decision B, test flags, `submission_candidate`)
