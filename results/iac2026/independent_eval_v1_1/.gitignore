@@ -1,0 +1,3 @@
+validation/
+*.tmp
+**/__pycache__/

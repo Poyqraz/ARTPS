@@ -1,0 +1,16 @@
+{
+  "annotation_version": "independent_eval_v1_1",
+  "n": 360,
+  "source_manifest_v1_sha256": "9f953dc07286738b82a07b6a4311ceaf6cc64de361893af3a04ee3279a45d408",
+  "final_label_distribution": {
+    "1": 340,
+    "0": 20
+  },
+  "review_status_distribution": {
+    "reviewed": 360
+  },
+  "class_balance_forced": false,
+  "auto_binarized_uncertain_exclude": false,
+  "manifest_v1_mutated": false,
+  "built_at": "2026-08-08T08:57:56Z"
+}

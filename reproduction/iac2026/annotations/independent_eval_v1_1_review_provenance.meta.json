@@ -1,0 +1,19 @@
+{
+  "annotation_version": "independent_eval_v1_1",
+  "review_type": "repeat_author_blind_review",
+  "independent_annotator": false,
+  "n_reviewed": 360,
+  "n_validation_pr28": 54,
+  "n_remaining": 306,
+  "source_manifest_v1_sha256": "9f953dc07286738b82a07b6a4311ceaf6cc64de361893af3a04ee3279a45d408",
+  "v1_1_manifest_sha256": "b8d6f83d8c0ba1aca85214c7dcf06a4d514ee1f5b327855a56800e33badd732c",
+  "validation_artifact_sha256": "e237fdd8dcf8340c2324d00e1b3c5d3d9e93ed8ac1ed30a5bc8e5339a8dd479f",
+  "remaining_results_sha256": "508d43cc1f2dd0de5c79027f9afa6e59e94b4f5b2d81a7073734a9ed6a2dd052",
+  "remaining_pack_manifest_sha256": "46114d4e155e83c17bec8cc24825057d29845e9466cbdfe56acb965fba34682d",
+  "annotation_guide_sha256": "5b4baa407a388a3f5b36b2331a4f1e718d0cd854371929e73d10a37fcb868beb",
+  "git_commit": "458c96714b6a53d3735e9877ff9b218f58ff336c",
+  "completed_at": "2026-08-08T08:59:49Z",
+  "model_scores_visible": false,
+  "original_labels_visible": false,
+  "test_inference_performed": false
+}
