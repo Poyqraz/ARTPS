@@ -19,9 +19,13 @@ The initial \texttt{independent\_eval\_v1} binary labels were produced by a clas
 heuristic with forced $180/180$ class balance.
 A model-blind repeat-author review changed the semantic distribution substantially
 ($340$ positive / $20$ negative).
-\texttt{independent\_eval\_v1\_1} therefore follows the intended science-interest annotation
-definition more faithfully on this selected domain; the imbalance indicates that
-science-interest prevalence is naturally high under that definition.
+\texttt{independent\_eval\_v1\_1} more directly reflects the adopted human annotation
+definition than the initial heuristic label layer.
+The human-reviewed annotation produces a strongly imbalanced class distribution
+($340$ positive / $20$ negative) in this selected benchmark.
+This observed prevalence is specific to the sampled Curiosity Mastcam domain and the
+adopted science-interest annotation definition; it should not be generalized to
+planetary imagery as a whole.
 Frozen-score AUROC~$0.772$ indicates useful ranking separation.
 Threshold-based F1 is not informative here because the predeclared operating point is
 all-positive.

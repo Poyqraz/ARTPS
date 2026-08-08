@@ -81,6 +81,13 @@ def test_limitations_and_discussion_present():
     assert "0.772" in disc
     disc_flat = " ".join(disc.split())
     assert "historical" in disc_flat and "same issue" in disc_flat
+    assert "planetary imagery as a whole" in disc_flat
+    assert "naturally high" not in disc_flat
+    exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
+    res = RESULTS.read_text(encoding="utf-8").lower()
+    assert "compatibility" in exp and "dataset and validation artifacts now exist" in exp
+    assert "claim closure remain" in res or "claim closure remains" in res
+    assert "data are still pending" not in res and "data still pending" not in res
 
 
 def test_no_test_split_metrics_in_tex():
