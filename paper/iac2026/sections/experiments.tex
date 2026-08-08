@@ -17,8 +17,22 @@ It is \emph{not} a reproduction of the accepted-abstract numbers.
 Protocol documents, YAML lock, annotation guide, and dataset plan live under
 \texttt{reproduction/iac2026/} and \texttt{scripts/iac2026/}.
 The primary image score is locked to \texttt{max\_valid\_candidate\_after\_masks}.
-Until a frozen test split and verified annotations exist, this track remains
-\texttt{protocol\_defined\_pending\_data}: no fabricated $N$, no invented metrics.
+The existing ledger status \texttt{protocol\_defined\_pending\_data} is retained for
+compatibility with the original protocol-tracking state.
+Dataset and validation artifacts now exist; however, headline independent-evaluation
+closure remains pending because the frozen test split has not been authorized or
+evaluated.
+No fabricated $N$ and no invented test metrics are reported.
+
+\subsection{Supplementary human-reviewed annotation (\texttt{independent\_eval\_v1\_1})}
+A separate annotation version, \texttt{independent\_eval\_v1\_1}, records a model-blind
+repeat-author review of all 360 included images under the same annotation guide.
+The original \texttt{independent\_eval\_v1} manifest remains immutable.
+Split assignments are unchanged; the test split stays embargoed (human viewing only;
+no ARTPS inference).
+This supplementary track is a current reproducible validation audit.
+It is \emph{not} a reproduction of the accepted-abstract numbers, not a replacement for
+the historical experiment, and not an independent second annotation.
 
 \subsection{Annotation and dataset plan}
 Annotation follows the independent-evaluation annotation guide: operational target labels,
