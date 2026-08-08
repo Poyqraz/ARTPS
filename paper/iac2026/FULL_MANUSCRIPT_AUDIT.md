@@ -143,30 +143,30 @@ Current IAC TeX: **no display equations**.
 
 ### P0 — submission integrity
 
-**P0-01**  
-- File: `sections/methods.tex` (also Intro contribution 2)  
-- Issue: Entropy-weighted fusion stated as what ARTPS uses.  
-- Evidence: `src/artps_detection_core.py` ~1043–1052 fixed `w_recon/w_depth/w_texture`; no Shannon entropy in `.py`. Ledger C02 claim text vs code.  
-- Why: Reviewers can treat entropy fusion as measured live behaviour.  
+**P0-01**
+- File: `sections/methods.tex` (also Intro contribution 2)
+- Issue: Entropy-weighted fusion stated as what ARTPS uses.
+- Evidence: `src/artps_detection_core.py` ~1043–1052 fixed `w_recon/w_depth/w_texture`; no Shannon entropy in `.py`. Ledger C02 claim text vs code.
+- Why: Reviewers can treat entropy fusion as measured live behaviour.
 - Fix: Specify entropy rule as **architectural specification**; state current frozen path uses **fixed-weight** multi-cue fusion.
 
-**P0-02**  
-- File: `sections/results.tex`, `sections/methods.tex`  
-- Issue: v1_1 AUROC/AP come from frozen `artps_full_frozen_mars_clf_on_v1` image scores (`max_valid_candidate_after_masks`). Curiosity, diversity, and Priority Buffer are **not** in that path.  
-- Evidence: `src/artps_inference.py` vs `app.py` ranking; `INDEPENDENT_EVAL_V1_1_REPORT.md`.  
-- Why: Readers may attribute 0.772 to the full abstract stack.  
+**P0-02**
+- File: `sections/results.tex`, `sections/methods.tex`
+- Issue: v1_1 AUROC/AP come from frozen `artps_full_frozen_mars_clf_on_v1` image scores (`max_valid_candidate_after_masks`). Curiosity, diversity, and Priority Buffer are **not** in that path.
+- Evidence: `src/artps_inference.py` vs `app.py` ranking; `INDEPENDENT_EVAL_V1_1_REPORT.md`.
+- Why: Readers may attribute 0.772 to the full abstract stack.
 - Fix: One explicit sentence in Results + Methods overview.
 
 ### P1 — should fix before submission
 
-**P1-01** Intro contribution 2: qualify entropy vs current fusion.  
-**P1-02** Methods: name curiosity score \(C(r)\) to match abstract; UI-only / not frozen image_score.  
-**P1-03** Methods: restore code-faithful soft-similarity + Priority Buffer equations, same qualifier.  
-**P1-04** Results: state frozen score contract; keep AUROC 0.772 / AP 0.956 / no 0.920.  
-**P1-05** Discussion: one *why* block (hybrid, diversity, buffer); drop duplicate 340/20; mention entropy spec vs fixed-weight eval.  
-**P1-06** Experiments metrics: F1 is protocol-named; **not** a v1_1 headline metric.  
-**P1-07** Ledger C02 **notes** (support class unchanged unless tests allow): entropy specified; current core fixed-weight.  
-**P1-08** Results subsection title / prose: “independent evaluation” vs “supplementary validation”.  
+**P1-01** Intro contribution 2: qualify entropy vs current fusion.
+**P1-02** Methods: name curiosity score \(C(r)\) to match abstract; UI-only / not frozen image_score.
+**P1-03** Methods: restore code-faithful soft-similarity + Priority Buffer equations, same qualifier.
+**P1-04** Results: state frozen score contract; keep AUROC 0.772 / AP 0.956 / no 0.920.
+**P1-05** Discussion: one *why* block (hybrid, diversity, buffer); drop duplicate 340/20; mention entropy spec vs fixed-weight eval.
+**P1-06** Experiments metrics: F1 is protocol-named; **not** a v1_1 headline metric.
+**P1-07** Ledger C02 **notes** (support class unchanged unless tests allow): entropy specified; current core fixed-weight.
+**P1-08** Results subsection title / prose: “independent evaluation” vs “supplementary validation”.
 **P1-09** Limitations: frozen eval does not exercise curiosity/diversity/buffer.
 
 ### P2 — polish (this PR only if low-risk)
@@ -181,11 +181,11 @@ Email placeholder; real architecture figure; Tables 2–6; Jetson; Estlin 2014; 
 
 ## 8. Minimal patch plan (this PR)
 
-1. Write this audit + `AUDIT_ACCEPTED_ABSTRACT_ALIGNMENT.md`.  
-2. Patch Methods / Intro / Results / Discussion / Limitations / Experiments / C02 notes only.  
-3. Restore only entropy (labeled specified), curiosity, similarity, buffer equations.  
-4. Do **not** change abstract text/numbers, Table 1, 0.772/0.956, declaration, freeze, F1 artifacts.  
-5. Extend manuscript tests for new invariants.  
+1. Write this audit + `AUDIT_ACCEPTED_ABSTRACT_ALIGNMENT.md`.
+2. Patch Methods / Intro / Results / Discussion / Limitations / Experiments / C02 notes only.
+3. Restore only entropy (labeled specified), curiosity, similarity, buffer equations.
+4. Do **not** change abstract text/numbers, Table 1, 0.772/0.956, declaration, freeze, F1 artifacts.
+5. Extend manuscript tests for new invariants.
 6. Build + CI + merge.
 
 Invariants unchanged: historical YES/NO report fields must remain **NO** for metric edits.
