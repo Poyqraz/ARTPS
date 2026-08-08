@@ -28,9 +28,48 @@ FPS @ $256\times256$ (lightweight core) & $28.1$ \\
 \end{table}
 
 \subsection{Independent evaluation (\texttt{independent\_eval\_v1})}
-No numeric results are reported for \texttt{independent\_eval\_v1} in this draft.
-Support status remains \texttt{protocol\_defined\_pending\_data}.
-% TODO(results): populate detection / ranking tables only after frozen split + verified metrics.
+The frozen \texttt{independent\_eval\_v1} heuristic-label artifact remains a separate
+protocol pin.
+Headline \texttt{IND\_EVAL\_V1} support stays \texttt{protocol\_defined\_pending\_data}:
+the test split is not opened and no test metrics are reported.
+Numeric supplementary audit below uses the human-reviewed annotation version only.
+
+\subsection{Supplementary Human-Reviewed Evaluation}
+Table~\ref{tab:indep-v11} reports a validation-only audit under
+\texttt{independent\_eval\_v1\_1}.
+Frozen ARTPS scores from \texttt{artps\_full\_frozen\_mars\_clf\_on\_v1} (FP32) were
+relabeled; no tuning and no inference rerun were performed.
+This subsection is explicitly distinct from Table~\ref{tab:accepted-abstract}.
+AUROC is the principal ranking-oriented metric for this supplementary audit.
+
+\begin{table}[t]
+\centering
+\caption{Supplementary human-reviewed evaluation (\texttt{independent\_eval\_v1\_1}).
+Not a reproduction of Table~\ref{tab:accepted-abstract} and not a final-test result.}
+\label{tab:indep-v11}
+\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Item & Value \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Label audit (360 images)}} \\
+Reviewed / agreement / disagreement & $360$ / $188$ / $172$ \\
+v1 heuristic labels (pos./neg.) & $180$ / $180$ \\
+v1\_1 human-reviewed labels (pos./neg.) & $340$ / $20$ \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Frozen validation relabel ($46$ pos.\ / $8$ neg.)}} \\
+AUROC (principal ranking metric) & $0.772$ \\
+AP (val.\ prevalence $46/54 \approx 0.852$) & $0.956$ \\
+F1 at threshold $0.0$\textsuperscript{*} & $0.920$ \\
+Confusion (TN/FP/FN/TP) & $0/8/0/46$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textsuperscript{*}F1 was obtained at the predeclared validation-selected threshold
+of $0.0$, corresponding to an all-positive operating point; because the validation subset
+contains $46$ positive and $8$ negative samples, this value is strongly prevalence-dependent
+and is not treated as the primary discriminative performance measure.
 
 \subsection{Proxy analyses}
 Preliminary proxy analyses (shadow/FP gates; size--distance policy) may be discussed

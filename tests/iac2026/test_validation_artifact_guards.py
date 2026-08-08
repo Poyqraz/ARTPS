@@ -128,7 +128,7 @@ def test_claim_support_levels_unchanged():
     assert "| C06 |" in text and "accepted_abstract_reproduction_pending" in text
     assert "| C07 |" in text and "accepted_abstract_reproduction_pending" in text
     assert "| IND_EVAL_V1 |" in text and "protocol_defined_pending_data" in text
-    # Must not claim measured on IND_EVAL_V1
+    # Must not claim measured on IND_EVAL_V1 (do not match IND_EVAL_V1_1).
     for line in text.splitlines():
-        if line.startswith("| IND_EVAL_V1 |"):
+        if line.startswith("| IND_EVAL_V1 |") and not line.startswith("| IND_EVAL_V1_1 |"):
             assert "measured" not in line.lower() or "not measured" in line.lower() or "pending" in line

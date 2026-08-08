@@ -8,15 +8,28 @@ claim of superior detection in all regimes.
 Relative depth is an ordering cue~\citep{ranftl2021dpt}; interpreting it as metric distance
 would overstate what monocular estimation provides.
 Operational suppressions address common imagery distractors, but residual false positives
-remain an open operational risk until independent evaluation metrics exist.
+remain an open operational risk on the still-closed independent test split.
 
-% TODO(results): discuss independent\_eval\_v1 AUROC/AUPRC/F1 once artifacts close IND\_EVAL\_V1.
 % TODO(results): discuss accepted-abstract reproduction only if C05--C07 close beyond pending.
 % Avoid ``outperforms'' / ``demonstrate'' language until evidence gates allow.
 
-The separation between historical accepted-abstract claims and the current
-\texttt{independent\_eval\_v1} track is intentional: conflating them would misrepresent
-evidence status.
+The separation between historical accepted-abstract claims and the current independent-eval
+track is intentional: conflating them would misrepresent evidence status.
+The initial \texttt{independent\_eval\_v1} binary labels were produced by a classical-image
+heuristic with forced $180/180$ class balance.
+A model-blind repeat-author review changed the semantic distribution substantially
+($340$ positive / $20$ negative).
+\texttt{independent\_eval\_v1\_1} therefore follows the intended science-interest annotation
+definition more faithfully on this selected domain; the imbalance indicates that
+science-interest prevalence is naturally high under that definition.
+Frozen-score AUROC~$0.772$ indicates useful ranking separation.
+Threshold-based F1 is not informative here because the predeclared operating point is
+all-positive.
+A future balanced challenge set or harder negative set may be useful for operating-point
+evaluation.
+This label-audit finding is confined to the supplementary independent-eval benchmark; it
+does not imply that the historical accepted-abstract ARTPS experiment suffered the same
+issue.
 Proxy analyses remain secondary and must not migrate into abstract headlines.
 
 Safety language stays bounded: ARTPS is safety-aware software on a flight-readiness-oriented
