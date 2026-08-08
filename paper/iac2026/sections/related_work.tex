@@ -4,7 +4,6 @@
 Onboard science autonomy systems such as AEGIS-style target selection aim to reduce reliance
 on delayed ground loops by identifying and prioritizing scientifically interesting
 targets~\citep{estlin2012}.
-% TODO(citation): add verified Estlin ISAIRAS 2014 (or equivalent) entry with complete metadata.
 Human-in-the-loop operations remain essential for mission-level decisions, but bandwidth and
 latency constraints motivate onboard screening that is explicit about uncertainty and
 false-positive control.
@@ -12,7 +11,7 @@ ARTPS follows this operational framing: anomaly cues feed prioritization rather 
 mission planning.
 
 \subsection{Visual anomaly detection}
-Feature-distribution and memory-bank methods such as PaDiM and PatchCore are strong
+Feature-distribution and memory-bank methods such as PaDiM and PatchCore are widely used
 industrial anomaly baselines~\citep{defard2020padim,roth2022patchcore}.
 Reconstruction- and embedding-based detectors similarly score unusual appearance, but a high
 anomaly score is not identical to an operationally actionable science target under rover
@@ -31,6 +30,5 @@ ARTPS uses relative depth as an ordering and policy cue and forbids metric-dista
 Onboard compute, thermal, and power limits constrain which models can run continuously.
 Uncertainty, fail-safe ``no selection'' behaviour, and runtime monitoring matter as much as
 ranking discrimination for operational use.
-% TODO(citation): add verified edge/onboard autonomy or runtime-assurance survey/source if approved.
-ARTPS adopts safety-aware wording: bounded assurance within a defined operational envelope,
+ARTPS therefore states only bounded assurance within a defined operational envelope,
 not universal or flight-certified guarantees.

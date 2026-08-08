@@ -197,3 +197,31 @@ Invariants unchanged: historical YES/NO report fields must remain **NO** for met
 Implemented: P0-01, P0-02, P1-01–P1-09, plus Fig.~1 schematic label “Fusion” (not “Entropy fusion”).
 Deferred: all P2/P3 except Related Work “peak accuracy” → “ranking discrimination”.
 Abstract / declaration / freeze / historical numbers / v1_1 0.772+0.956 unchanged.
+
+---
+
+## 10. Camera-ready status (PR after #32)
+
+Branch: `paper/iac2026-camera-ready-assets`. Does not reopen P0/P1 evidence issues.
+
+REAL_ARCHITECTURE_FIGURE: complete
+(TikZ `figures/artps_pipeline.tex`; layers A/B/C; fixed-weight vs dashed entropy spec; ranking not in frozen v1_1 image score)
+
+BIBLIOGRAPHY: verified for 4 cited keys (`estlin2012` → AEGIS ACM TIST 2012; PaDiM; PatchCore; DPT).
+Unresolved: Estlin ISAIRAS 2014 = UNVERIFIED_METADATA (no DOI/pages; not added).
+
+TODO_CITATIONS: PDF-visible = 0; comment-only = 7
+(1× methods AE/FastFlow/CFA planning cite; 4× `% TODO(results)`; 1× author email; 1× declaration slot)
+
+EMAIL: author_action_required (`CORRESPONDING_EMAIL_TBD` unchanged)
+
+P0: 0
+
+P1: 0
+
+P2: remaining 3
+(underfull hboxes harmless; accepted title/abstract strong words leave-as-is; ledger taxonomy note out of scope)
+
+CAMERA_READY: ready_except_author_email
+
+Tables 2–6 / Figs 2–5: DEFER (no invented values). Table 1 + Table 2s KEEP.

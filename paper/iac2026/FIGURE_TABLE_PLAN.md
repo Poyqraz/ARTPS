@@ -6,13 +6,13 @@ Do **not** invent final Result numbers in LaTeX until ledger support is closed. 
 
 | ID | Title | TeX now? | Ledger | Status |
 |----|-------|----------|--------|--------|
-| Table 1 | Reported results from the accepted IAC abstract | Yes (`tab:accepted-abstract`) | C05–C07 | abstract reference + reproduction-pending footnote |
-| Table 2 | Independent eval detection (AUROC/AUPRC/F1) | No — plan only | IND_EVAL_V1 | protocol_defined_pending_data (test closed) |
-| Table 2s | Supplementary v1→v1_1 label audit + frozen-score validation | Yes (`tab:indep-v11`) | IND_EVAL_V1_1 | measured validation-only; AUROC 0.772 principal; AP prevalence-contextual; F1 not a table metric; no test |
-| Table 3 | Independent eval vs PaDiM/PatchCore baselines | No — plan only | IND_EVAL_V1 | pending metrics |
-| Table 4 | Workstation FPS / latency by resolution | No — plan only | C07 / C08 | reproduction-pending / planned |
-| Table 5 | Shadow / FP proxy OFF vs ON | No — plan only | C09–C10 | preliminary proxy (non-headline) |
-| Table 6 | Size–distance policy proxy | No — plan only | C11 | preliminary proxy (non-headline) |
+| Table 1 | Reported results from the accepted IAC abstract | Yes (`tab:accepted-abstract`) | C05–C07 | **KEEP** — abstract reference + reproduction-pending footnote |
+| Table 2 | Independent eval detection (AUROC/AUPRC/F1) | No — plan only | IND_EVAL_V1 | **DEFER** — `protocol_defined_pending_data` (test closed) |
+| Table 2s | Supplementary v1→v1_1 label audit + frozen-score validation | Yes (`tab:indep-v11`) | IND_EVAL_V1_1 | **KEEP** — measured validation-only; AUROC 0.772 principal; AP prevalence-contextual; F1 not a table metric; no test |
+| Table 3 | Independent eval vs PaDiM/PatchCore baselines | No — plan only | IND_EVAL_V1 | **DEFER** — pending metrics |
+| Table 4 | Workstation FPS / latency by resolution | No — plan only | C07 / C08 | **DEFER** — reproduction-pending / planned; no Jetson |
+| Table 5 | Shadow / FP proxy OFF vs ON | No — plan only | C09–C10 | **DEFER** — preliminary proxy (non-headline) |
+| Table 6 | Size–distance policy proxy | No — plan only | C11 | **DEFER** — preliminary proxy (non-headline) |
 
 Legacy IDs (`T_detect`, `T_hw`, …) map to Tables 2–6 above.
 
@@ -20,11 +20,11 @@ Legacy IDs (`T_detect`, `T_hw`, …) map to Tables 2–6 above.
 
 | ID | Content | TeX now? | Notes |
 |----|---------|----------|-------|
-| Fig 1 | ARTPS pipeline schematic | Yes (`fig:pipeline`) | `figure*` tabular placeholder; no missing `\includegraphics` |
-| Fig 2 | Relative depth map example | No — plan only | Caption must say not metric distance |
-| Fig 3 | Detection overlays | No — plan only | From artifacts when available |
-| Fig 4 | Optional shadow/FP proxy chart | No — plan only | Preliminary proxy only |
-| Fig 5 | Optional size–distance proxy chart | No — plan only | Preliminary proxy only |
+| Fig 1 | ARTPS pipeline schematic | Yes (`fig:pipeline`) | TikZ vector (`figures/artps_pipeline.tex`); layers A/B/C; entropy dashed specified; ranking not in frozen v1_1 score |
+| Fig 2 | Relative depth map example | No — plan only | **DEFER** — caption must say not metric distance |
+| Fig 3 | Detection overlays | No — plan only | **DEFER** — from artifacts when available |
+| Fig 4 | Optional shadow/FP proxy chart | No — plan only | **DEFER** — preliminary proxy only |
+| Fig 5 | Optional size–distance proxy chart | No — plan only | **DEFER** — preliminary proxy only |
 
 ## On-disk artifacts (inventory)
 

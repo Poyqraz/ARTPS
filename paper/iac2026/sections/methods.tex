@@ -5,17 +5,16 @@ method prose here does not invent metrics.
 
 \begin{figure*}[t]
 \centering
-% Placeholder schematic (no external image asset; avoids broken \includegraphics).
-\begin{tabular}{@{}l@{$\rightarrow$}l@{$\rightarrow$}l@{$\rightarrow$}l@{}}
-\multicolumn{4}{c}{\textbf{ARTPS pipeline (schematic)}} \\
-\hline
-Input image & Anomaly cues + relative depth & Fusion + localization & Suppression + ranking \\
- &  & Diversity + Priority Buffer & Priority list / no-select \\
-\hline
-\end{tabular}
-\caption{ARTPS end-to-end pipeline: multi-cue anomaly responses and monocular relative depth
-are fused, localized, operationally filtered, ranked with diversity, and optionally retained
-in a Priority Buffer for second-chance evaluation.}
+\input{figures/artps_pipeline}
+\caption{ARTPS architecture aligned with the current implementation.
+Layer~A generates optional enhancement, reconstruction, relative-depth, texture, and optional
+classifier cues.
+Layer~B is the frozen evaluation image-score path: cue normalization, fixed-weight multi-cue
+fusion, localization, operational masks, and \texttt{max\_valid\_candidate\_after\_masks}.
+Entropy-weighted fusion is the architectural specification (dashed), not the measured frozen
+\texttt{independent\_eval\_v1\_1} default.
+Layer~C is the operational ranking stack (curiosity, soft similarity / diversity, clustering,
+Priority Buffer / Top-$K$) and is not included in frozen v1\_1 image-score evaluation.}
 \label{fig:pipeline}
 \end{figure*}
 
@@ -23,7 +22,8 @@ in a Priority Buffer for second-chance evaluation.}
 ARTPS ingests a single RGB field image and produces a ranked list of candidate targets, or an
 explicit no-selection outcome when evidence is insufficient.
 Primary modules are: (i)~multi-cue anomaly responses, (ii)~monocular relative depth,
-(iii)~entropy-weighted fusion, (iv)~candidate localization, (v)~operational false-positive
+(iii)~multi-cue fusion (entropy-weighted specification; frozen evaluation uses fixed weights),
+(iv)~candidate localization, (v)~operational false-positive
 suppression, (vi)~apparent size / image-relative size--distance policy,
 (vii)~feature-space diversity, (viii)~Priority Buffer, and (ix)~fail-closed runtime and claim
 gates.
@@ -126,5 +126,4 @@ ARTPS is intended for edge-oriented operation with bounded compute.
 When inputs, models, masks, or claim gates are incomplete, the system prefers fail-closed
 behaviour: no selection, or blocked evaluation, rather than emitting an unverified priority
 list.
-Safety wording is bounded: ARTPS is safety-aware software architecture, not flight-qualified
-avionics, and does not assert universal safety guarantees.
+Safety bounds are stated in Section~\ref{sec:limitations}.

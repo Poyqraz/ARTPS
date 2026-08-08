@@ -129,3 +129,36 @@ def test_no_test_split_metrics_in_tex():
     freeze = yaml.safe_load(FREEZE.read_text(encoding="utf-8"))
     assert freeze["test_opened"] is False
     assert freeze["final_test_authorized"] is False
+
+
+def test_camera_ready_figure_and_bibliography():
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
+    fig = (REPO / "paper/iac2026/figures/artps_pipeline.tex").read_text(encoding="utf-8")
+    bib = (REPO / "paper/iac2026/references.bib").read_text(encoding="utf-8")
+    sty = (REPO / "paper/iac2026/iac2026.sty").read_text(encoding="utf-8")
+    assert "fig:pipeline" in methods
+    assert r"\input{figures/artps_pipeline}" in methods
+    assert r"\begin{tikzpicture}" in fig
+    assert r"\RequirePackage{tikz}" in sty or r"\usepackage{tikz}" in sty
+    cap = methods.lower()
+    assert "frozen" in cap
+    assert "entropy" in cap
+    assert "not included" in cap
+    fig_l = fig.lower()
+    assert "fixed-weight" in fig_l
+    assert "entropy-weighted" in fig_l
+    assert "not in frozen" in fig_l
+    assert "0.772" not in fig
+    assert "0.894" not in fig
+    for doi in (
+        "10.1145/2168752.2168764",
+        "10.1007/978-3-030-68799-1_35",
+        "10.1109/CVPR52688.2022.01392",
+        "10.1109/ICCV48922.2021.01196",
+    ):
+        assert doi in bib
+    assert "Tara and others" not in bib
+    assert "Increased Mars Rover Autonomy" not in bib
+    assert "CORRESPONDING_EMAIL_TBD" in MAIN.read_text(encoding="utf-8") or r"CORRESPONDING\_EMAIL\_TBD" in MAIN.read_text(
+        encoding="utf-8"
+    )
