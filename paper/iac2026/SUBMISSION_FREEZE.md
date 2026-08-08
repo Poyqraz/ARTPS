@@ -12,7 +12,7 @@ It is **not** an official IAF submission receipt and **not** an accepted full-pa
 | Paper ID | `IAC-26,A3,IP,109,x109221` |
 | Branch | `paper/iac2026-submission-freeze` |
 | Base (`main` @ PR #34) | `aeedcebfa7cd83a58879f3bef81aa0eec12e66d6` |
-| Freeze commit | `PENDING` |
+| Freeze commit | `4419dae72b4d35c042a30bd48792c29973ac5446` |
 | Build date | 2026-08-08 (pdfinfo CreationDate 23:50:58 Türkiye) |
 | Page count | 7 |
 | Page size | US Letter (612 × 792 pts) |
