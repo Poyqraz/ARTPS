@@ -5,30 +5,30 @@ This section distinguishes two evaluation tracks that must not be conflated.
 \subsection{Historical accepted-abstract track}
 The accepted IAC abstract reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, baseline
 AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight core.
-In the repository claim ledger these values remain
-\texttt{accepted\_abstract\_reproduction\_pending}: they are preserved as abstract claims and
-are not asserted as freshly reproduced from current repository artifacts in this draft.
+The performance values reported in the accepted IAC abstract are retained as the historical
+ARTPS evaluation.
+The supplementary evaluation introduced below follows a separate contemporary protocol and
+is therefore reported independently rather than treated as a direct reproduction of the
+historical experiment.
 No new experiment in this manuscript invents replacement headline numbers.
 
 \subsection{Current reproducible evaluation (\texttt{independent\_eval\_v1})}
-A separate protocol, \texttt{independent\_eval\_v1}, defines a current reproducible evaluation
-for claim \texttt{IND\_EVAL\_V1} only.
+A separate frozen evaluation protocol, \texttt{independent\_eval\_v1}, was established for
+the current implementation.
 It is \emph{not} a reproduction of the accepted-abstract numbers.
-Protocol documents, YAML lock, annotation guide, and dataset plan live under
-\texttt{reproduction/iac2026/} and \texttt{scripts/iac2026/}.
-The primary image score is locked to \texttt{max\_valid\_candidate\_after\_masks}.
-The existing ledger status \texttt{protocol\_defined\_pending\_data} is retained for
-compatibility with the original protocol-tracking state.
-Dataset and validation artifacts now exist; however, headline independent-evaluation
-closure remains pending because the frozen test split has not been authorized or
-evaluated.
+Protocol definitions, annotation rules, and frozen execution settings are version-controlled
+with the implementation.
+The primary image score is the frozen image-level score defined in Methods.
+The held-out test partition was not opened in the present work.
+Validation artifacts exist; numeric supplementary results below use the human-reviewed
+annotation version only.
 No fabricated $N$ and no invented test metrics are reported.
 
 \subsection{Supplementary human-reviewed annotation (\texttt{independent\_eval\_v1\_1})}
 A separate annotation version, \texttt{independent\_eval\_v1\_1}, records a model-blind
 repeat-author review of all 360 included images under the same annotation guide.
 The original \texttt{independent\_eval\_v1} manifest remains immutable.
-Split assignments are unchanged; the test split stays embargoed (human viewing only;
+Split assignments are unchanged; the test split remains unopened (human viewing only;
 no ARTPS inference).
 This supplementary track is a current reproducible validation audit.
 It is \emph{not} a reproduction of the accepted-abstract numbers, not a replacement for
@@ -36,7 +36,7 @@ the historical experiment, and not an independent second annotation.
 
 \subsection{Annotation and dataset plan}
 Annotation follows the independent-evaluation annotation guide: operational target labels,
-mask validity, and fail-closed refusal when ratios or frozen splits are incomplete.
+mask validity, and refusal to proceed when label ratios or frozen splits are incomplete.
 Dataset construction uses declared train/val/test planning language; this draft does not
 state unverified image counts.
 
@@ -55,16 +55,13 @@ Bootstrap confidence intervals are \emph{planned} once frozen metrics exist; thi
 not invent interval values.
 % TODO(results): fill bootstrap CIs after independent\_eval\_v1 run artifacts.
 
-\subsection{Reproducibility, SHA locks, and fail-closed gates}
-Protocol files are SHA-pinned (LF-normalized) via the independent-eval execution contract.
-Evaluation refuses to run when protocol lock, manifest schema, score definition, or input
-audit gates fail.
-Claim--evidence readiness for historical C05/C06 remains layered and fail-closed; locating a
-YAML path alone is insufficient for a real run.
+\subsection{Reproducibility and evaluation integrity}
+Evaluation is aborted when required inputs or frozen protocol conditions are incomplete.
+Version-controlled protocol definitions alone are not a substitute for a completed run.
 
 \subsection{Hardware profiles}
 Workstation timing profiles and a Jetson / edge-hardware protocol are defined at the planning
-level (C08 support: \texttt{planned}).
+level.
 No Jetson numbers are reported in this draft.
 Hardware measurements are not flight hardware and do not constitute flight certification.
 

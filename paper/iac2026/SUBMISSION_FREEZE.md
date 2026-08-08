@@ -2,6 +2,8 @@
 
 `submission_candidate: true`
 
+`reviewer_facing_polish_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -99,3 +101,9 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 
 - IAC paper build: PASS ([run 31278095264](https://github.com/Poyqraz/ARTPS/actions/runs/31278095264))
 - IAC reproduction harness: PASS ([run 31278095266](https://github.com/Poyqraz/ARTPS/actions/runs/31278095266)); triggered by `tests/iac2026/**`
+
+## Reviewer-facing polish
+
+- `reviewer_facing_polish_complete: true`
+- polish_commit: `PENDING`
+- Scientific freeze snapshot above unchanged (metrics, Decision B, test flags, `submission_candidate`)

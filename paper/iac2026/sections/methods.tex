@@ -1,6 +1,6 @@
 \section{ARTPS Methodology}
 This section describes the ARTPS pipeline as an architectural specification.
-Quantitative performance claims appear only in Section~\ref{sec:results} under evidence gates;
+Quantitative performance claims appear only in Section~\ref{sec:results};
 method prose here does not invent metrics.
 
 \begin{figure*}[t]
@@ -25,16 +25,16 @@ Primary modules are: (i)~multi-cue anomaly responses, (ii)~monocular relative de
 (iii)~multi-cue fusion (entropy-weighted specification; frozen evaluation uses fixed weights),
 (iv)~candidate localization, (v)~operational false-positive
 suppression, (vi)~apparent size / image-relative size--distance policy,
-(vii)~feature-space diversity, (viii)~Priority Buffer, and (ix)~fail-closed runtime and claim
-gates.
-The primary image-level anomaly score used by the current evaluation contract is
-\texttt{max\_valid\_candidate\_after\_masks}: the maximum score among candidates that remain
+(vii)~feature-space diversity, (viii)~Priority Buffer, and (ix)~runtime fail-safe behaviour
+with evaluation-integrity checks.
+The frozen image-level score, implemented as
+\texttt{max\_valid\_candidate\_after\_masks}, is the maximum score among candidates that remain
 valid after operational masks and suppressions.
-This score definition is pinned for \texttt{independent\_eval\_v1} / frozen
-\texttt{independent\_eval\_v1\_1} remetrics and must not be silently redefined between
+This score definition is held fixed for \texttt{independent\_eval\_v1} and frozen
+\texttt{independent\_eval\_v1\_1} scoring and must not be silently redefined between
 protocol versions.
 Curiosity ranking, feature-space diversity, and the Priority Buffer are operational
-selection mechanisms; they are \emph{not} applied on the frozen independent-eval image score.
+selection mechanisms; they are \emph{not} applied on the frozen image-level score.
 
 \subsection{Multi-cue visual anomaly detection}
 ARTPS forms visual anomaly responses from embedding- or reconstruction-oriented cues aligned
@@ -73,7 +73,7 @@ Fused anomaly responses are converted into discrete candidate regions via locali
 code).
 Each candidate carries a score, spatial extent, and optional feature descriptor for diversity.
 Candidates that fail validity checks after masks do not contribute to
-\texttt{max\_valid\_candidate\_after\_masks}.
+the frozen image-level score.
 
 \subsection{Operational false-positive suppression}
 Rover imagery frequently contains distractors: rover body / hardware, strong boundary shadows,
@@ -97,7 +97,7 @@ anomaly response, optional combined-map, depth variance, and roughness),
 C(r)=\sum_i w_i S_i(r),\qquad w_i\ge 0.
 \]
 Default deployed weights emphasize known-value and anomaly terms.
-\(C(r)\) is \emph{not} the frozen independent-eval image score.
+\(C(r)\) is \emph{not} the frozen image-level score.
 
 \subsection{Feature-space diversity}
 To avoid redundant near-duplicates in the priority list, ARTPS applies a soft similarity
@@ -109,8 +109,7 @@ C'(r)=C(r)\,(1-\lambda s(r)).
 \]
 Diversity improves coverage of distinct visual modes under limited downlink slots.
 % TODO(results): quantify diversity impact only after frozen independent evaluation.
-This ranking step is not applied when computing
-\texttt{max\_valid\_candidate\_after\_masks}.
+This ranking step is not applied when computing the frozen image-level score.
 
 \subsection{Priority Buffer}
 Aggressive diversity or suppression can discard rare but scientifically interesting peaks.
@@ -119,11 +118,11 @@ The Priority Buffer retains high-anomaly candidates that lose the diversity cont
 r\in\mathcal{B}\iff C(r)>\tau_{\mathrm{high}}\ \mathrm{and}\ \bigl(C(r)-C'(r)\bigr)>\tau_\Delta.
 \]
 The buffer is a recovery mechanism for second-chance re-evaluation, not a guarantee that
-every rare target is recovered, and it is not part of the frozen independent-eval image score.
+every rare target is recovered, and it is not part of the frozen image-level score.
 
 \subsection{Runtime and safety-aware fail-closed behaviour}
 ARTPS is intended for edge-oriented operation with bounded compute.
-When inputs, models, masks, or claim gates are incomplete, the system prefers fail-closed
-behaviour: no selection, or blocked evaluation, rather than emitting an unverified priority
-list.
+Runtime processing may return an explicit no-selection outcome when evidence is insufficient.
+Evaluation is aborted when required inputs or frozen protocol conditions are incomplete,
+rather than emitting an unverified priority list.
 Safety bounds are stated in Section~\ref{sec:limitations}.
