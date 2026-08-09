@@ -68,16 +68,16 @@ def test_cc_contour_drawn_and_anchor_at_map_max():
 
 
 def test_peak_fallback_no_invented_contour():
-    rgb = np.zeros((50, 50, 3), np.uint8)
+    rgb = np.zeros((50, 60, 3), np.uint8)
     rgb[:] = (20, 20, 20)
-    combined = np.ones((50, 50), np.float32) * 0.1
+    combined = np.ones((50, 60), np.float32) * 0.1
     combined[22, 24] = 0.8
     dets = [
         {
-            "x": 10,
+            "x": 8,
             "y": 10,
-            "w": 20,
-            "h": 20,
+            "w": 40,
+            "h": 22,
             "score": 0.05,
             "support_geometry": "none",
             "peak_xy": [24, 22],
@@ -87,8 +87,8 @@ def test_peak_fallback_no_invented_contour():
     counts = overlay_geometry_counts(dets)
     assert counts["n_bracket_fallback"] == 1
     assert counts["n_support_contour"] == 0
-    # no full rectangle on ROI top edge
-    assert not _greenish(out[10, 20])
+    # ponytail: 8px min bracket + LINE_AA can close a 20px ROI gap; assert mid-edge on a wider box
+    assert not _greenish(out[10, 28])
     patch = out[20:25, 22:27]
     assert (patch.max(axis=2) > 180).any()
 
