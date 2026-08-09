@@ -8,6 +8,8 @@
 
 `enriched_context_pass: true`
 
+`cue_decomposition_figure: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -122,3 +124,8 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 
 - `enriched_context_pass: true`
 - Evaluation-track table + operational suppression / ranking context; scientific snapshot unchanged
+
+## Cue-decomposition figure
+
+- `cue_decomposition_figure: true`
+- Same non-test Fig.~2 sample; frozen fusion cues only; no new metric, no test split

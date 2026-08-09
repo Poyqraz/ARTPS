@@ -1050,6 +1050,7 @@ def compute_combined_anomaly_map(
     # Uzak alanlari tamamen bastirmadan yakinlik etkisini daha yumusak uygula.
     proximity_mix = 0.55 * proximity_w + 0.45 * (1.0 - proximity_w)
     combined = np.clip(raw_combined * (0.5 + 0.5 * proximity_mix), 0.0, 1.0)
+    raw_combined_pre_mask = combined.copy()
 
     # Gölge bastırma: (koyu) AND (düşük görüntü gradyanı) AND (düşük derinlik kenarı)
     # ve aydınlatma-kenar etkisi azaltımı: görüntü kenarı yüksek ama derinlik kenarı düşükse etkisini düşür.
@@ -1136,6 +1137,15 @@ def compute_combined_anomaly_map(
         "rocky_recall_mode": bool(rocky_recall_mode),
         "pre_filter_proposal_count": 0,
         "proposal_sources_breakdown": {},
+        "recon_diff_n": recon_diff_n.astype(np.float32, copy=True),
+        "depth_edge_n": depth_edge_n.astype(np.float32, copy=True),
+        "texture_term": texture_term.astype(np.float32, copy=True),
+        "raw_combined_pre_mask": raw_combined_pre_mask.astype(np.float32, copy=True),
+        "w_recon": float(w_recon),
+        "w_depth": float(w_depth),
+        "w_texture": float(w_texture),
+        "w_lap": float(w_lap),
+        "w_detail": float(w_detail),
     }
 
     # Histerezis eşikleme ile aday bölgeler (seed-grow): daha sağlam tespit

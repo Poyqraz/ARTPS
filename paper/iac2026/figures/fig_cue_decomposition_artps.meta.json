@@ -1,0 +1,49 @@
+{
+  "sample_id": "ie1_train_boulder_curiosity_100_MAST_106_jpg.rf.78c4b8fcf62f2b932ebccf43bd427980.jpg_4dd2d929c0ee",
+  "product_id": "curiosity_100_mast_106",
+  "split": "train",
+  "relative_path": "train/boulder/curiosity_100_MAST_106_jpg.rf.78c4b8fcf62f2b932ebccf43bd427980.jpg",
+  "file_sha256": "4dd2d929c0ee66f91b17c3f73b8bf127f23b6f6775511da3a735e927fbf2291a",
+  "source_selection_inherited_from_fig2": true,
+  "new_sample_selection": false,
+  "test_used": false,
+  "score_blind_selection": true,
+  "score_based_cherry_picking": false,
+  "quantitative_experiment": false,
+  "classifier_in_fused_map": false,
+  "git_sha_at_generation": "00802c926c05c722ee2bca378082adcfd26fc13b",
+  "config_yaml": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
+  "config_id": "artps_full_frozen_mars_clf_on_v1",
+  "preprocessing_profile": "mars_enhancement_v1",
+  "enable_realesrgan": false,
+  "priority_buffer": false,
+  "curiosity_ranking_applied": false,
+  "diversity_penalty_applied": false,
+  "cue_implementation": "src/artps_detection_core.py:compute_combined_anomaly_map",
+  "inference_normalization": "_normalize_map percentile 2-98 per cue before weighting",
+  "visualization_normalization": "per-panel min-max for display only",
+  "frozen_fusion_weights": {
+    "w_recon": 0.5,
+    "w_depth": 0.3,
+    "w_texture": 0.2,
+    "w_lap": 0.08,
+    "w_detail": 0.12
+  },
+  "checkpoints": {
+    "ae": {
+      "path": "results/optimized_autoencoder_curiosity_extended.pth",
+      "sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2"
+    },
+    "dpt": {
+      "path": "raw_models/dpt_large_384.pt",
+      "sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
+    },
+    "classifier": {
+      "path": "results/depth_enhanced_classifier.pth",
+      "sha256": "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457"
+    }
+  },
+  "device": "cuda",
+  "output_png": "paper/iac2026/figures/fig_cue_decomposition_artps.png",
+  "command": "set ARTPS_DATASET_ROOT=<repo>/mars_images then python scripts/iac2026/generate_cue_decomposition_figure.py"
+}

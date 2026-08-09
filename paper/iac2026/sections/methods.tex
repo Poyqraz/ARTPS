@@ -45,8 +45,11 @@ A reconstruction residual emphasizes appearance that the autoencoder cannot expl
 typical terrain context.
 Complementary texture and local-contrast cues capture high-frequency structure that a
 reconstruction residual may under-emphasize, including sharp rock edges and mottled surfaces.
-A depth-edge / protrusion cue, derived from the monocular relative-depth field, highlights
-regions that stand out from the surrounding near/far layout rather than from appearance alone.
+Frozen multi-cue fusion uses a relative-depth \emph{edge} cue (image-relative depth
+discontinuity), not a protrusion map.
+Protrusion remains a candidate geomorph descriptor outside the fused score.
+The depth-edge cue highlights regions that stand out from the surrounding near/far layout
+rather than from appearance alone.
 Cue maps therefore highlight unusual appearance or structure relative to a reference
 distribution of ``normal'' terrain context.
 No single cue is treated as a mineral detector, lithology classifier, or complete science
@@ -85,6 +88,26 @@ Conflating Layer~B image scores with Layer~C ranked target lists would misstate 
 supplementary validation actually measured.
 Static equal-weight baselines remain available for protocol comparison but are not asserted
 here as superior without evidence.
+Figure~\ref{fig:cue-decomp} shows how that measured fixed-weight mix is assembled on the same
+non-test image as Figure~\ref{fig:qualitative}.
+Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
+Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
+image-relative discontinuity cue, not metric distance and not protrusion.
+Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
+gradient magnitude).
+Panel~(d) is the linear fused response after a soft proximity mix and \emph{before}
+operational false-positive suppression.
+Primary weights are reconstruction $0.50$, depth-edge $0.30$, and texture $0.20$; smaller
+depth-Laplacian ($0.08$) and fine-detail ($0.12$) terms also enter the mix and are named
+rather than shown as extra panels.
+These weights are the measured \texttt{independent\_eval\_v1\_1} default; entropy-weighted
+fusion remains the architectural specification and is not plotted here.
+The three primary cues are complementary: residual emphasizes unexplained appearance,
+depth-edge emphasizes geometric discontinuity, and texture emphasizes high-frequency structure.
+The classifier / known-value term is enabled in the frozen profile for detection scoring and
+curiosity, but it is not a term in the fused map.
+Display scaling in the figure is independent of inference percentile normalization and does
+not constitute a new quantitative experiment.
 
 \subsection{Candidate localization}
 Fused anomaly responses are converted into discrete candidate regions via localization
@@ -115,8 +138,8 @@ A separate object-in-shadow check distinguishes a flat shadow artefact from a st
 candidate that happens to sit inside a shadowed area: suppressing the artefact must not
 automatically discard the in-shadow object.
 These masks act before frozen image-score aggregation.
-They reduce invalid candidates; they do not prove that a surviving region is scientifically
-irrelevant.
+They reduce invalid candidates; they do not establish that a surviving region is scientifically
+relevant.
 
 Only candidates that remain valid after these checks contribute to the frozen image-level
 score; Figure~\ref{fig:qualitative}(d) shows that valid-candidate overlay on one non-test
@@ -135,6 +158,21 @@ valid-candidate localization produced by the frozen image-score path.
 The depth visualization is relative and non-metric.
 The example is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:qualitative}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_cue_decomposition_artps.png}
+\caption{Cue decomposition of the frozen multi-cue score on the same non-test image as
+Figure~\ref{fig:qualitative}.
+Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
+fixed-weight fused response after proximity mixing and before operational masks.
+Smaller depth-Laplacian and fine-detail terms also enter the mix but are not shown as
+separate panels.
+Display scaling is for visualization only.
+The depth-derived cue is image-relative and non-metric.
+The figure is illustrative and is not used as an additional quantitative benchmark.}
+\label{fig:cue-decomp}
 \end{figure*}
 
 \subsection{Apparent size / image-relative size--distance policy}
