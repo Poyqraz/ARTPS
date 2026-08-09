@@ -1,6 +1,7 @@
 """Manuscript integration guards for independent_eval_v1_1 (no abstract/test/C05 rewrite)."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import yaml
@@ -141,6 +142,19 @@ def test_camera_ready_figure_and_bibliography():
     sty = (REPO / "paper/iac2026/iac2026.sty").read_text(encoding="utf-8")
     assert "fig:pipeline" in methods
     assert r"\input{figures/artps_pipeline}" in methods
+    assert "fig:qualitative" in methods
+    assert "figures/fig_qualitative_artps.png" in methods
+    assert "qualitative" in methods.lower()
+    assert "non-metric" in methods.lower() or "relative and non-metric" in methods.lower()
+    assert "not used as an additional quantitative benchmark" in methods.lower()
+    assert (REPO / "paper/iac2026/figures/fig_qualitative_artps.png").is_file()
+    meta = json.loads(
+        (REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json").read_text(encoding="utf-8")
+    )
+    assert meta["test_used"] is False
+    assert meta["score_blind_selection"] is True
+    assert str(meta["split"]).lower() != "test"
+    assert "test/" not in str(meta["relative_path"]).replace("\\", "/").lower()
     assert r"\begin{tikzpicture}" in fig
     assert r"\RequirePackage{tikz}" in sty or r"\usepackage{tikz}" in sty
     cap = methods.lower()
