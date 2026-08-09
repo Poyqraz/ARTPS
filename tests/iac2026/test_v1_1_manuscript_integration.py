@@ -160,8 +160,15 @@ def test_camera_ready_figure_and_bibliography():
     )
     assert meta["test_used"] is False
     assert meta["score_blind_selection"] is True
+    assert meta.get("model_output_used_for_selection") is False
+    assert meta.get("score_based_cherry_picking") is False
     assert str(meta["split"]).lower() != "test"
-    assert "test/" not in str(meta["relative_path"]).replace("\\", "/").lower()
+    rel = str(meta["relative_path"]).replace("\\", "/")
+    assert "test/" not in rel.lower()
+    assert rel == (
+        "train/boulder/curiosity_300_MAST_453_jpg.rf.6ecd29659d982741653bbe91b11ef22b.jpg"
+    )
+    assert "deterministically selected" not in methods.lower()
     assert r"\begin{tikzpicture}" in fig
     assert r"\RequirePackage{tikz}" in sty or r"\usepackage{tikz}" in sty
     cap = methods.lower()
@@ -211,6 +218,7 @@ def test_cue_decomposition_figure_and_caption():
     assert "non-metric" in cap_l
     assert "not used as an additional quantitative benchmark" in cap_l
     assert cue_meta["sample_id"] == fig2_meta["sample_id"]
+    assert cue_meta["file_sha256"] == fig2_meta["file_sha256"]
     assert cue_meta["test_used"] is False
     assert cue_meta.get("new_sample_selection") is False
     assert "0.920" not in results
@@ -249,6 +257,7 @@ def test_scientific_definition_pass_language():
         "planning level",
         "may be discussed qualitatively",
         "must not migrate",
+        "deterministically selected",
         "c05",
         "c06",
         "c07",
@@ -314,6 +323,10 @@ def test_close_far_qualitative_figure():
     far_rel = str(meta["far"]["relative_path"]).replace("\\", "/")
     assert close_rel in ALLOWED_CLOSE_FAR_POOL
     assert far_rel in ALLOWED_CLOSE_FAR_POOL
+    fig2_rel = json.loads(
+        (REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json").read_text(encoding="utf-8")
+    )["relative_path"].replace("\\", "/")
+    assert close_rel != fig2_rel and far_rel != fig2_rel
     assert str(meta["close"]["split"]).lower() != "test"
     assert str(meta["far"]["split"]).lower() != "test"
     assert "test/" not in close_rel.lower()

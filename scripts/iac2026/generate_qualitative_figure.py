@@ -1,4 +1,4 @@
-"""Deterministic non-test 4-panel qualitative ARTPS illustration (not a benchmark)."""
+"""Author-pool RGB-locked non-test 4-panel qualitative ARTPS illustration (not a benchmark)."""
 
 from __future__ import annotations
 
@@ -50,10 +50,23 @@ AE_SHA = "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2"
 DPT_SHA = "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
 CLF_SHA = "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457"
 
+LOCKED_RELATIVE_PATH = (
+    "train/boulder/curiosity_300_MAST_453_jpg.rf.6ecd29659d982741653bbe91b11ef22b.jpg"
+)
+LOCKED_FILE_SHA256 = "a94b785f4e9cf88fcf07ae7ddabe5b79c53957afe764aac3b14ba3125d7571a2"
+SELECTION_ORIGIN = "AUTHOR_1"
+AUTHOR_RGB_POOL = {
+    "AUTHOR_1": LOCKED_RELATIVE_PATH,
+    "AUTHOR_2": "0735MR0031500040403079E01_DXXX.jpg",
+    "AUTHOR_3": "Mars_Perseverance_Rover_Sands.png.png",
+    "AUTHOR_4": (
+        "train/boulder/curiosity_1500_MAST_1736_jpg.rf.a8aeaeffa6df777cc46abce36193bec4.jpg"
+    ),
+}
 SELECTION_RULE = (
-    "included rows from independent_eval_v1.csv; drop split==test or relative_path "
-    "under test/; sort by sample_id UTF-8 lexicographic; first existing file under "
-    "ARTPS_DATASET_ROOT; no score lookup before selection"
+    "selected before inference from an author-provided RGB candidate pool using "
+    "qualitative scene-composition and domain criteria; no ARTPS output, score, "
+    "or detection count used for selection"
 )
 
 
@@ -84,31 +97,34 @@ def _assert_test_closed() -> None:
             raise RuntimeError("final_test_authorized is not false")
 
 
-def select_sample(root: Path) -> dict[str, str]:
-    rows = list(csv.DictReader(MANIFEST.open(encoding="utf-8")))
-    cands: list[dict[str, str]] = []
-    for row in rows:
-        if (row.get("inclusion_status") or "").strip().lower() != "included":
-            continue
-        split = (row.get("split") or "").strip().lower()
-        rel = (row.get("relative_path") or "").replace("\\", "/").lstrip("/")
-        if split == "test" or rel.lower().startswith("test/"):
-            continue
-        cands.append(row)
-    cands.sort(key=lambda r: r["sample_id"])
-    for row in cands:
-        rel = row["relative_path"].replace("\\", "/").lstrip("/")
-        path = root / rel
-        if path.is_file():
-            return {
-                "sample_id": row["sample_id"],
-                "split": row["split"].strip(),
-                "relative_path": rel,
-                "product_id": row.get("product_id", ""),
-                "manifest_sha256": row.get("sha256", ""),
-                "abs_path": str(path.resolve()),
-            }
-    raise RuntimeError("no non-test included manifest image exists under ARTPS_DATASET_ROOT")
+def lock_sample(root: Path) -> dict[str, str]:
+    rel = LOCKED_RELATIVE_PATH.replace("\\", "/").lstrip("/")
+    if rel.lower().startswith("test/"):
+        raise RuntimeError(f"locked path is under test/: {rel}")
+    path = root / rel
+    if not path.is_file():
+        raise RuntimeError(f"locked source missing: {path}")
+    row: dict[str, str] = {}
+    if MANIFEST.is_file():
+        for cand in csv.DictReader(MANIFEST.open(encoding="utf-8")):
+            mrel = (cand.get("relative_path") or "").replace("\\", "/").lstrip("/")
+            if mrel == rel:
+                row = cand
+                break
+    split = (row.get("split") or rel.split("/", 1)[0]).strip()
+    if split.lower() == "test":
+        raise RuntimeError(f"locked source is test split: {rel}")
+    included = (row.get("inclusion_status") or "").strip().lower() == "included"
+    sample_id = (row.get("sample_id") or "").strip() or f"author_pool_{SELECTION_ORIGIN}_{path.name}"
+    return {
+        "sample_id": sample_id,
+        "split": split,
+        "relative_path": rel,
+        "product_id": (row.get("product_id") or "curiosity_300_mast_453").strip(),
+        "manifest_sha256": (row.get("sha256") or "").strip(),
+        "in_independent_eval_v1_included": included,
+        "abs_path": str(path.resolve()),
+    }
 
 
 def _to_u8(rgb_float: np.ndarray) -> np.ndarray:
@@ -139,11 +155,13 @@ def _git_sha() -> str:
 def main() -> int:
     _assert_test_closed()
     root = _dataset_root()
-    sample = select_sample(root)
+    sample = lock_sample(root)
     split_l = sample["split"].lower()
     if split_l == "test":
         raise RuntimeError("selected sample is test; abort")
     file_sha = _sha256_file(Path(sample["abs_path"]))
+    if file_sha != LOCKED_FILE_SHA256:
+        raise RuntimeError(f"locked source sha256 mismatch: {file_sha}")
     if sample["manifest_sha256"] and file_sha != sample["manifest_sha256"]:
         raise RuntimeError(
             f"source sha256 mismatch: manifest={sample['manifest_sha256']} file={file_sha}"
@@ -232,8 +250,16 @@ def main() -> int:
         "abs_path": sample["abs_path"],
         "file_sha256": file_sha,
         "selection_rule": SELECTION_RULE,
+        "selection_origin": SELECTION_ORIGIN,
+        "author_rgb_pool": AUTHOR_RGB_POOL,
+        "source_selection_locked": True,
+        "in_independent_eval_v1_included": sample["in_independent_eval_v1_included"],
+        "mission": "Curiosity",
+        "instrument": "Mastcam",
         "test_used": False,
         "score_blind_selection": True,
+        "model_output_used_for_selection": False,
+        "score_based_cherry_picking": False,
         "git_sha_at_generation": _git_sha(),
         "config_yaml": str(CONFIG_YAML.relative_to(REPO)).replace("\\", "/"),
         "config_id": "artps_full_frozen_mars_clf_on_v1",

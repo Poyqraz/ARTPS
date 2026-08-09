@@ -42,12 +42,6 @@ AE_SHA = "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2"
 DPT_SHA = "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
 CLF_SHA = "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457"
 
-EXPECTED_SAMPLE_ID = (
-    "ie1_train_boulder_curiosity_100_MAST_106_jpg.rf."
-    "78c4b8fcf62f2b932ebccf43bd427980.jpg_4dd2d929c0ee"
-)
-EXPECTED_SHA256 = "4dd2d929c0ee66f91b17c3f73b8bf127f23b6f6775511da3a735e927fbf2291a"
-
 
 def _sha256_file(path: Path) -> str:
     h = hashlib.sha256()
@@ -91,21 +85,22 @@ def _display_minmax(arr: np.ndarray) -> np.ndarray:
 def main() -> int:
     _assert_test_closed()
     fig2 = json.loads(FIG2_META.read_text(encoding="utf-8"))
-    if fig2.get("sample_id") != EXPECTED_SAMPLE_ID:
-        raise RuntimeError(f"Fig. 2 sample_id mismatch: {fig2.get('sample_id')}")
     if str(fig2.get("split", "")).lower() == "test":
         raise RuntimeError("Fig. 2 sample is test; abort")
-    if fig2.get("file_sha256") != EXPECTED_SHA256:
-        raise RuntimeError("Fig. 2 file_sha256 mismatch")
+    expected_sha = str(fig2.get("file_sha256") or "")
+    if not expected_sha:
+        raise RuntimeError("Fig. 2 meta missing file_sha256")
 
     root = _dataset_root()
     rel = str(fig2["relative_path"]).replace("\\", "/").lstrip("/")
+    if rel.lower().startswith("test/"):
+        raise RuntimeError(f"Fig. 2 relative_path is under test/: {rel}")
     src = root / rel
     if not src.is_file():
         raise RuntimeError(f"Fig. 2 source missing under ARTPS_DATASET_ROOT: {src}")
     file_sha = _sha256_file(src)
-    if file_sha != EXPECTED_SHA256:
-        raise RuntimeError(f"source sha256 mismatch: {file_sha}")
+    if file_sha != expected_sha:
+        raise RuntimeError(f"source sha256 mismatch vs Fig. 2 meta: {file_sha}")
 
     cfg = FrozenARTPSConfig(
         preprocessing_profile="mars_enhancement_v1",
