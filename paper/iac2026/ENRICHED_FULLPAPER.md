@@ -10,4 +10,7 @@ Status: **candidate**. The 7-page freeze commit remains the conservative rollbac
 - Figure provenance: [`figures/FIG_QUALITATIVE_PROVENANCE.md`](figures/FIG_QUALITATIVE_PROVENANCE.md).
 - Scientific freeze snapshot in [`SUBMISSION_FREEZE.md`](SUBMISSION_FREEZE.md) is unchanged
   except `enriched_fullpaper_candidate: true`, `enriched_context_pass: true`,
-  `cue_decomposition_figure: true`, and `scientific_definition_pass_complete: true`.
+  `cue_decomposition_figure: true`, `scientific_definition_pass_complete: true`,
+  and `close_far_qualitative_figure: true`.
+- Close vs distant Fig.~4: author-provided non-test pool only; provenance
+  [`figures/FIG_CLOSE_FAR_QUALITATIVE_PROVENANCE.md`](figures/FIG_CLOSE_FAR_QUALITATIVE_PROVENANCE.md).

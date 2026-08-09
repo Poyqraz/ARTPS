@@ -12,6 +12,8 @@
 
 `scientific_definition_pass_complete: true`
 
+`close_far_qualitative_figure: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -146,3 +148,8 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - local verify: `pytest -q tests/iac2026` 220 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean; undefined cites/refs: 0
 - CI: IAC paper build PASS ([run 31312030326](https://github.com/Poyqraz/ARTPS/actions/runs/31312030326)); harness PASS ([run 31312030318](https://github.com/Poyqraz/ARTPS/actions/runs/31312030318))
 - test unopened; historical and supplementary metrics unchanged; no new quantitative experiment
+
+## Close vs distant qualitative figure
+
+- `close_far_qualitative_figure: true`
+- Author-provided non-test pool only; Fig.~4 illustrative close/far pair; no new metric, no test split

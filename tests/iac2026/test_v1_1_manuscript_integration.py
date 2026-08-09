@@ -272,3 +272,53 @@ def test_scientific_definition_pass_language():
     assert "curiosity" in exp and "priority buffer" in exp
     res = RESULTS.read_text(encoding="utf-8").lower()
     assert "curiosity ranking" in res and "not applied" in res
+
+
+ALLOWED_CLOSE_FAR_POOL = {
+    "train/hills_or_ridge/curiosity_1100_MAST_938_jpg.rf.7417a3036ec4af81b3b9d4305c05eee3.jpg",
+    "train/boulder/percy_sol1450_MCZ_RIGHT_9_jpg.rf.f390f8c84becbe615a34db73d9f2610e.jpg",
+    "train/flat_terrain/curiosity_1100_MAST_827_jpg.rf.fd10bd35d413cba7432b79ab8433e9b6.jpg",
+    "train/rocky/curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg",
+    "train/rover/percy_sol150_NAVCAM_LEFT_8_jpg.rf.5d964d0db273d6db4a7054ec8516c688.jpg",
+}
+
+
+def test_close_far_qualitative_figure():
+    results = RESULTS.read_text(encoding="utf-8")
+    png = REPO / "paper/iac2026/figures/fig_close_far_qualitative_artps.png"
+    meta_path = REPO / "paper/iac2026/figures/fig_close_far_qualitative_artps.meta.json"
+    assert png.is_file()
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert "fig:close-far" in results
+    assert "figures/fig_close_far_qualitative_artps.png" in results
+    cap = results[results.find(r"\label{fig:close-far}") - 900 : results.find(r"\label{fig:close-far}")]
+    cap_l = " ".join(cap.lower().split())
+    assert "illustrative" in cap_l or "qualitative" in results.lower()
+    assert "author-provided" in cap_l or "author-provided" in results.lower()
+    assert "not presented as an additional quantitative benchmark" in cap_l
+    assert "post-suppression" in cap_l
+    for banned in (
+        "demonstrates superior",
+        "proves robustness",
+        "validates distance generalization",
+        "superior near/far performance",
+    ):
+        assert banned not in results.lower()
+        assert banned not in cap_l
+    assert meta["test_used"] is False
+    assert meta["author_provided_pool_only"] is True
+    assert meta["agent_selected_outside_pool"] is False
+    assert meta["quantitative_experiment"] is False
+    assert meta.get("score_maximization_cherrypick") is False
+    close_rel = str(meta["close"]["relative_path"]).replace("\\", "/")
+    far_rel = str(meta["far"]["relative_path"]).replace("\\", "/")
+    assert close_rel in ALLOWED_CLOSE_FAR_POOL
+    assert far_rel in ALLOWED_CLOSE_FAR_POOL
+    assert str(meta["close"]["split"]).lower() != "test"
+    assert str(meta["far"]["split"]).lower() != "test"
+    assert "test/" not in close_rel.lower()
+    assert "test/" not in far_rel.lower()
+    exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
+    assert "fig:close-far" in exp or "close-range" in exp
+    lim = LIMITATIONS.read_text(encoding="utf-8").lower()
+    assert "near/far" in lim or "qualitative figures" in lim

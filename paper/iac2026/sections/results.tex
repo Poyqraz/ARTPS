@@ -72,5 +72,22 @@ frozen image-score path.
 Figure~\ref{fig:cue-decomp} decomposes that same frozen fusion path into reconstruction,
 relative-depth-edge, and texture cues plus the pre-suppression fused map; it is not a new
 detection metric.
-Neither figure enters Table~\ref{tab:accepted-abstract} or Table~\ref{tab:indep-v11}, opens
-the test split, or adds an AUROC, AUPRC, F1, or throughput number.
+In addition to that single-scene example and cue decomposition, Figure~\ref{fig:close-far}
+shows one close-range and one distant-scene illustration selected from a fixed author-provided
+pool, to show how the current frozen pipeline behaves under different apparent object-scale
+contexts.
+These examples are qualitative and are not a controlled near/far benchmark.
+None of these figures enters Table~\ref{tab:accepted-abstract} or Table~\ref{tab:indep-v11},
+opens the test split, or adds an AUROC, AUPRC, F1, or throughput number.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_close_far_qualitative_artps.png}
+\caption{Qualitative current-code examples illustrating the frozen ARTPS pipeline on one
+close-range scene and one distant-scene selected from an author-provided candidate pool.
+For each scene, the figure shows the RGB input, the post-suppression combined map, and the
+final valid-candidate overlay.
+These examples are illustrative only and are not presented as an additional quantitative
+benchmark or a controlled range-conditioned performance study.}
+\label{fig:close-far}
+\end{figure*}
