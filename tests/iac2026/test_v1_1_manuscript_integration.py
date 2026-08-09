@@ -1,6 +1,7 @@
 """Manuscript integration guards for independent_eval_v1_1 (no abstract/test/C05 rewrite)."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -231,8 +232,11 @@ def test_cue_decomposition_figure_and_caption():
     assert "scientifically irrelevant" not in methods_flat
     assert "independently min-max" in cap_l or "not numerically comparable" in cap_l
     assert "pre-suppression" in cap_l or "pre-suppression fused" in methods_flat
-    fig2_cap = methods[methods.find(r"\label{fig:qualitative}") - 700 : methods.find(r"\label{fig:qualitative}")]
+    fig2_cap = methods[methods.find(r"\label{fig:qualitative}") - 1200 : methods.find(r"\label{fig:qualitative}")]
     assert "post-suppression" in fig2_cap.lower()
+    assert "candidate-support overlay" in fig2_cap.lower()
+    assert "corner brackets" in fig2_cap.lower()
+    assert "not pixel-level" in fig2_cap.lower()
 
 
 def test_scientific_definition_pass_language():
@@ -300,12 +304,14 @@ def test_close_far_qualitative_figure():
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     assert "fig:close-far" in results
     assert "figures/fig_close_far_qualitative_artps.png" in results
-    cap = results[results.find(r"\label{fig:close-far}") - 900 : results.find(r"\label{fig:close-far}")]
+    cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     cap_l = " ".join(cap.lower().split())
     assert "illustrative" in cap_l or "qualitative" in results.lower()
     assert "author-provided" in cap_l or "author-provided" in results.lower()
     assert "not presented as an additional quantitative benchmark" in cap_l
     assert "post-suppression" in cap_l
+    assert "candidate-support overlay" in cap_l
+    assert "corner brackets" in cap_l
     for banned in (
         "demonstrates superior",
         "proves robustness",
@@ -335,3 +341,64 @@ def test_close_far_qualitative_figure():
     assert "fig:close-far" in exp or "close-range" in exp
     lim = LIMITATIONS.read_text(encoding="utf-8").lower()
     assert "near/far" in lim or "qualitative figures" in lim
+    assert meta.get("visualization_only") is True
+    assert meta.get("candidate_scores_changed") is False
+    assert meta.get("validity_decisions_changed") is False
+    assert meta.get("image_scores_changed") is False
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _assert_same_candidates(actual: list[dict], expected: list[dict]) -> None:
+    assert len(actual) == len(expected)
+    for got, exp in zip(actual, expected):
+        assert int(got["x"]) == int(exp["x"])
+        assert int(got["y"]) == int(exp["y"])
+        assert int(got["w"]) == int(exp["w"])
+        assert int(got["h"]) == int(exp["h"])
+        assert abs(float(got["score"]) - float(exp["score"])) < 1e-9
+
+
+def test_candidate_support_overlay_invariance_and_language():
+    fixture = json.loads(
+        (REPO / "tests/iac2026/fixtures/qualitative_overlay_candidates.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    fig2 = json.loads(
+        (REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json").read_text(encoding="utf-8")
+    )
+    fig4 = json.loads(
+        (REPO / "paper/iac2026/figures/fig_close_far_qualitative_artps.meta.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    cue_png = REPO / "paper/iac2026/figures/fig_cue_decomposition_artps.png"
+    assert _sha256_file(cue_png) == fixture["fig3_png_sha256"]
+    assert fig2["relative_path"].replace("\\", "/") == fixture["fig2"]["relative_path"]
+    assert fig2["n_raw_detections"] == fixture["fig2"]["n_raw_detections"]
+    assert fig2["n_valid_candidates"] == fixture["fig2"]["n_valid_candidates"]
+    _assert_same_candidates(fig2["candidates"], fixture["fig2"]["candidates"])
+    assert abs(max(c["score"] for c in fig2["candidates"]) - fixture["fig2"]["image_score"]) < 1e-9
+    assert fig4["close"]["relative_path"].replace("\\", "/") == fixture["fig4_close"]["relative_path"]
+    assert fig4["far"]["relative_path"].replace("\\", "/") == fixture["fig4_far"]["relative_path"]
+    assert fig4["close"]["n_raw_detections"] == fixture["fig4_close"]["n_raw_detections"]
+    assert fig4["far"]["n_raw_detections"] == fixture["fig4_far"]["n_raw_detections"]
+    _assert_same_candidates(fig4["close"]["candidates"], fixture["fig4_close"]["candidates"])
+    _assert_same_candidates(fig4["far"]["candidates"], fixture["fig4_far"]["candidates"])
+    assert fig2.get("visualization_only") is True
+    assert fig2.get("overlay_visualization_version") == "candidate_support_v1"
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8").lower()
+    results = RESULTS.read_text(encoding="utf-8").lower()
+    disc = DISCUSSION.read_text(encoding="utf-8").lower()
+    blob = methods + "\n" + results + "\n" + disc
+    for banned in (
+        "segmentation mask",
+        "object segmentation",
+        "ground-truth boundary",
+        "object silhouette",
+    ):
+        assert banned not in blob
+    assert "deterministically selected" not in methods

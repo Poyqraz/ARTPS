@@ -21,7 +21,16 @@ Illustration only. Not a quantitative experiment and not a Results metric.
 | 11. `model_output_used_for_selection` | **false** |
 | 12. `score_based_cherry_picking` | **false** |
 | 13. Test data used | **NO** (`test_opened=false`, `final_test_authorized=false`) |
+| Overlay visualization | `candidate_support_v1` (open-corner ROI + proposal-support contour + combined-map anchor) |
+| `support_geometry_source` | proposal hysteresis/CC contour persisted as visualization-only metadata; no new map threshold |
+| `anchor_definition` | argmax of post-suppression `combined_map` inside support contour, else ROI; `peak_xy` if present |
+| `fallback_behavior` | open-corner ROI + anchor when no proposal CC survives |
+| `visualization_only` | **true** |
+| `candidate_scores_changed` | **false** |
+| `validity_decisions_changed` | **false** |
+| `image_scores_changed` | **false** |
+| `quantitative_experiment` | **false** |
 
-Additional (not manuscript metrics): frozen image-score aggregation `max_valid_candidate_after_masks`; Priority Buffer / curiosity / diversity **not** applied; device `cuda`; 3 raw detections, 2 valid candidates after masks.
+Additional (not manuscript metrics): frozen image-score aggregation `max_valid_candidate_after_masks`; Priority Buffer / curiosity / diversity **not** applied; device `cuda`; 3 raw detections, 2 valid candidates after masks; overlay geometry `n_support_contour=2`, `n_oriented_poly=0`, `n_bracket_fallback=0`. Overlay panel is a candidate-support overlay, not a segmentation.
 
 Machine-readable copy: `fig_qualitative_artps.meta.json`.

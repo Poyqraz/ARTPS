@@ -1,0 +1,124 @@
+{
+  "fig2": {
+    "relative_path": "train/boulder/curiosity_300_MAST_453_jpg.rf.6ecd29659d982741653bbe91b11ef22b.jpg",
+    "file_sha256": "a94b785f4e9cf88fcf07ae7ddabe5b79c53957afe764aac3b14ba3125d7571a2",
+    "n_raw_detections": 3,
+    "n_valid_candidates": 2,
+    "candidates": [
+      {
+        "x": 551,
+        "y": 472,
+        "w": 56,
+        "h": 29,
+        "score": 0.07113860818307659
+      },
+      {
+        "x": 366,
+        "y": 335,
+        "w": 138,
+        "h": 146,
+        "score": 0.04513449176254386
+      }
+    ],
+    "image_score": 0.07113860818307659,
+    "ae_mse_not_a_manuscript_metric": 0.017237167805433273
+  },
+  "fig4_close": {
+    "relative_path": "train/hills_or_ridge/curiosity_1100_MAST_938_jpg.rf.7417a3036ec4af81b3b9d4305c05eee3.jpg",
+    "file_sha256": "4b09d26fdc90e154c661720397277d215e0646a4238893bf46aa5dc278d5d88c",
+    "n_raw_detections": 7,
+    "n_valid_candidates": 6,
+    "candidates": [
+      {
+        "x": 0,
+        "y": 454,
+        "w": 35,
+        "h": 21,
+        "score": 0.12617728447827278
+      },
+      {
+        "x": 417,
+        "y": 485,
+        "w": 29,
+        "h": 26,
+        "score": 0.11834365845485605
+      },
+      {
+        "x": 179,
+        "y": 509,
+        "w": 39,
+        "h": 31,
+        "score": 0.11573848057463351
+      },
+      {
+        "x": 58,
+        "y": 545,
+        "w": 31,
+        "h": 21,
+        "score": 0.10402444029890079
+      },
+      {
+        "x": 326,
+        "y": 503,
+        "w": 24,
+        "h": 21,
+        "score": 0.10198117120107252
+      },
+      {
+        "x": 365,
+        "y": 498,
+        "w": 49,
+        "h": 26,
+        "score": 0.09855910072914718
+      }
+    ],
+    "image_score": 0.12617728447827278,
+    "ae_mse_not_a_manuscript_metric": 0.014977631159126759
+  },
+  "fig4_far": {
+    "relative_path": "train/rocky/curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg",
+    "file_sha256": "1732bef60212e10724fb6005d5edfe87fff9000b6f08297d7ce971de2a549f8d",
+    "n_raw_detections": 9,
+    "n_valid_candidates": 5,
+    "candidates": [
+      {
+        "x": 352,
+        "y": 437,
+        "w": 57,
+        "h": 21,
+        "score": 0.16762598558341177
+      },
+      {
+        "x": 48,
+        "y": 485,
+        "w": 43,
+        "h": 20,
+        "score": 0.16060523050178308
+      },
+      {
+        "x": 100,
+        "y": 419,
+        "w": 82,
+        "h": 37,
+        "score": 0.15903740533989016
+      },
+      {
+        "x": 0,
+        "y": 520,
+        "w": 60,
+        "h": 33,
+        "score": 0.15121914052569294
+      },
+      {
+        "x": 473,
+        "y": 403,
+        "w": 62,
+        "h": 61,
+        "score": 0.14015892144119663
+      }
+    ],
+    "image_score": 0.16762598558341177,
+    "ae_mse_not_a_manuscript_metric": 0.008773530833423138
+  },
+  "fig3_png_sha256": "6d42dcfd09750ef491a6131dbeea979494da846a0873a142d0957da0d967115c"
+}

@@ -158,7 +158,7 @@ They reduce invalid candidates; they do not establish that a surviving region is
 relevant.
 
 Only candidates that remain valid after these checks contribute to the frozen image-level
-score; Figure~\ref{fig:qualitative}(d) shows that valid-candidate overlay on one non-test
+score; Figure~\ref{fig:qualitative}(d) shows that candidate-support overlay on one non-test
 example, not a curiosity-ranked downlink list.
 A candidate that survives suppression is still only a localization hypothesis: it is not a
 confirmed science target and is not automatically queued for downlink.
@@ -171,7 +171,11 @@ Suppression is policy-driven and auditable; it is not a claim of perfect distrac
 inference from an author-provided RGB candidate pool on the basis of scene structure and
 domain suitability.
 Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
-depth, and the valid-candidate localization produced by the frozen image-score path.
+depth, and the candidate-support overlay produced by the frozen image-score path.
+Corner brackets denote the candidate ROI, while available contours indicate the
+anomaly/proposal support associated with the valid candidate; support contours are shown
+where proposal geometry is available and are visualization aids, not pixel-level
+ground-truth segmentations.
 The depth visualization is relative and non-metric.
 The example is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:qualitative}

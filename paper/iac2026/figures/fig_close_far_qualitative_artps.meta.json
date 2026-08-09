@@ -4,7 +4,7 @@
   "quantitative_experiment": false,
   "test_used": false,
   "score_maximization_cherrypick": false,
-  "qualitative_selection_rationale": "Close 1 + Far 2: Curiosity Mastcam pair with readable post-suppression maps and valid overlays. Close 2 rejected for Perseverance domain mismatch and overlay missing the two most salient near rocks. Far 1 rejected for a surviving top-edge frame artefact in the valid overlay. Far 3 rejected: rover hardware still dominates RGB and the map is sparser than Far 2.",
+  "qualitative_selection_rationale": "Close 1 + Far 2: Curiosity Mastcam pair with readable post-suppression maps and candidate-support overlays. Close 2 rejected for Perseverance domain mismatch and overlay missing the two most salient near rocks. Far 1 rejected for a surviving top-edge frame artefact in the valid overlay. Far 3 rejected: rover hardware still dominates RGB and the map is sparser than Far 2.",
   "rejected": {
     "close2": "Perseverance MCZ domain mismatch vs manuscript Curiosity-Mastcam framing; overlay misses the two most salient near rocks",
     "far1": "valid overlay includes a full-width top-edge frame artefact",
@@ -29,7 +29,54 @@
     "file_sha256": "4b09d26fdc90e154c661720397277d215e0646a4238893bf46aa5dc278d5d88c",
     "in_independent_eval_v1_included": false,
     "n_raw_detections": 7,
-    "n_valid_candidates": 6
+    "n_valid_candidates": 6,
+    "candidates": [
+      {
+        "x": 0,
+        "y": 454,
+        "w": 35,
+        "h": 21,
+        "score": 0.12617728447827278
+      },
+      {
+        "x": 417,
+        "y": 485,
+        "w": 29,
+        "h": 26,
+        "score": 0.11834365845485605
+      },
+      {
+        "x": 179,
+        "y": 509,
+        "w": 39,
+        "h": 31,
+        "score": 0.11573848057463351
+      },
+      {
+        "x": 58,
+        "y": 545,
+        "w": 31,
+        "h": 21,
+        "score": 0.10402444029890079
+      },
+      {
+        "x": 326,
+        "y": 503,
+        "w": 24,
+        "h": 21,
+        "score": 0.10198117120107252
+      },
+      {
+        "x": 365,
+        "y": 498,
+        "w": 49,
+        "h": 26,
+        "score": 0.09855910072914718
+      }
+    ],
+    "n_support_contour": 6,
+    "n_oriented_poly": 0,
+    "n_bracket_fallback": 0
   },
   "far": {
     "pool_key": "far2",
@@ -40,9 +87,57 @@
     "file_sha256": "1732bef60212e10724fb6005d5edfe87fff9000b6f08297d7ce971de2a549f8d",
     "in_independent_eval_v1_included": true,
     "n_raw_detections": 9,
-    "n_valid_candidates": 5
+    "n_valid_candidates": 5,
+    "candidates": [
+      {
+        "x": 352,
+        "y": 437,
+        "w": 57,
+        "h": 21,
+        "score": 0.16762598558341177
+      },
+      {
+        "x": 48,
+        "y": 485,
+        "w": 43,
+        "h": 20,
+        "score": 0.16060523050178308
+      },
+      {
+        "x": 100,
+        "y": 419,
+        "w": 82,
+        "h": 37,
+        "score": 0.15903740533989016
+      },
+      {
+        "x": 0,
+        "y": 520,
+        "w": 60,
+        "h": 33,
+        "score": 0.15121914052569294
+      },
+      {
+        "x": 473,
+        "y": 403,
+        "w": 62,
+        "h": 61,
+        "score": 0.14015892144119663
+      }
+    ],
+    "n_support_contour": 5,
+    "n_oriented_poly": 0,
+    "n_bracket_fallback": 0
   },
-  "git_sha_at_generation": "947743fb7520bfca14c81605ac7dce4b97b47edb",
+  "overlay_visualization_version": "candidate_support_v1",
+  "support_geometry_source": "proposal hysteresis/CC contour persisted as visualization-only metadata; no new map threshold",
+  "anchor_definition": "argmax of post-suppression combined_map inside support contour, else ROI; peak_xy if present",
+  "fallback_behavior": "open-corner ROI + anchor when no proposal CC survives",
+  "visualization_only": true,
+  "candidate_scores_changed": false,
+  "validity_decisions_changed": false,
+  "image_scores_changed": false,
+  "git_sha_at_generation": "cf817962e7f185a9d43a46803f763b833a53149e",
   "config_yaml": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
   "config_id": "artps_full_frozen_mars_clf_on_v1",
   "preprocessing_profile": "mars_enhancement_v1",
