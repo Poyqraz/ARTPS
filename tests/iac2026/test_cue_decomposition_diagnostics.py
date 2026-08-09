@@ -1,12 +1,31 @@
 """Frozen fusion diagnostics expose the three primary cue maps."""
 from __future__ import annotations
 
-import numpy as np
+import sys
+from pathlib import Path
 
-from src.artps_detection_core import compute_combined_anomaly_map
+import numpy as np
+import pytest
+
+REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
+
+CORE = REPO / "src" / "artps_detection_core.py"
+CUE_KEYS = ("recon_diff_n", "depth_edge_n", "texture_term", "raw_combined_pre_mask")
+
+
+def test_combined_map_diagnostics_keys_in_source():
+    src = CORE.read_text(encoding="utf-8")
+    assert "raw_combined_pre_mask = combined.copy()" in src
+    for key in CUE_KEYS:
+        assert f'"{key}"' in src
 
 
 def test_combined_map_diagnostics_include_fusion_cues():
+    pytest.importorskip("torch")
+    pytest.importorskip("cv2")
+    from src.artps_detection_core import compute_combined_anomaly_map
+
     rgb = np.full((64, 64, 3), 0.45, np.float32)
     rgb[20:40, 20:40] = 0.85
     recon = np.full((64, 64, 3), 0.45, np.float32)
@@ -20,7 +39,7 @@ def test_combined_map_diagnostics_include_fusion_cues():
         top_k=5,
     )
     h, w = combined.shape[:2]
-    for key in ("recon_diff_n", "depth_edge_n", "texture_term", "raw_combined_pre_mask"):
+    for key in CUE_KEYS:
         assert key in diag
         arr = np.asarray(diag[key])
         assert arr.shape == (h, w)
