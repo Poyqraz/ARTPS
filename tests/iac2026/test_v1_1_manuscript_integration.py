@@ -112,7 +112,9 @@ def test_limitations_and_discussion_present():
     assert "fixed-weight" in intro or "fixed-weight multi-cue" in intro
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
     res = RESULTS.read_text(encoding="utf-8").lower()
-    assert "held-out test" in exp and "not opened" in exp
+    assert "tab:eval-tracks" in exp
+    assert "not directly interchangeable" in exp
+    assert "held-out test" in exp and ("not opened" in exp or "unopened" in exp)
     assert "historical" in exp and "supplementary" in exp
     assert "validation-only" in res or "validation only" in res
     assert "held-out test" in res and "unopened" in res

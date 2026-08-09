@@ -6,6 +6,8 @@
 
 `enriched_fullpaper_candidate: true`
 
+`enriched_context_pass: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -115,3 +117,8 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - `enriched_fullpaper_candidate: true`
 - 7-page freeze manuscript remains the fallback on `main`
 - See [`ENRICHED_FULLPAPER.md`](ENRICHED_FULLPAPER.md) and [`figures/FIG_QUALITATIVE_PROVENANCE.md`](figures/FIG_QUALITATIVE_PROVENANCE.md)
+
+## Enriched context pass
+
+- `enriched_context_pass: true`
+- Evaluation-track table + operational suppression / ranking context; scientific snapshot unchanged
