@@ -236,7 +236,7 @@ def test_cue_decomposition_figure_and_caption():
     assert "post-suppression" in fig2_cap.lower()
     assert "candidate-support overlay" in fig2_cap.lower()
     assert "corner brackets" in fig2_cap.lower()
-    assert "not pixel-level" in fig2_cap.lower()
+    assert "not a pixel-level" in fig2_cap.lower() or "not pixel-level" in fig2_cap.lower()
 
 
 def test_scientific_definition_pass_language():
@@ -389,7 +389,8 @@ def test_candidate_support_overlay_invariance_and_language():
     _assert_same_candidates(fig4["close"]["candidates"], fixture["fig4_close"]["candidates"])
     _assert_same_candidates(fig4["far"]["candidates"], fixture["fig4_far"]["candidates"])
     assert fig2.get("visualization_only") is True
-    assert fig2.get("overlay_visualization_version") == "candidate_support_v1"
+    assert fig2.get("overlay_visualization_version") == "candidate_support_v2"
+    assert fig4.get("overlay_visualization_version") == "candidate_support_v2"
     methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8").lower()
     results = RESULTS.read_text(encoding="utf-8").lower()
     disc = DISCUSSION.read_text(encoding="utf-8").lower()
@@ -401,4 +402,7 @@ def test_candidate_support_overlay_invariance_and_language():
         "object silhouette",
     ):
         assert banned not in blob
+    assert "translucent footprint" in methods
+    assert "translucent footprint" in results
+    assert "support footprint" in disc or "translucent support footprint" in disc
     assert "deterministically selected" not in methods
