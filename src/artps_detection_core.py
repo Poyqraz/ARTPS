@@ -465,6 +465,42 @@ def _bbox_iou_xywh(a: dict, b: dict) -> float:
     return float(inter / max(union, 1e-6))
 
 
+_VIZ_SUPPORT_KEYS = ("support_contour", "support_geometry", "peak_xy")
+
+
+def _contour_xy(cnt) -> list[list[int]]:
+    pts = np.asarray(cnt).reshape(-1, 2)
+    return [[int(p[0]), int(p[1])] for p in pts]
+
+
+def _copy_viz_support(src: dict, dst: dict) -> None:
+    """Visualization-only fields; must not change x/y/w/h/score/poly."""
+    for key in _VIZ_SUPPORT_KEYS:
+        if key in src:
+            dst[key] = src[key]
+
+
+def _union_support_contours(members: list[dict], hw: tuple[int, int]) -> list[list[int]] | None:
+    """Union existing proposal CCs. Returns None if any member lacks a contour."""
+    if not members:
+        return None
+    polys = []
+    for det in members:
+        cnt = det.get("support_contour")
+        if not cnt:
+            return None
+        polys.append(np.asarray(cnt, dtype=np.int32).reshape(-1, 1, 2))
+    h, w = int(hw[0]), int(hw[1])
+    if h <= 0 or w <= 0:
+        return None
+    mask = np.zeros((h, w), np.uint8)
+    cv2.fillPoly(mask, polys, 1)
+    found, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not found:
+        return None
+    return _contour_xy(max(found, key=cv2.contourArea))
+
+
 def _collect_plateau_detections(
     combined: np.ndarray,
     *,
@@ -506,6 +542,9 @@ def _collect_plateau_detections(
         region = combined[y1:y2, x1:x2]
         mass = float(np.sum(region))
         score = mass / max(1.0, float(region.size))
+        cc_mask = (labels == lab).astype(np.uint8)
+        cnts, _ = cv2.findContours(cc_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        support_contour = _contour_xy(max(cnts, key=cv2.contourArea)) if cnts else None
         out.append(
             {
                 "x": x1,
@@ -514,6 +553,8 @@ def _collect_plateau_detections(
                 "h": y2 - y1,
                 "score": float(score),
                 "poly": None,
+                "support_contour": support_contour,
+                "support_geometry": "cc" if support_contour else "none",
                 "proposal_source": "heuristic_plateau",
                 "plateau_mass": mass,
                 "area_ratio": area_ratio,
@@ -687,6 +728,8 @@ def _collect_detection_from_contour(
         "x": int(x), "y": int(y), "w": int(w), "h": int(h),
         "score": float(score),
         "poly": box_pts.tolist(),
+        "support_contour": _contour_xy(cnt),
+        "support_geometry": "cc",
         "comb_mean": float(comb_mean),
         "edge_mean": float(edge_mean),
         "prox_mean": float(prox_mean),
@@ -758,6 +801,8 @@ def _collect_peak_window_detections(
                 "h": int(y2 - y1),
                 "score": float(np.mean(region)),
                 "poly": None,
+                "peak_xy": [int(xc), int(yc)],
+                "support_geometry": "none",
                 "proposal_source": "heuristic_peaks",
             }
         )
@@ -802,6 +847,8 @@ def _collect_detail_first_detections(
                 "edge_mean": float(np.percentile(region, 90)),
                 "fine_local": float(np.percentile(region, 85)),
                 "poly": None,
+                "support_contour": _contour_xy(cnt),
+                "support_geometry": "cc",
                 "proposal_source": "heuristic_detail_first",
             }
         )
@@ -1271,6 +1318,15 @@ def compute_combined_anomaly_map(
                 'poly': None,
                 'proposal_source': 'heuristic_merged' if len(group) > 1 else a.get('proposal_source', 'heuristic'),
             }
+            if len(group) == 1:
+                _copy_viz_support(a, merged_det)
+            else:
+                union = _union_support_contours([detections[g] for g in group], (H, W))
+                if union is not None:
+                    merged_det["support_contour"] = union
+                    merged_det["support_geometry"] = "cc"
+                else:
+                    merged_det["support_geometry"] = "none"
             _annotate_det_size_distance(
                 merged_det, (H, W), proximity_w=proximity_w, depth_map=depth_n_for_region
             )

@@ -38,6 +38,11 @@ from src.artps_inference import (  # noqa: E402
     _preprocess_image,
     load_frozen_artps_profile,
 )
+from _candidate_support_overlay import (  # noqa: E402
+    candidate_xywh_scores,
+    draw_candidate_support_overlay,
+    overlay_geometry_counts,
+)
 
 MANIFEST = REPO / "reproduction/iac2026/manifests/independent_eval_v1.csv"
 FREEZE = REPO / "reproduction/iac2026/test_freeze/TEST_OPEN_STATUS.yaml"
@@ -131,21 +136,6 @@ def _to_u8(rgb_float: np.ndarray) -> np.ndarray:
     return np.clip(rgb_float * 255.0, 0, 255).astype(np.uint8)
 
 
-def _overlay_boxes(rgb_u8: np.ndarray, detections: list[dict], map_hw: tuple[int, int]) -> np.ndarray:
-    out = rgb_u8.copy()
-    mh, mw = map_hw
-    h, w = out.shape[:2]
-    sx = w / float(mw)
-    sy = h / float(mh)
-    for det in detections:
-        x1 = int(round(float(det["x"]) * sx))
-        y1 = int(round(float(det["y"]) * sy))
-        x2 = int(round((float(det["x"]) + float(det["w"])) * sx))
-        y2 = int(round((float(det["y"]) + float(det["h"])) * sy))
-        cv2.rectangle(out, (x1, y1), (x2, y2), (0, 220, 80), 2)
-    return out
-
-
 def _git_sha() -> str:
     return subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=str(REPO), text=True
@@ -216,7 +206,8 @@ def main() -> int:
     rgb_in = np.array(pil.convert("RGB"), dtype=np.uint8)
     mh, mw = combined_map.shape[:2]
     rgb_disp = cv2.resize(rgb_in, (mw, mh), interpolation=cv2.INTER_AREA)
-    overlay = _overlay_boxes(rgb_disp, scored, (mh, mw))
+    overlay = draw_candidate_support_overlay(rgb_disp, scored, combined_map, (mh, mw))
+    geom = overlay_geometry_counts(scored)
     depth_n = depth_map.astype(np.float32)
     depth_n = (depth_n - depth_n.min()) / (float(depth_n.max() - depth_n.min()) + 1e-8)
 
@@ -226,7 +217,7 @@ def main() -> int:
         (axes[0, 0], rgb_disp, "a) RGB input", None),
         (axes[0, 1], combined_map, "b) Post-suppression combined map", "inferno"),
         (axes[1, 0], depth_n, "c) Relative depth (near to far)", "viridis"),
-        (axes[1, 1], overlay, "d) Valid-candidate overlay", None),
+        (axes[1, 1], overlay, "d) Candidate-support overlay", None),
     ]
     for ax, img, title, cmap in panels:
         if cmap is None:
@@ -283,6 +274,23 @@ def main() -> int:
         "device": str(bundle.device),
         "n_raw_detections": len(detections),
         "n_valid_candidates": len(scored),
+        "candidates": candidate_xywh_scores(scored),
+        "overlay_visualization_version": "candidate_support_v1",
+        "support_geometry_source": (
+            "proposal hysteresis/CC contour persisted as visualization-only metadata; "
+            "no new map threshold"
+        ),
+        "anchor_definition": (
+            "argmax of post-suppression combined_map inside support contour, else ROI; "
+            "peak_xy if present"
+        ),
+        "fallback_behavior": "open-corner ROI + anchor when no proposal CC survives",
+        "visualization_only": True,
+        "candidate_scores_changed": False,
+        "validity_decisions_changed": False,
+        "image_scores_changed": False,
+        "quantitative_experiment": False,
+        **geom,
         "output_png": str(OUT_PNG.relative_to(REPO)).replace("\\", "/"),
         "ae_mse_not_a_manuscript_metric": float(mse),
         "command": (

@@ -21,7 +21,7 @@
   "score_blind_selection": true,
   "model_output_used_for_selection": false,
   "score_based_cherry_picking": false,
-  "git_sha_at_generation": "acb328619376618b530d97bd041e64d59209b538",
+  "git_sha_at_generation": "cf817962e7f185a9d43a46803f763b833a53149e",
   "config_yaml": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
   "config_id": "artps_full_frozen_mars_clf_on_v1",
   "preprocessing_profile": "mars_enhancement_v1",
@@ -47,6 +47,34 @@
   "device": "cuda",
   "n_raw_detections": 3,
   "n_valid_candidates": 2,
+  "candidates": [
+    {
+      "x": 551,
+      "y": 472,
+      "w": 56,
+      "h": 29,
+      "score": 0.07113860818307659
+    },
+    {
+      "x": 366,
+      "y": 335,
+      "w": 138,
+      "h": 146,
+      "score": 0.04513449176254386
+    }
+  ],
+  "overlay_visualization_version": "candidate_support_v1",
+  "support_geometry_source": "proposal hysteresis/CC contour persisted as visualization-only metadata; no new map threshold",
+  "anchor_definition": "argmax of post-suppression combined_map inside support contour, else ROI; peak_xy if present",
+  "fallback_behavior": "open-corner ROI + anchor when no proposal CC survives",
+  "visualization_only": true,
+  "candidate_scores_changed": false,
+  "validity_decisions_changed": false,
+  "image_scores_changed": false,
+  "quantitative_experiment": false,
+  "n_support_contour": 2,
+  "n_oriented_poly": 0,
+  "n_bracket_fallback": 0,
   "output_png": "paper/iac2026/figures/fig_qualitative_artps.png",
   "ae_mse_not_a_manuscript_metric": 0.017237167805433273,
   "command": "set ARTPS_DATASET_ROOT=<repo>/mars_images && python scripts/iac2026/generate_qualitative_figure.py"

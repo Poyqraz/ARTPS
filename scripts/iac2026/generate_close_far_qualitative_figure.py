@@ -39,6 +39,11 @@ from src.artps_inference import (  # noqa: E402
     _preprocess_image,
     load_frozen_artps_profile,
 )
+from _candidate_support_overlay import (  # noqa: E402
+    candidate_xywh_scores,
+    draw_candidate_support_overlay,
+    overlay_geometry_counts,
+)
 
 MANIFEST = REPO / "reproduction/iac2026/manifests/independent_eval_v1.csv"
 FREEZE = REPO / "reproduction/iac2026/test_freeze/TEST_OPEN_STATUS.yaml"
@@ -117,21 +122,6 @@ def _git_sha() -> str:
     return subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=str(REPO), text=True
     ).strip()
-
-
-def _overlay_boxes(rgb_u8: np.ndarray, detections: list[dict], map_hw: tuple[int, int]) -> np.ndarray:
-    out = rgb_u8.copy()
-    mh, mw = map_hw
-    h, w = out.shape[:2]
-    sx = w / float(mw)
-    sy = h / float(mh)
-    for det in detections:
-        x1 = int(round(float(det["x"]) * sx))
-        y1 = int(round(float(det["y"]) * sy))
-        x2 = int(round((float(det["x"]) + float(det["w"])) * sx))
-        y2 = int(round((float(det["y"]) + float(det["h"])) * sy))
-        cv2.rectangle(out, (x1, y1), (x2, y2), (0, 220, 80), 3)
-    return out
 
 
 def _manifest_index() -> dict[str, dict[str, str]]:
@@ -214,13 +204,16 @@ def _run_frozen(cfg: FrozenARTPSConfig, bundle, abs_path: str) -> dict:
     rgb_in = np.array(pil.convert("RGB"), dtype=np.uint8)
     mh, mw = combined_map.shape[:2]
     rgb_disp = cv2.resize(rgb_in, (mw, mh), interpolation=cv2.INTER_AREA)
-    overlay = _overlay_boxes(rgb_disp, scored, (mh, mw))
+    overlay = draw_candidate_support_overlay(rgb_disp, scored, combined_map, (mh, mw))
+    geom = overlay_geometry_counts(scored)
     return {
         "rgb": rgb_disp,
         "combined_map": combined_map,
         "overlay": overlay,
         "n_raw_detections": len(detections),
         "n_valid_candidates": len(scored),
+        "candidates": candidate_xywh_scores(scored),
+        "overlay_geometry": geom,
         "ae_mse_not_a_manuscript_metric": float(mse),
     }
 
@@ -320,10 +313,10 @@ def generate_figure() -> int:
     panels = [
         (axes[0, 0], close_out["rgb"], "a) Close-range RGB", None),
         (axes[0, 1], close_out["combined_map"], "b) Post-suppression combined map", "inferno"),
-        (axes[0, 2], close_out["overlay"], "c) Valid-candidate overlay", None),
+        (axes[0, 2], close_out["overlay"], "c) Candidate-support overlay", None),
         (axes[1, 0], far_out["rgb"], "d) Distant-scene RGB", None),
         (axes[1, 1], far_out["combined_map"], "e) Post-suppression combined map", "inferno"),
-        (axes[1, 2], far_out["overlay"], "f) Valid-candidate overlay", None),
+        (axes[1, 2], far_out["overlay"], "f) Candidate-support overlay", None),
     ]
     for ax, img, title, cmap in panels:
         if cmap is None:
@@ -345,6 +338,21 @@ def generate_figure() -> int:
         "quantitative_experiment": False,
         "test_used": False,
         "score_maximization_cherrypick": False,
+        "qualitative_selection_rationale": (
+            "Close 1 + Far 2: Curiosity Mastcam pair with readable post-suppression maps "
+            "and candidate-support overlays. Close 2 rejected for Perseverance domain "
+            "mismatch and overlay missing the two most salient near rocks. Far 1 rejected "
+            "for a surviving top-edge frame artefact in the valid overlay. Far 3 rejected: "
+            "rover hardware still dominates RGB and the map is sparser than Far 2."
+        ),
+        "rejected": {
+            "close2": (
+                "Perseverance MCZ domain mismatch vs manuscript Curiosity-Mastcam framing; "
+                "overlay misses the two most salient near rocks"
+            ),
+            "far1": "valid overlay includes a full-width top-edge frame artefact",
+            "far3": "rover hardware remains visually dominant in RGB; not cleaner than Far 1/2",
+        },
         "selection_rule": SELECTION_RULE,
         "selected_close_key": SELECTED_CLOSE,
         "selected_far_key": SELECTED_FAR,
@@ -359,6 +367,8 @@ def generate_figure() -> int:
             "in_independent_eval_v1_included": close["in_independent_eval_v1_included"],
             "n_raw_detections": close_out["n_raw_detections"],
             "n_valid_candidates": close_out["n_valid_candidates"],
+            "candidates": close_out["candidates"],
+            **close_out["overlay_geometry"],
         },
         "far": {
             "pool_key": far["pool_key"],
@@ -370,7 +380,23 @@ def generate_figure() -> int:
             "in_independent_eval_v1_included": far["in_independent_eval_v1_included"],
             "n_raw_detections": far_out["n_raw_detections"],
             "n_valid_candidates": far_out["n_valid_candidates"],
+            "candidates": far_out["candidates"],
+            **far_out["overlay_geometry"],
         },
+        "overlay_visualization_version": "candidate_support_v1",
+        "support_geometry_source": (
+            "proposal hysteresis/CC contour persisted as visualization-only metadata; "
+            "no new map threshold"
+        ),
+        "anchor_definition": (
+            "argmax of post-suppression combined_map inside support contour, else ROI; "
+            "peak_xy if present"
+        ),
+        "fallback_behavior": "open-corner ROI + anchor when no proposal CC survives",
+        "visualization_only": True,
+        "candidate_scores_changed": False,
+        "validity_decisions_changed": False,
+        "image_scores_changed": False,
         "git_sha_at_generation": _git_sha(),
         "config_yaml": str(CONFIG_YAML.relative_to(REPO)).replace("\\", "/"),
         "config_id": "artps_full_frozen_mars_clf_on_v1",

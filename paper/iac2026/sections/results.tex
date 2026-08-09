@@ -67,7 +67,7 @@ principal ranking-oriented metric.
 
 \subsection{Qualitative processing example}
 Figure~\ref{fig:qualitative} is a single non-test illustration of RGB input, the
-post-suppression combined anomaly map, relative depth, and valid-candidate overlay under the
+post-suppression combined anomaly map, relative depth, and candidate-support overlay under the
 frozen image-score path.
 Figure~\ref{fig:cue-decomp} decomposes that same frozen fusion path into reconstruction,
 relative-depth-edge, and texture cues plus the pre-suppression fused map; it is not a new
@@ -86,7 +86,9 @@ opens the test split, or adds an AUROC, AUPRC, F1, or throughput number.
 \caption{Qualitative current-code examples illustrating the frozen ARTPS pipeline on one
 close-range scene and one distant-scene selected from an author-provided candidate pool.
 For each scene, the figure shows the RGB input, the post-suppression combined map, and the
-final valid-candidate overlay.
+candidate-support overlay.
+Corner brackets denote the candidate ROI; support contours are shown where proposal geometry
+is available and are visualization aids, not pixel-level ground-truth segmentations.
 These examples are illustrative only and are not presented as an additional quantitative
 benchmark or a controlled range-conditioned performance study.}
 \label{fig:close-far}
