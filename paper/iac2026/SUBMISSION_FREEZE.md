@@ -141,4 +141,7 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Experimental protocol finalized; planning/draft tone removed
 - Literature: Francis 2017, Francis 2019, Gaines 2020 added
 - Historical and supplementary metrics unchanged; test unopened; no new quantitative experiment
-- definition_pass_commit: pending branch tip (filled after commit)
+- definition_pass_commit: `4cda8f6`
+- pages: 11 (US Letter); overfull `\hbox`: 0; underfull `\vbox`: 22 (warn-only)
+- local verify: `pytest -q tests/iac2026` 220 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean; undefined cites/refs: 0
+- test unopened; historical and supplementary metrics unchanged; no new quantitative experiment
