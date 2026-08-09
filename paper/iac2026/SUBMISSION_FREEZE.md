@@ -144,4 +144,5 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - definition_pass_commit: `4cda8f6`
 - pages: 11 (US Letter); overfull `\hbox`: 0; underfull `\vbox`: 22 (warn-only)
 - local verify: `pytest -q tests/iac2026` 220 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean; undefined cites/refs: 0
+- CI: IAC paper build PASS ([run 31312030326](https://github.com/Poyqraz/ARTPS/actions/runs/31312030326)); harness PASS ([run 31312030318](https://github.com/Poyqraz/ARTPS/actions/runs/31312030318))
 - test unopened; historical and supplementary metrics unchanged; no new quantitative experiment
