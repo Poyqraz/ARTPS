@@ -2,9 +2,8 @@
 \label{sec:results}
 
 \subsection{Reported results from the accepted IAC abstract}
-Table~\ref{tab:accepted-abstract} restates the historical ARTPS evaluation reported in the
-accepted IAC abstract.
-These numbers are distinct from the supplementary validation below.
+Table~\ref{tab:accepted-abstract} restates the historical ARTPS evaluation
+(Table~\ref{tab:eval-tracks}).
 
 \begin{table}[t]
 \centering
@@ -25,8 +24,7 @@ FPS @ $256\times256$ (lightweight core) & $28.1$ \\
 \end{table}
 
 \subsection{Current frozen evaluation protocol (\texttt{independent\_eval\_v1})}
-The \texttt{independent\_eval\_v1} heuristic-label track remains a separate frozen protocol,
-not a supplementary validation result.
+The \texttt{independent\_eval\_v1} heuristic-label track remains a separate frozen protocol.
 The held-out test set remains unopened, so the current protocol is reported as validation-only.
 Numeric supplementary validation below uses the human-reviewed annotation version only.
 
@@ -37,7 +35,6 @@ Frozen ARTPS image scores (FP32) use the frozen image-level score; labels were r
 no tuning and no inference rerun.
 Curiosity ranking, diversity penalty, and the Priority Buffer were not applied on these
 scores.
-This subsection is explicitly distinct from Table~\ref{tab:accepted-abstract}.
 AUROC is the principal ranking-oriented metric for this supplementary validation.
 
 \begin{table}[t]

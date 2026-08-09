@@ -105,8 +105,19 @@ These regions can produce high reconstruction or texture responses that do not c
 science-interest targets.
 ARTPS applies operational masks and suppressions so that high responses in these regions are
 down-weighted or invalidated before ranking.
-Typical checks include rover-hardware / body masks, strong boundary-shadow suppression, frame
-edge invalidation, and overlay / telemetry rejection where those signals are available.
+
+Boundary-connected shadow suppression targets dark, low-structure regions attached to the
+frame border---cast shadow wedges and similar artefacts---rather than every dark pixel in
+the scene.
+Rover-body and nearby hardware are excluded as self-view clutter.
+Frame-edge and overlay / telemetry regions are invalidated where those signals are available.
+A separate object-in-shadow check distinguishes a flat shadow artefact from a structured
+candidate that happens to sit inside a shadowed area: suppressing the artefact must not
+automatically discard the in-shadow object.
+These masks act before frozen image-score aggregation.
+They reduce invalid candidates; they do not prove that a surviving region is scientifically
+irrelevant.
+
 Only candidates that remain valid after these checks contribute to the frozen image-level
 score; Figure~\ref{fig:qualitative}(d) shows that valid-candidate overlay on one non-test
 example, not a curiosity-ranked downlink list.
@@ -132,6 +143,15 @@ to prefer candidates whose apparent size is consistent with the intended operati
 (e.g., avoiding both tiny noise peaks and unrealistically large blobs under relative depth
 ordering).
 This is a relative heuristic, not a physical size measurement in metres.
+
+\subsection{Operational ranking sequence}
+Candidates that remain valid after perception and masks may enter an operational ranking
+stack for onboard downlink.
+The sequence is: a surviving candidate receives a curiosity score; a soft similarity penalty
+may then reduce its priority among already selected items; the Priority Buffer may retain a
+high-anomaly candidate that lost that diversity contest for later reconsideration.
+This operational ranking path is not part of the frozen \texttt{independent\_eval\_v1\_1}
+image-score validation.
 
 \subsection{Curiosity score}
 For operational ranking, ARTPS computes a curiosity score as a non-negative weighted

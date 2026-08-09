@@ -4,12 +4,11 @@ ARTPS specifies an onboard target-prioritization architecture that couples multi
 anomaly responses with monocular relative depth, entropy-weighted fusion, operational
 suppression, apparent size--distance policy, diversity ranking, and a Priority Buffer.
 
-Accepted-abstract detection and speed numbers are retained as the historical ARTPS evaluation.
+Table~\ref{tab:eval-tracks} summarizes the evaluation tracks: historical accepted-abstract
+numbers are retained, and supplementary validation reports AUROC~$0.772$ under frozen scores
+without opening the held-out test.
 A qualitative non-test processing example illustrates the frozen image-score path without
 adding a new benchmark.
-A separate current evaluation protocol (\texttt{independent\_eval\_v1}) did not open the
-held-out test split; a supplementary human-reviewed validation
-(\texttt{independent\_eval\_v1\_1}) reports ranking-oriented AUROC~$0.772$ under frozen scores.
 
 Future work includes a harder-negative or independently annotated challenge set, optional
 reproduction of historical abstract claims if artifacts allow, planned edge-hardware timing
