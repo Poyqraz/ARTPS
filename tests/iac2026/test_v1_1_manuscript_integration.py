@@ -182,3 +182,34 @@ def test_camera_ready_figure_and_bibliography():
     assert "poyrazbaydemir@gmail.com" in main
     assert "CORRESPONDING_EMAIL_TBD" not in main
     assert r"CORRESPONDING\_EMAIL\_TBD" not in main
+
+
+def test_cue_decomposition_figure_and_caption():
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
+    results = RESULTS.read_text(encoding="utf-8")
+    disc = DISCUSSION.read_text(encoding="utf-8")
+    png = REPO / "paper/iac2026/figures/fig_cue_decomposition_artps.png"
+    meta_path = REPO / "paper/iac2026/figures/fig_cue_decomposition_artps.meta.json"
+    fig2_meta = json.loads(
+        (REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json").read_text(encoding="utf-8")
+    )
+    cue_meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert "fig:cue-decomp" in methods
+    assert "figures/fig_cue_decomposition_artps.png" in methods
+    assert png.is_file()
+    cap = methods[methods.find(r"\label{fig:cue-decomp}") - 800 : methods.find(r"\label{fig:cue-decomp}")]
+    cap_l = cap.lower()
+    assert "qualitative" in methods.lower() or "illustrative" in cap_l
+    assert "non-metric" in cap_l
+    assert "not used as an additional quantitative benchmark" in cap_l
+    assert cue_meta["sample_id"] == fig2_meta["sample_id"]
+    assert cue_meta["test_used"] is False
+    assert cue_meta.get("new_sample_selection") is False
+    assert "0.920" not in results
+    assert "0/8/0/46" not in results
+    assert "$0.0$" not in results
+    assert "fig:cue-decomp" in results
+    assert "fig:cue-decomp" in disc
+    methods_flat = " ".join(methods.lower().split())
+    assert "scientifically relevant" in methods_flat
+    assert "scientifically irrelevant" not in methods_flat
