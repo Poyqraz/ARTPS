@@ -153,7 +153,7 @@ def main() -> int:
         (axes[0, 0], recon, "a) Reconstruction residual", "inferno"),
         (axes[0, 1], depth_edge, "b) Relative-depth edge", "inferno"),
         (axes[1, 0], texture, "c) Texture / local contrast", "inferno"),
-        (axes[1, 1], fused, "d) Fixed-weight fused map", "inferno"),
+        (axes[1, 1], fused, "d) Pre-suppression fused map", "inferno"),
     ]
     for ax, img, title, cmap in panels:
         ax.imshow(img, cmap=cmap)

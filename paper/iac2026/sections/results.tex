@@ -66,16 +66,11 @@ performance measures in this supplementary evaluation; AUROC is used as the
 principal ranking-oriented metric.
 
 \subsection{Qualitative processing example}
-Figure~\ref{fig:qualitative} is a single non-test illustration of RGB input, an anomaly-related
-cue, relative depth, and valid-candidate overlay under the frozen image-score path.
+Figure~\ref{fig:qualitative} is a single non-test illustration of RGB input, the
+post-suppression combined anomaly map, relative depth, and valid-candidate overlay under the
+frozen image-score path.
 Figure~\ref{fig:cue-decomp} decomposes that same frozen fusion path into reconstruction,
-relative-depth-edge, and texture cues plus the pre-mask fused response; it is not a new
+relative-depth-edge, and texture cues plus the pre-suppression fused map; it is not a new
 detection metric.
 Neither figure enters Table~\ref{tab:accepted-abstract} or Table~\ref{tab:indep-v11}, opens
 the test split, or adds an AUROC, AUPRC, F1, or throughput number.
-
-\subsection{Proxy analyses}
-Preliminary proxy analyses (shadow/FP gates; size--distance policy) may be discussed
-qualitatively in Discussion once cited as non-headline proxies.
-They are deliberately omitted from primary Results tables here to avoid conflation with
-accepted-abstract or independent-evaluation headlines.

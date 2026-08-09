@@ -206,7 +206,7 @@ def main() -> int:
     fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=200)
     panels = [
         (axes[0, 0], rgb_disp, "a) RGB input", None),
-        (axes[0, 1], combined_map, "b) Anomaly-related cue", "inferno"),
+        (axes[0, 1], combined_map, "b) Post-suppression combined map", "inferno"),
         (axes[1, 0], depth_n, "c) Relative depth (near to far)", "viridis"),
         (axes[1, 1], overlay, "d) Valid-candidate overlay", None),
     ]

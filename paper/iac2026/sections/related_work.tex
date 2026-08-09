@@ -3,7 +3,10 @@
 \subsection{Onboard science autonomy and rover target selection}
 Onboard science autonomy systems such as AEGIS-style target selection aim to reduce reliance
 on delayed ground loops by identifying and prioritizing scientifically interesting
-targets~\citep{estlin2012}.
+targets~\citep{estlin2012,francis2017aegis}.
+Operational ChemCam targeting on Curiosity demonstrated that onboard selection can be adopted
+as a routine science tool~\citep{francis2017aegis}, and analogue-mission studies have examined
+the utility of rover science-autonomy capabilities under reduced ground interaction~\citep{francis2019utility}.
 Human-in-the-loop operations remain essential for mission-level decisions, but bandwidth and
 latency constraints motivate onboard screening that is explicit about uncertainty and
 false-positive control.
@@ -24,10 +27,12 @@ Dense monocular depth models provide image-relative structure useful for near/fa
 organization~\citep{ranftl2021dpt}.
 They do not, by themselves, provide metric distance, physical object size, or calibrated 3D
 reconstruction under planetary scale ambiguity.
-ARTPS uses relative depth as an ordering and policy cue and forbids metric-distance claims.
+ARTPS uses relative depth as an ordering and policy cue; no metric-distance claim is made.
 
 \subsection{Edge onboard AI and safety-aware autonomy}
 Onboard compute, thermal, and power limits constrain which models can run continuously.
+Self-reliant rover concepts further emphasize maintaining productivity with reduced
+ground-in-the-loop interaction~\citep{gaines2020srr}.
 Uncertainty, fail-safe ``no selection'' behaviour, and runtime monitoring matter as much as
 ranking discrimination for operational use.
 ARTPS therefore states only bounded assurance within a defined operational envelope,

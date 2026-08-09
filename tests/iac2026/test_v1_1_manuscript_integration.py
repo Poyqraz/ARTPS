@@ -106,10 +106,15 @@ def test_limitations_and_discussion_present():
     assert "planetary imagery as a whole" in disc_flat
     assert "naturally high" not in disc_flat
     methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8").lower()
-    assert "entropy" in methods and "fixed-weight" in methods
+    assert "entropy" in methods
+    assert "fixed-weight" in methods or "fixed-coefficient" in methods or "fixed fusion coefficients" in methods
     assert "c(r)" in methods.replace(" ", "") or "c(r)" in methods
     intro = (REPO / "paper/iac2026/sections/introduction.tex").read_text(encoding="utf-8").lower()
-    assert "fixed-weight" in intro or "fixed-weight multi-cue" in intro
+    assert (
+        "fixed-weight" in intro
+        or "fixed-weight multi-cue" in intro
+        or "fixed-coefficient" in intro
+    )
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
     res = RESULTS.read_text(encoding="utf-8").lower()
     assert "tab:eval-tracks" in exp
@@ -164,7 +169,7 @@ def test_camera_ready_figure_and_bibliography():
     assert "entropy" in cap
     assert "not included" in cap
     fig_l = fig.lower()
-    assert "fixed-weight" in fig_l
+    assert "fixed-weight" in fig_l or "fixed-coefficient" in fig_l or "fixed-coeff" in fig_l
     assert "entropy-weighted" in fig_l
     assert "not in frozen" in fig_l
     assert "0.772" not in fig
@@ -174,6 +179,9 @@ def test_camera_ready_figure_and_bibliography():
         "10.1007/978-3-030-68799-1_35",
         "10.1109/CVPR52688.2022.01392",
         "10.1109/ICCV48922.2021.01196",
+        "10.1126/scirobotics.aan4582",
+        "10.1016/j.pss.2019.03.007",
+        "10.1002/rob.21979",
     ):
         assert doi in bib
     assert "Tara and others" not in bib
@@ -213,3 +221,54 @@ def test_cue_decomposition_figure_and_caption():
     methods_flat = " ".join(methods.lower().split())
     assert "scientifically relevant" in methods_flat
     assert "scientifically irrelevant" not in methods_flat
+    assert "independently min-max" in cap_l or "not numerically comparable" in cap_l
+    assert "pre-suppression" in cap_l or "pre-suppression fused" in methods_flat
+    fig2_cap = methods[methods.find(r"\label{fig:qualitative}") - 700 : methods.find(r"\label{fig:qualitative}")]
+    assert "post-suppression" in fig2_cap.lower()
+
+
+def test_scientific_definition_pass_language():
+    tex_paths = (
+        REPO / "paper/iac2026/sections/methods.tex",
+        REPO / "paper/iac2026/sections/experiments.tex",
+        REPO / "paper/iac2026/sections/results.tex",
+        REPO / "paper/iac2026/sections/discussion.tex",
+        REPO / "paper/iac2026/sections/limitations.tex",
+        REPO / "paper/iac2026/sections/conclusion.tex",
+        REPO / "paper/iac2026/sections/introduction.tex",
+        REPO / "paper/iac2026/sections/related_work.tex",
+    )
+    blob = "\n".join(p.read_text(encoding="utf-8") for p in tex_paths)
+    visible = "\n".join(
+        ln for ln in blob.splitlines() if not ln.lstrip().startswith("%")
+    )
+    vis_l = visible.lower()
+    for banned in (
+        "this draft",
+        "planned baselines",
+        "planning level",
+        "may be discussed qualitatively",
+        "must not migrate",
+        "c05",
+        "c06",
+        "c07",
+        "test_opened",
+        "accepted_abstract_reproduction_pending",
+        "protocol_defined_pending_data",
+    ):
+        assert banned not in vis_l
+    intro = (REPO / "paper/iac2026/sections/introduction.tex").read_text(encoding="utf-8")
+    intro_vis = "\n".join(ln for ln in intro.splitlines() if not ln.lstrip().startswith("%"))
+    assert "low-confidence" not in intro_vis.lower()
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
+    methods_vis = "\n".join(ln for ln in methods.splitlines() if not ln.lstrip().startswith("%"))
+    assert "diversity or suppression" not in methods_vis.lower()
+    methods_flat = " ".join(methods.lower().split())
+    assert "fixed fusion coefficients" in methods_flat
+    assert r"s_{\mathrm{image}}" in methods.lower().replace(" ", "")
+    assert "v_r" in methods.lower().replace(" ", "") or "v_{r}" in methods.lower()
+    exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
+    assert "held-out test" in exp and ("unopened" in exp or "not opened" in exp)
+    assert "curiosity" in exp and "priority buffer" in exp
+    res = RESULTS.read_text(encoding="utf-8").lower()
+    assert "curiosity ranking" in res and "not applied" in res

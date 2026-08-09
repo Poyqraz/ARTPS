@@ -1,15 +1,18 @@
 \section{Conclusions}
 \label{sec:conclusion}
 ARTPS specifies an onboard target-prioritization architecture that couples multi-cue visual
-anomaly responses with monocular relative depth, entropy-weighted fusion, operational
-suppression, apparent size--distance policy, diversity ranking, and a Priority Buffer.
+anomaly responses with monocular relative depth, an entropy-weighted fusion specification,
+operational suppression, apparent size--distance policy, diversity ranking, and a Priority
+Buffer.
+The current supplementary frozen evaluation uses the fixed-coefficient Layer~B image-score
+path rather than entropy-weighted fusion.
 
 Table~\ref{tab:eval-tracks} summarizes the evaluation tracks: historical accepted-abstract
-numbers are retained, and supplementary validation reports AUROC~$0.772$ under frozen scores
-without opening the held-out test.
+numbers are retained, and supplementary validation reports AUROC~$0.772$ under frozen
+fixed-coefficient scores without opening the held-out test.
 A qualitative non-test processing example illustrates the frozen image-score path without
 adding a new benchmark.
 
-Future work includes a harder-negative or independently annotated challenge set, optional
-reproduction of historical abstract claims if artifacts allow, planned edge-hardware timing
-profiles, and mission-specific V\&V beyond the scope of this software manuscript.
+Future work includes a harder-negative or independently annotated challenge set, archival
+reconstruction of the historical experiment, full-pipeline edge-hardware timing, and
+mission-specific V\&V.
