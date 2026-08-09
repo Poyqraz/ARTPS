@@ -1,12 +1,19 @@
 \section{Experimental Protocol}
 \label{sec:protocol}
 This section distinguishes two evaluation tracks that must not be conflated.
+The historical track restates accepted-abstract detection and speed numbers.
+The current track is a frozen, version-controlled protocol on the present implementation,
+with a supplementary human-reviewed label audit.
+A qualitative processing example is included only as an illustration of the frozen
+image-score path; it is not a third quantitative track.
 
 \subsection{Historical accepted-abstract track}
 The accepted IAC abstract reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, baseline
 AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight core.
 The performance values reported in the accepted IAC abstract are retained as the historical
 ARTPS evaluation.
+That track is a prior experimental snapshot; it is not re-run or retuned in this manuscript,
+and the present repository snapshot does not independently reconstruct it.
 The supplementary evaluation introduced below follows a separate contemporary protocol and
 is therefore reported independently rather than treated as a direct reproduction of the
 historical experiment.
@@ -17,12 +24,19 @@ A separate frozen evaluation protocol, \texttt{independent\_eval\_v1}, was estab
 the current implementation.
 It is \emph{not} a reproduction of the accepted-abstract numbers.
 Protocol definitions, annotation rules, and frozen execution settings are version-controlled
-with the implementation.
-The primary image score is the frozen image-level score defined in Methods.
-The held-out test partition was not opened in the present work.
+with the implementation, including the image-score aggregation, preprocessing profile, and
+checkpoint hashes used for scoring.
+The primary image score is the frozen image-level score defined in Methods
+(\texttt{max\_valid\_candidate\_after\_masks}).
+Curiosity ranking, diversity penalty, and the Priority Buffer remain disabled for this score.
+The held-out test partition was not opened in the present work: no test inference, no test
+metric, and no threshold retune on held-out images.
 Validation artifacts exist; numeric supplementary results below use the human-reviewed
 annotation version only.
 No fabricated $N$ and no invented test metrics are reported.
+The qualitative example in Figure~\ref{fig:qualitative} uses one deterministically selected
+non-test image from the same manifest under the frozen image-score path; it is not a
+benchmark and does not open the test split.
 
 \subsection{Supplementary human-reviewed annotation (\texttt{independent\_eval\_v1\_1})}
 A separate annotation version, \texttt{independent\_eval\_v1\_1}, records a model-blind
@@ -30,6 +44,7 @@ repeat-author review of all 360 included images under the same annotation guide.
 The original \texttt{independent\_eval\_v1} manifest remains immutable.
 Split assignments are unchanged; the test split remains unopened (human viewing only;
 no ARTPS inference).
+Scores were remapped onto the reviewed labels with no tuning and no inference rerun.
 This supplementary track is a current reproducible validation audit.
 It is \emph{not} a reproduction of the accepted-abstract numbers, not a replacement for
 the historical experiment, and not an independent second annotation.

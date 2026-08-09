@@ -35,14 +35,23 @@ This score definition is held fixed for \texttt{independent\_eval\_v1} and froze
 protocol versions.
 Curiosity ranking, feature-space diversity, and the Priority Buffer are operational
 selection mechanisms; they are \emph{not} applied on the frozen image-level score.
+Optional Mars-oriented enhancement may precede cue extraction; it is preprocessing, not a
+detection metric, and Real-ESRGAN is off in the frozen evaluation profile used here.
 
 \subsection{Multi-cue visual anomaly detection}
 ARTPS forms visual anomaly responses from embedding- or reconstruction-oriented cues aligned
 with industrial anomaly practice~\citep{defard2020padim,roth2022patchcore}.
-Cue maps highlight unusual appearance relative to a reference distribution of ``normal''
-terrain context.
-ARTPS does not treat any single cue as a mineral detector or as a complete science classifier;
-cues are inputs to fusion and prioritization.
+A reconstruction residual emphasizes appearance that the autoencoder cannot explain from
+typical terrain context.
+Complementary texture and local-contrast cues capture high-frequency structure that a
+reconstruction residual may under-emphasize, including sharp rock edges and mottled surfaces.
+A depth-edge / protrusion cue, derived from the monocular relative-depth field, highlights
+regions that stand out from the surrounding near/far layout rather than from appearance alone.
+Cue maps therefore highlight unusual appearance or structure relative to a reference
+distribution of ``normal'' terrain context.
+No single cue is treated as a mineral detector, lithology classifier, or complete science
+label; each map is an input to fusion and localization.
+Figure~\ref{fig:qualitative}(b) shows one anomaly-related cue on a non-test example.
 % TODO(citation): add Autoencoder / FastFlow / CFA keys only after bibliography verification.
 
 \subsection{Monocular relative depth}
@@ -50,8 +59,12 @@ A dense monocular estimator provides an image-relative depth field for near/far
 organization~\citep{ranftl2021dpt}.
 Depth values are used as relative ordering cues, not as metric metres, absolute physical size,
 or calibrated stereo geometry.
+The same image can be ordered from nearer to farther surfaces, but those values are not
+transferable across images as a common metric scale.
 Metric depth claims are forbidden in this manuscript and in evaluation contracts.
-Depth supports apparent size--distance policy and spatial structuring of candidates.
+Depth supports apparent size--distance policy and spatial structuring of candidates, and it
+feeds the depth-edge cue used in frozen multi-cue fusion.
+Figure~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
 
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
@@ -64,6 +77,12 @@ Low-entropy (peaked) maps receive higher weight.
 The current detection core used for frozen independent-eval scoring applies a
 \emph{fixed-weight} linear mix of reconstruction, depth-edge, and texture cues instead of
 this entropy rule.
+That fixed-weight mix is the measured Layer~B path in Figure~\ref{fig:pipeline}.
+Layer~C ranking---curiosity, soft similarity / diversity, and the Priority Buffer---is an
+operational selection stack for onboard downlink; it is not applied when forming the frozen
+image-level score.
+Conflating Layer~B image scores with Layer~C ranked target lists would misstate what the
+supplementary validation actually measured.
 Static equal-weight baselines remain available for protocol comparison but are not asserted
 here as superior without evidence.
 
@@ -74,13 +93,38 @@ code).
 Each candidate carries a score, spatial extent, and optional feature descriptor for diversity.
 Candidates that fail validity checks after masks do not contribute to
 the frozen image-level score.
+The frozen aggregation is the maximum among remaining valid candidates, not a mean over the
+full anomaly map and not a curiosity-weighted sum.
+Figure~\ref{fig:qualitative}(d) overlays only those remaining valid regions; it is not a
+downlink ranking and does not apply curiosity, diversity, or the Priority Buffer.
 
 \subsection{Operational false-positive suppression}
 Rover imagery frequently contains distractors: rover body / hardware, strong boundary shadows,
 frame edges, and telemetry overlays.
+These regions can produce high reconstruction or texture responses that do not correspond to
+science-interest targets.
 ARTPS applies operational masks and suppressions so that high responses in these regions are
 down-weighted or invalidated before ranking.
+Typical checks include rover-hardware / body masks, strong boundary-shadow suppression, frame
+edge invalidation, and overlay / telemetry rejection where those signals are available.
+Only candidates that remain valid after these checks contribute to the frozen image-level
+score; Figure~\ref{fig:qualitative}(d) shows that valid-candidate overlay on one non-test
+example, not a curiosity-ranked downlink list.
+A candidate that survives suppression is still only a localization hypothesis: it is not a
+confirmed science target and is not automatically queued for downlink.
 Suppression is policy-driven and auditable; it is not a claim of perfect distractor rejection.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_qualitative_artps.png}
+\caption{Qualitative ARTPS processing example from a deterministically selected non-test Mars
+image.
+Panels show the RGB input, an anomaly-related cue, monocular image-relative depth, and the
+valid-candidate localization produced by the frozen image-score path.
+The depth visualization is relative and non-metric.
+The example is illustrative and is not used as an additional quantitative benchmark.}
+\label{fig:qualitative}
+\end{figure*}
 
 \subsection{Apparent size / image-relative size--distance policy}
 Given relative depth and image extent, ARTPS applies an image-relative size--distance policy

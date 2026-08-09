@@ -4,6 +4,8 @@
 
 `reviewer_facing_polish_complete: true`
 
+`enriched_fullpaper_candidate: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -107,3 +109,9 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - `reviewer_facing_polish_complete: true`
 - polish_commit: `8f07a9432ee36c22ba2936bc7ed91c7cdf9e3cea`
 - Scientific freeze snapshot above unchanged (metrics, Decision B, test flags, `submission_candidate`)
+
+## Enriched full-paper candidate
+
+- `enriched_fullpaper_candidate: true`
+- 7-page freeze manuscript remains the fallback on `main`
+- See [`ENRICHED_FULLPAPER.md`](ENRICHED_FULLPAPER.md) and [`figures/FIG_QUALITATIVE_PROVENANCE.md`](figures/FIG_QUALITATIVE_PROVENANCE.md)
