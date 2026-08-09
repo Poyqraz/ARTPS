@@ -5,24 +5,29 @@ import json
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-cv2 = pytest.importorskip("cv2")
-
-from src.artps_detection_core import (  # noqa: E402
-    _copy_viz_support,
-    _union_support_contours,
-    compute_combined_anomaly_map,
-)
-
 FIXTURE = REPO / "tests" / "iac2026" / "fixtures" / "qualitative_overlay_candidates.json"
 
 
+def test_overlay_fixture_file_exists_and_has_locked_counts():
+    data = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    assert data["fig2"]["n_valid_candidates"] == 2
+    assert data["fig2"]["n_raw_detections"] == 3
+    assert data["fig4_close"]["n_valid_candidates"] == 6
+    assert data["fig4_far"]["n_valid_candidates"] == 5
+    assert len(data["fig2"]["candidates"]) == 2
+    assert data["fig3_png_sha256"]
+
+
 def test_copy_viz_support_does_not_touch_score_xywh():
+    pytest.importorskip("torch")
+    pytest.importorskip("cv2")
+    from src.artps_detection_core import _copy_viz_support
+
     src = {
         "x": 1,
         "y": 2,
@@ -45,6 +50,10 @@ def test_copy_viz_support_does_not_touch_score_xywh():
 
 
 def test_union_support_contours_uses_existing_ccs_only():
+    pytest.importorskip("torch")
+    pytest.importorskip("cv2")
+    from src.artps_detection_core import _union_support_contours
+
     a = {"support_contour": [[5, 5], [15, 5], [15, 15], [5, 15]]}
     b = {"support_contour": [[12, 12], [22, 12], [22, 22], [12, 22]]}
     union = _union_support_contours([a, b], (40, 40))
@@ -53,6 +62,11 @@ def test_union_support_contours_uses_existing_ccs_only():
 
 
 def test_combined_map_heuristic_dets_keep_cc_without_score_shape_change():
+    pytest.importorskip("torch")
+    pytest.importorskip("cv2")
+    import numpy as np
+    from src.artps_detection_core import compute_combined_anomaly_map
+
     rgb = np.full((64, 64, 3), 0.45, np.float32)
     rgb[20:40, 20:40] = 0.85
     recon = np.full((64, 64, 3), 0.45, np.float32)
@@ -72,13 +86,3 @@ def test_combined_map_heuristic_dets_keep_cc_without_score_shape_change():
         if det.get("support_geometry") == "cc":
             cnt = det.get("support_contour")
             assert isinstance(cnt, list) and len(cnt) >= 3
-
-
-def test_overlay_fixture_file_exists_and_has_locked_counts():
-    data = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    assert data["fig2"]["n_valid_candidates"] == 2
-    assert data["fig2"]["n_raw_detections"] == 3
-    assert data["fig4_close"]["n_valid_candidates"] == 6
-    assert data["fig4_far"]["n_valid_candidates"] == 5
-    assert len(data["fig2"]["candidates"]) == 2
-    assert data["fig3_png_sha256"]
