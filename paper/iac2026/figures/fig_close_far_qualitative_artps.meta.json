@@ -1,0 +1,71 @@
+{
+  "author_provided_pool_only": true,
+  "agent_selected_outside_pool": false,
+  "quantitative_experiment": false,
+  "test_used": false,
+  "score_maximization_cherrypick": false,
+  "qualitative_selection_rationale": "Close 1 + Far 2: Curiosity Mastcam pair with readable post-suppression maps and valid overlays. Close 2 rejected for Perseverance domain mismatch and overlay missing the two most salient near rocks. Far 1 rejected for a surviving top-edge frame artefact in the valid overlay. Far 3 rejected: rover hardware still dominates RGB and the map is sparser than Far 2.",
+  "rejected": {
+    "close2": "Perseverance MCZ domain mismatch vs manuscript Curiosity-Mastcam framing; overlay misses the two most salient near rocks",
+    "far1": "valid overlay includes a full-width top-edge frame artefact",
+    "far3": "rover hardware remains visually dominant in RGB; not cleaner than Far 1/2"
+  },
+  "selection_rule": "exactly one close and one far from a fixed author-provided five-image pool; visual clarity / interpretability / clean post-suppression map / readable overlay; no score-maximization; test split unused",
+  "selected_close_key": "close1",
+  "selected_far_key": "far2",
+  "considered_pool": {
+    "close1": "train/hills_or_ridge/curiosity_1100_MAST_938_jpg.rf.7417a3036ec4af81b3b9d4305c05eee3.jpg",
+    "close2": "train/boulder/percy_sol1450_MCZ_RIGHT_9_jpg.rf.f390f8c84becbe615a34db73d9f2610e.jpg",
+    "far1": "train/flat_terrain/curiosity_1100_MAST_827_jpg.rf.fd10bd35d413cba7432b79ab8433e9b6.jpg",
+    "far2": "train/rocky/curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg",
+    "far3": "train/rover/percy_sol150_NAVCAM_LEFT_8_jpg.rf.5d964d0db273d6db4a7054ec8516c688.jpg"
+  },
+  "close": {
+    "pool_key": "close1",
+    "sample_id": "author_pool_close1_curiosity_1100_MAST_938_jpg.rf.7417a3036ec4af81b3b9d4305c05eee3.jpg",
+    "split": "train",
+    "relative_path": "train/hills_or_ridge/curiosity_1100_MAST_938_jpg.rf.7417a3036ec4af81b3b9d4305c05eee3.jpg",
+    "product_id": "",
+    "file_sha256": "4b09d26fdc90e154c661720397277d215e0646a4238893bf46aa5dc278d5d88c",
+    "in_independent_eval_v1_included": false,
+    "n_raw_detections": 7,
+    "n_valid_candidates": 6
+  },
+  "far": {
+    "pool_key": "far2",
+    "sample_id": "ie1_train_rocky_curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg_1732bef60212",
+    "split": "train",
+    "relative_path": "train/rocky/curiosity_1100_MAST_817_jpg.rf.7d755ad9d3fcbac273a3dfffdc0b3c40.jpg",
+    "product_id": "curiosity_1100_mast_817",
+    "file_sha256": "1732bef60212e10724fb6005d5edfe87fff9000b6f08297d7ce971de2a549f8d",
+    "in_independent_eval_v1_included": true,
+    "n_raw_detections": 9,
+    "n_valid_candidates": 5
+  },
+  "git_sha_at_generation": "947743fb7520bfca14c81605ac7dce4b97b47edb",
+  "config_yaml": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
+  "config_id": "artps_full_frozen_mars_clf_on_v1",
+  "preprocessing_profile": "mars_enhancement_v1",
+  "enable_realesrgan": false,
+  "priority_buffer": false,
+  "curiosity_ranking_applied": false,
+  "diversity_penalty_applied": false,
+  "image_score_aggregation": "max_valid_candidate_after_masks",
+  "checkpoints": {
+    "ae": {
+      "path": "results/optimized_autoencoder_curiosity_extended.pth",
+      "sha256": "8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2"
+    },
+    "dpt": {
+      "path": "raw_models/dpt_large_384.pt",
+      "sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69"
+    },
+    "classifier": {
+      "path": "results/depth_enhanced_classifier.pth",
+      "sha256": "83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457"
+    }
+  },
+  "device": "cuda",
+  "output_png": "paper/iac2026/figures/fig_close_far_qualitative_artps.png",
+  "command": "set ARTPS_DATASET_ROOT=<repo>/mars_images && python scripts/iac2026/generate_close_far_qualitative_figure.py"
+}
