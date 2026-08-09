@@ -10,6 +10,8 @@
 
 `cue_decomposition_figure: true`
 
+`scientific_definition_pass_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -129,3 +131,14 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 
 - `cue_decomposition_figure: true`
 - Same non-test Fig.~2 sample; frozen fusion cues only; no new metric, no test split
+
+## Scientific definition pass
+
+- `scientific_definition_pass_complete: true`
+- Fig.~1 topology updated (classifier to candidate scoring; proximity; candidate score)
+- Fig.~2(b) post-suppression combined map; Fig.~3(d) pre-suppression fused map + independent min-max caveat
+- Frozen map equation and candidate/image score documented
+- Experimental protocol finalized; planning/draft tone removed
+- Literature: Francis 2017, Francis 2019, Gaines 2020 added
+- Historical and supplementary metrics unchanged; test unopened; no new quantitative experiment
+- definition_pass_commit: pending branch tip (filled after commit)

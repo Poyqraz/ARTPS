@@ -1,18 +1,19 @@
 \section{ARTPS Methodology}
-This section describes the ARTPS pipeline as an architectural specification.
-Quantitative performance claims appear only in Section~\ref{sec:results};
-method prose here does not invent metrics.
+This section describes the ARTPS pipeline as implemented for the present study.
+Quantitative performance claims appear only in Section~\ref{sec:results}.
 
 \begin{figure*}[t]
 \centering
 \input{figures/artps_pipeline}
 \caption{ARTPS architecture aligned with the current implementation.
-Layer~A generates optional enhancement, reconstruction, relative-depth, texture, and optional
-classifier cues.
-Layer~B is the frozen evaluation image-score path: cue normalization, fixed-weight multi-cue
-fusion, localization, operational masks, and \texttt{max\_valid\_candidate\_after\_masks}.
-Entropy-weighted fusion is the architectural specification (dashed), not the measured frozen
-\texttt{independent\_eval\_v1\_1} default.
+Layer~A generates optional enhancement, reconstruction, relative-depth, and texture cues.
+The optional classifier contributes a known-value scalar to candidate-level scoring, not to
+fixed map fusion.
+Layer~B is the frozen evaluation image-score path: cue normalization, fixed-coefficient
+fusion, proximity modulation, map-level suppression, localization, candidate scoring with
+validity gates, and \texttt{max\_valid\_candidate\_after\_masks}.
+Entropy-weighted fusion is the architectural specification (dashed), not the frozen
+\texttt{independent\_eval\_v1\_1} path.
 Layer~C is the operational ranking stack (curiosity, soft similarity / diversity, clustering,
 Priority Buffer / Top-$K$) and is not included in frozen v1\_1 image-score evaluation.}
 \label{fig:pipeline}
@@ -22,7 +23,8 @@ Priority Buffer / Top-$K$) and is not included in frozen v1\_1 image-score evalu
 ARTPS ingests a single RGB field image and produces a ranked list of candidate targets, or an
 explicit no-selection outcome when evidence is insufficient.
 Primary modules are: (i)~multi-cue anomaly responses, (ii)~monocular relative depth,
-(iii)~multi-cue fusion (entropy-weighted specification; frozen evaluation uses fixed weights),
+(iii)~multi-cue fusion (entropy-weighted specification; frozen evaluation uses fixed
+coefficients),
 (iv)~candidate localization, (v)~operational false-positive
 suppression, (vi)~apparent size / image-relative size--distance policy,
 (vii)~feature-space diversity, (viii)~Priority Buffer, and (ix)~runtime fail-safe behaviour
@@ -30,9 +32,7 @@ with evaluation-integrity checks.
 The frozen image-level score, implemented as
 \texttt{max\_valid\_candidate\_after\_masks}, is the maximum score among candidates that remain
 valid after operational masks and suppressions.
-This score definition is held fixed for \texttt{independent\_eval\_v1} and frozen
-\texttt{independent\_eval\_v1\_1} scoring and must not be silently redefined between
-protocol versions.
+The same aggregation is used throughout the current evaluation.
 Curiosity ranking, feature-space diversity, and the Priority Buffer are operational
 selection mechanisms; they are \emph{not} applied on the frozen image-level score.
 Optional Mars-oriented enhancement may precede cue extraction; it is preprocessing, not a
@@ -54,8 +54,8 @@ Cue maps therefore highlight unusual appearance or structure relative to a refer
 distribution of ``normal'' terrain context.
 No single cue is treated as a mineral detector, lithology classifier, or complete science
 label; each map is an input to fusion and localization.
-Figure~\ref{fig:qualitative}(b) shows one anomaly-related cue on a non-test example.
-% TODO(citation): add Autoencoder / FastFlow / CFA keys only after bibliography verification.
+Figure~\ref{fig:qualitative}(b) shows the post-suppression combined anomaly map on a non-test
+example.
 
 \subsection{Monocular relative depth}
 A dense monocular estimator provides an image-relative depth field for near/far
@@ -64,7 +64,7 @@ Depth values are used as relative ordering cues, not as metric metres, absolute 
 or calibrated stereo geometry.
 The same image can be ordered from nearer to farther surfaces, but those values are not
 transferable across images as a common metric scale.
-Metric depth claims are forbidden in this manuscript and in evaluation contracts.
+Accordingly, no metric-depth claim is made in the present study.
 Depth supports apparent size--distance policy and spatial structuring of candidates, and it
 feeds the depth-edge cue used in frozen multi-cue fusion.
 Figure~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
@@ -76,35 +76,51 @@ The ARTPS specification defines an entropy-weighted fusion rule: for normalized 
 \(\tilde w_i=1/(H_i+\varepsilon)\) and \(w_i=\tilde w_i/\sum_j\tilde w_j\), so
 \(A_{\mathrm{comb}}=\sum_i w_i A_i'\).
 Low-entropy (peaked) maps receive higher weight.
-% TODO(results): report fusion ablations only after independent\_eval\_v1 metrics exist.
+Those normalized entropy weights sum to one.
 The current detection core used for frozen independent-eval scoring applies a
-\emph{fixed-weight} linear mix of reconstruction, depth-edge, and texture cues instead of
-this entropy rule.
-That fixed-weight mix is the measured Layer~B path in Figure~\ref{fig:pipeline}.
+\emph{fixed-coefficient} linear mix instead of this entropy rule.
+Let \(R\), \(E_D\), \(T\), \(L_D\), and \(F_D\) denote inference-normalized reconstruction
+residual, relative-depth Sobel edge, texture / local-contrast, depth-Laplacian, and
+fine-detail maps (percentile~$2$--$98$ per cue), and let \(P\) be the normalized proximity
+map (near high).
+The frozen mix is
+\[
+A_{\mathrm{raw}}
+=
+0.50\,R + 0.30\,E_D + 0.20\,T + 0.08\,L_D + 0.12\,F_D,
+\]
+\[
+P_{\mathrm{mix}}=0.55\,P+0.45\,(1-P),
+\]
+\[
+A_{\mathrm{pre}}
+=
+\mathrm{clip}\!\bigl(A_{\mathrm{raw}}\,[0.5+0.5\,P_{\mathrm{mix}}],\,0,1\bigr).
+\]
+The values \(0.50/0.30/0.20/0.08/0.12\) are \emph{fixed fusion coefficients}: they are
+implementation coefficients, they are not required to sum to one, and the output is
+subsequently modulated and clipped.
+They are distinct from the entropy-weighted architectural specification.
+These are the frozen fusion coefficients used to generate the scores evaluated under
+\texttt{independent\_eval\_v1\_1}.
+They are not claimed to be optimal or learned.
+The proximity multiplier lies in a narrow band near \(0.75\), so far-field responses are
+down-weighted rather than zeroed.
+That fixed-coefficient mix is the measured Layer~B path in Figure~\ref{fig:pipeline}.
 Layer~C ranking---curiosity, soft similarity / diversity, and the Priority Buffer---is an
 operational selection stack for onboard downlink; it is not applied when forming the frozen
 image-level score.
 Conflating Layer~B image scores with Layer~C ranked target lists would misstate what the
 supplementary validation actually measured.
-Static equal-weight baselines remain available for protocol comparison but are not asserted
-here as superior without evidence.
-Figure~\ref{fig:cue-decomp} shows how that measured fixed-weight mix is assembled on the same
-non-test image as Figure~\ref{fig:qualitative}.
+Figure~\ref{fig:cue-decomp} shows how that frozen mix is assembled on the same non-test image
+as Figure~\ref{fig:qualitative}.
 Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
 Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
 image-relative discontinuity cue, not metric distance and not protrusion.
 Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
 gradient magnitude).
-Panel~(d) is the linear fused response after a soft proximity mix and \emph{before}
-operational false-positive suppression.
-Primary weights are reconstruction $0.50$, depth-edge $0.30$, and texture $0.20$; smaller
-depth-Laplacian ($0.08$) and fine-detail ($0.12$) terms also enter the mix and are named
-rather than shown as extra panels.
-These weights are the measured \texttt{independent\_eval\_v1\_1} default; entropy-weighted
-fusion remains the architectural specification and is not plotted here.
-The three primary cues are complementary: residual emphasizes unexplained appearance,
-depth-edge emphasizes geometric discontinuity, and texture emphasizes high-frequency structure.
-The classifier / known-value term is enabled in the frozen profile for detection scoring and
+Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
+The classifier / known-value term is enabled in the frozen profile for candidate scoring and
 curiosity, but it is not a term in the fused map.
 Display scaling in the figure is independent of inference percentile normalization and does
 not constitute a new quantitative experiment.
@@ -153,8 +169,8 @@ Suppression is policy-driven and auditable; it is not a claim of perfect distrac
 \includegraphics[width=\textwidth]{figures/fig_qualitative_artps.png}
 \caption{Qualitative ARTPS processing example from a deterministically selected non-test Mars
 image.
-Panels show the RGB input, an anomaly-related cue, monocular image-relative depth, and the
-valid-candidate localization produced by the frozen image-score path.
+Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
+depth, and the valid-candidate localization produced by the frozen image-score path.
 The depth visualization is relative and non-metric.
 The example is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:qualitative}
@@ -166,14 +182,47 @@ The example is illustrative and is not used as an additional quantitative benchm
 \caption{Cue decomposition of the frozen multi-cue score on the same non-test image as
 Figure~\ref{fig:qualitative}.
 Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
-fixed-weight fused response after proximity mixing and before operational masks.
+pre-suppression fused map after proximity mixing.
 Smaller depth-Laplacian and fine-detail terms also enter the mix but are not shown as
 separate panels.
-Display scaling is for visualization only.
+Each panel is independently min-max scaled for visualization; color intensities are therefore
+not numerically comparable across panels.
 The depth-derived cue is image-relative and non-metric.
 The figure is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:cue-decomp}
 \end{figure*}
+
+\subsection{Frozen candidate and image score}
+After localization and validity gates, each remaining candidate \(r\) receives a frozen score
+from pooled map responses and a classifier-derived known-value scalar.
+Let \(F_r\) be the pooled combined-map response, \(D_r\) the pooled relative-depth value,
+\(Q_r\) the proposal confidence, and \(K\) the image-global known-value scalar
+(\(\arg\max\) class index divided by four when the classifier is enabled; not a per-box
+classifier and not a claimed lithology label).
+Optional PaDiM and PatchCore score slots exist in the generic implementation; they are zero
+in the frozen \texttt{independent\_eval\_v1\_1} path because those maps are not supplied.
+The historical PaDiM/PatchCore baseline remains a separate evaluation track and is not a
+component of the current v1\_1 score.
+The frozen candidate equations are
+\[
+V_r=\mathrm{clip}(0.55\,K+0.25\,D_r+0.20\,F_r,0,1),
+\]
+\[
+\begin{aligned}
+A_r=\mathrm{clip}\bigl(&0.50\,F_r+0.20\,P^{\mathrm{PaDiM}}_r+0.15\,P^{\mathrm{PC}}_r\\
+&+0.10\,Q_r+0.05\,(1-D_r),0,1\bigr),
+\end{aligned}
+\]
+\[
+S_r=\mathrm{clip}\bigl(A_r\,(0.70+0.30\,V_r),0,1\bigr).
+\]
+The image score is
+\[
+S_{\mathrm{image}}=\max_{r\in R_{\mathrm{valid}}} S_r,
+\]
+or \(S_{\mathrm{image}}=0\) when no valid candidate remains.
+A slim recall-support pooling step may raise \(F_r\) for some proposal sources before these
+equations; no additional score formula is introduced.
 
 \subsection{Apparent size / image-relative size--distance policy}
 Given relative depth and image extent, ARTPS applies an image-relative size--distance policy
@@ -203,22 +252,23 @@ Default deployed weights emphasize known-value and anomaly terms.
 
 \subsection{Feature-space diversity}
 To avoid redundant near-duplicates in the priority list, ARTPS applies a soft similarity
-penalty in feature space.
+penalty in feature space to the fused candidate score \(S_r\).
 If \(s(r)\) is the maximum cosine similarity to already selected items and
 \(\lambda\in[0,1]\),
 \[
-C'(r)=C(r)\,(1-\lambda s(r)).
+S'_r=S_r\,(1-\lambda s(r)).
 \]
 Diversity improves coverage of distinct visual modes under limited downlink slots.
-% TODO(results): quantify diversity impact only after frozen independent evaluation.
 This ranking step is not applied when computing the frozen image-level score.
 
 \subsection{Priority Buffer}
-Aggressive diversity or suppression can discard rare but scientifically interesting peaks.
+Aggressive diversity down-weighting can deprioritize rare but potentially valuable candidates.
 The Priority Buffer retains high-anomaly candidates that lose the diversity contest:
 \[
-r\in\mathcal{B}\iff C(r)>\tau_{\mathrm{high}}\ \mathrm{and}\ \bigl(C(r)-C'(r)\bigr)>\tau_\Delta.
+r\in\mathcal{B}\iff S_r>\tau_{\mathrm{high}}\ \mathrm{and}\ \bigl(S_r-S'_r\bigr)>\tau_\Delta.
 \]
+Only candidates that remain valid after operational masks enter this buffer; the buffer does
+not recover mask-invalidated regions.
 The buffer is a recovery mechanism for second-chance re-evaluation, not a guarantee that
 every rare target is recovered, and it is not part of the frozen image-level score.
 

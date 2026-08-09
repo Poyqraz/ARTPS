@@ -14,15 +14,15 @@ the Priority Buffer keeps high-anomaly candidates that the similarity penalty wo
 drop irreversibly.
 These ranking mechanisms are specified for onboard selection; they are not part of the
 frozen supplementary validation scores.
-Figure~\ref{fig:qualitative} therefore shows Layer~B products (cue, relative depth, valid
-candidates) rather than a Priority-Buffer or diversity-ranked target list.
+Figure~\ref{fig:qualitative} therefore shows Layer~B products (post-suppression combined map,
+relative depth, valid candidates) rather than a Priority-Buffer or diversity-ranked target list.
 Figure~\ref{fig:cue-decomp} decomposes that same frozen Layer~B path into the three primary
 cues and the pre-suppression fused map; it does not introduce a new metric.
 The example is score-blind in selection and illustrative in purpose: a high local cue or a
 near-field blob does not by itself become a science target, and a single non-test frame
 cannot stand in for a detection benchmark.
-Read left to right, the panels separate appearance, an anomaly-related response, image-relative
-depth, and the candidates that remain after operational masks.
+Read left to right, the panels separate appearance, the post-suppression combined map,
+image-relative depth, and the candidates that remain after operational masks.
 A box on the overlay is a valid localization hypothesis under the frozen image-score path,
 not a measured curiosity rank and not a claim that the region is scientifically confirmed.
 
@@ -30,7 +30,7 @@ not a measured curiosity rank and not a claim that the region is scientifically 
 % Avoid ``outperforms'' / ``demonstrate'' language until evidence gates allow.
 
 The entropy-weighted fusion rule remains the architectural specification; the current frozen
-evaluation uses fixed-weight multi-cue fusion.
+evaluation uses fixed-coefficient multi-cue fusion.
 Table~\ref{tab:eval-tracks} summarizes the historical versus supplementary evaluation tracks.
 The initial \texttt{independent\_eval\_v1} binary labels were produced by a classical-image
 heuristic with forced $180/180$ class balance.
@@ -49,7 +49,6 @@ evaluation.
 This label-audit finding is confined to the supplementary validation benchmark; it
 does not imply that the historical accepted-abstract ARTPS experiment suffered the same
 issue.
-Proxy analyses remain secondary and must not migrate into abstract headlines.
 
-Hardware timing (including planned Jetson profiles) is engineering measurement, not
-certification evidence.
+The reported $28.1$\,FPS value is a lightweight-core workstation measurement and is not a
+full neural-pipeline edge-hardware or flight-qualification result.

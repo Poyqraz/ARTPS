@@ -16,14 +16,13 @@ The present human-reviewed validation subset contains only eight negative
 examples, making operating-threshold calibration unstable.
 The frozen image-level score does not include curiosity ranking, diversity
 penalty, or the Priority Buffer.
-Frozen checkpoint training provenance is unverified relative to this dataset.
-No final test was opened and no embedded/Jetson result is added here.
-
-Proxy analyses are preliminary and non-headline; they do not replace human-annotated
-localization benchmarks where those are required.
+The training-set lineage of the frozen checkpoints was not independently reconstructed
+against the supplementary evaluation corpus; the validation is therefore not presented as a
+formally leakage-audited external test.
+No final test was opened and no embedded/Jetson or full-pipeline timing result is added here.
 
 ARTPS is a safety-aware, flight-readiness-oriented software architecture.
 It is not flight-qualified avionics, not mission-certified, and does not assert
 universal safety guarantees.
 Operational envelopes, independent V\&V, and mission-specific safety evidence remain
-out of scope for this manuscript draft.
+out of scope.

@@ -1,6 +1,6 @@
 \section{Experimental Protocol}
 \label{sec:protocol}
-This section distinguishes two evaluation tracks that must not be conflated
+This section distinguishes two evaluation tracks that are not directly interchangeable
 (Table~\ref{tab:eval-tracks}).
 A qualitative processing example (Figure~\ref{fig:qualitative}) illustrates the frozen
 image-score path only; it is not a third quantitative track.
@@ -23,7 +23,7 @@ Purpose & Accepted-IAC historical experiment
 Evaluation status & Retained historical evaluation; not reconstructed in this repository snapshot
   & Validation only; does not replace the historical result \\
 Image-score / system scope & Full historical result lineage; not claimed as the current frozen implementation run
-  & Fixed-weight frozen image-score path; curiosity, diversity, and Priority Buffer not applied \\
+  & Fixed-coefficient frozen image-score path; curiosity, diversity, and Priority Buffer not applied \\
 Test status & No new final-test opening in this manuscript
   & Held-out test unopened; no final-test metric \\
 Reported evidence & AUROC~$0.894$ / AUPRC~$0.847$ / F1~$0.823$; baseline AUROC~$0.856$
@@ -58,39 +58,43 @@ no ARTPS inference).
 Scores were remapped onto the reviewed labels with no tuning and no inference rerun.
 This is not an independent second annotation.
 
-\subsection{Annotation and dataset plan}
-Annotation follows the independent-evaluation annotation guide: operational target labels,
-mask validity, and refusal to proceed when label ratios or frozen splits are incomplete.
-Dataset construction uses declared train/val/test planning language; this draft does not
-state unverified image counts.
+\subsection{Dataset and annotation semantics}
+One homogeneous Curiosity Mastcam-oriented image domain was selected from inventory metadata
+without model-score inspection.
+The frozen supplementary benchmark comprises $360$ included images with fixed split
+assignments of $252$ train / $54$ validation / $54$ test.
+All $360$ images received a repeat-author model-blind review; this is not independent double
+annotation.
+Test images could be viewed for annotation, but no ARTPS inference was performed on the
+held-out test split.
+A positive label denotes at least one real surface object or region that is visually distinct
+from its surroundings and scientifically worth follow-up under the annotation guide.
+A negative label denotes no distinct science-interest target under that guide.
+Rover hardware, border artefacts, telemetry overlays, compression or noise artefacts, a
+shadow boundary alone, or an exposure/specular artefact alone do not count as positive.
+These labels are not claimed to be equivalent to the historical accepted-abstract ground truth.
 
-\subsection{Baselines}
-Planned baselines include PaDiM- and PatchCore-style anomaly
-detectors~\citep{defard2020padim,roth2022patchcore}, evaluated separately from ARTPS fusion
-and operational modules.
-Baseline comparison tables appear only after \texttt{independent\_eval\_v1} metrics exist.
+\subsection{Baseline scope}
+The PaDiM/PatchCore baseline AUROC~$0.856$ belongs to the historical accepted-IAC track~\citep{defard2020padim,roth2022patchcore}.
+No current-protocol PaDiM/PatchCore comparison is claimed for \texttt{independent\_eval\_v1\_1}.
+PaDiM and PatchCore remain separate baselines and are not active components of the current
+frozen score.
 
-\subsection{Metrics and statistics}
-Named metrics for the current protocol include AUROC, AUPRC, F1, and throughput (FPS) where
-profiles request them.
+\subsection{Metrics}
+Historical reported metrics are AUROC, AUPRC, F1, the historical baseline AUROC, and
+lightweight-core FPS.
 For the supplementary \texttt{independent\_eval\_v1\_1} validation, AUROC is the principal
-reported metric and threshold-dependent F1 is not treated as a performance measure.
-Bootstrap confidence intervals are \emph{planned} once frozen metrics exist; this draft does
-not invent interval values.
-% TODO(results): fill bootstrap CIs after independent\_eval\_v1 run artifacts.
+ranking-oriented metric and AP is a secondary metric reported with prevalence context.
+Threshold-dependent F1 is not treated as a performance measure on that track.
 
 \subsection{Reproducibility and evaluation integrity}
-Evaluation is aborted when required inputs or frozen protocol conditions are incomplete.
-Version-controlled protocol definitions alone are not a substitute for a completed run.
+The evaluation uses the frozen configuration, checkpoint hashes, and image-score definition
+stated above.
+There was no test inference, no test metric, and no threshold retuning on held-out images.
+Runs are aborted when required inputs or frozen protocol conditions are incomplete.
 
-\subsection{Hardware profiles}
-Workstation timing profiles and a Jetson / edge-hardware protocol are defined at the planning
-level.
-No Jetson numbers are reported in this draft.
-Hardware measurements are not flight hardware and do not constitute flight certification.
-
-\subsection{Proxy analyses (non-headline)}
-Preliminary proxy analyses for shadow/FP gates and size--distance policy use curated labels,
-masks, and OFF-run pseudo-ground-truth.
-They are not human bounding-box ground truth and are excluded from abstract headlines and
-from primary Results tables in this draft.
+\subsection{Hardware scope}
+The reported $28.1$\,FPS value is a historical lightweight-core workstation measurement; it
+excludes learned DPT and autoencoder inference.
+The present study does not report full-pipeline edge-hardware or Jetson timing.
+No flight qualification is claimed.

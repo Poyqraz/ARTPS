@@ -11,7 +11,7 @@
   "score_based_cherry_picking": false,
   "quantitative_experiment": false,
   "classifier_in_fused_map": false,
-  "git_sha_at_generation": "00802c926c05c722ee2bca378082adcfd26fc13b",
+  "git_sha_at_generation": "e1607508375ac841b68252e548c7adf7440e81bd",
   "config_yaml": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
   "config_id": "artps_full_frozen_mars_clf_on_v1",
   "preprocessing_profile": "mars_enhancement_v1",

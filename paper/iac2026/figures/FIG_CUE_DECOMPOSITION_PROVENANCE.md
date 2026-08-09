@@ -12,7 +12,7 @@ Source selection is inherited from Fig. 2; no new sample was chosen.
 | 5 | Split | `train` (not test) |
 | 6 | Source selection inherited from Fig. 2 | **YES** (`fig_qualitative_artps.meta.json`; generator does not call `select_sample()`) |
 | 7 | New sample selection | **NO** |
-| 8 | Repository commit at generation | `00802c926c05c722ee2bca378082adcfd26fc13b` (`origin/main` @ PR #38) |
+| 8 | Repository commit at generation | `e1607508375ac841b68252e548c7adf7440e81bd` (`main` @ PR #39); panel (d) relabel only |
 | 9 | Checkpoints | AE `results/optimized_autoencoder_curiosity_extended.pth` `8186bbe6be424dd212d5d4a93b1ae36b80939552519706b4a8680c5d05e995f2`; DPT_Large `raw_models/dpt_large_384.pt` `2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69`; classifier `results/depth_enhanced_classifier.pth` `83f6c63eeef6ede9ce7e2fed47acf0d594ec1f957684ae357f23a6f0dd491457` |
 | 10 | Inference profile / config | `artps_full_frozen_mars_clf_on_v1` (`reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml`) |
 | 11 | Preprocessing | `mars_enhancement_v1`, Real-ESRGAN off |
@@ -24,6 +24,6 @@ Source selection is inherited from Fig. 2; no new sample was chosen.
 | 17 | Quantitative experiment | **NO** |
 | 18 | Classifier in fused map | **NO** (classifier ON in config for scoring / curiosity; not a `combined_map` term) |
 
-Additional: score-based cherry-picking **NO**; Priority Buffer / curiosity / diversity **not** applied; panel (b) is relative-depth **edge** (Sobel magnitude), not protrusion; panel (d) is `raw_combined` after proximity mix and **before** FP suppression; cue arrays come from `compute_combined_anomaly_map` diagnostics (`recon_diff_n`, `depth_edge_n`, `texture_term`, `raw_combined_pre_mask`).
+Additional: score-based cherry-picking **NO**; Priority Buffer / curiosity / diversity **not** applied; panel (b) is relative-depth **edge** (Sobel magnitude), not protrusion; panel (d) is `raw_combined_pre_mask` after proximity mix and **before** FP suppression (display title: pre-suppression fused map); cue arrays come from `compute_combined_anomaly_map` diagnostics (`recon_diff_n`, `depth_edge_n`, `texture_term`, `raw_combined_pre_mask`). Display min–max is per panel and not numerically comparable across panels.
 
 Machine-readable copy: `fig_cue_decomposition_artps.meta.json`.

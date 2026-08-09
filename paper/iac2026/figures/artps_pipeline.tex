@@ -1,6 +1,7 @@
 % Code-faithful ARTPS Fig.~1 (no performance numbers).
 % Layer B = frozen eval image score; Layer C = UI ranking (not in v1_1 scores).
 % Entropy-weighted fusion is specified, not the frozen default.
+% Classifier feeds candidate scoring, not map fusion.
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
   font=\scriptsize,
@@ -9,56 +10,61 @@
     draw,
     rounded corners=1.2pt,
     align=center,
-    inner xsep=3.0pt,
-    inner ysep=2.2pt,
-    minimum height=6.8mm,
+    inner xsep=2.4pt,
+    inner ysep=1.8pt,
+    minimum height=6.4mm,
   },
   arr/.style={-{Latex}, thick},
   darr/.style={-{Latex}, thick, dashed},
 ]
 % --- A. Perception / cue generation ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.20,6.10)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.15,6.35)
   {A.\ Perception / cue generation};
-\node[bx] (rgb) at (0.00,5.35) {RGB input};
-\node[bx] (enh) at (2.50,5.35) {Optional\\enhancement};
-\node[bx] (ae)  at (5.15,5.35) {AE recon.\\cue};
-\node[bx] (dpt) at (7.65,5.35) {DPT Large\\rel.\ depth};
-\node[bx] (tex) at (10.15,5.35) {RGB / texture\\cues};
-\node[bx] (clf) at (12.75,5.35) {Optional\\classifier};
+\node[bx] (rgb) at (0.00,5.50) {RGB input};
+\node[bx] (enh) at (2.35,5.50) {Optional\\enhancement};
+\node[bx] (ae)  at (5.00,5.50) {AE recon.\\/ latent};
+\node[bx] (dpt) at (7.50,5.50) {DPT Large\\rel.\ depth};
+\node[bx] (tex) at (10.05,5.50) {RGB / texture\\cues};
+\node[bx] (clf) at (12.70,5.50) {Optional\\classifier};
 \draw[arr] (rgb) -- (enh);
 \draw[arr] (enh) -- (ae);
-\draw[arr] (enh.east) -- ++(0.18,0) |- (dpt.west);
-\draw[arr] (enh.east) -- ++(0.18,0) |- (tex.west);
-\draw[arr] (enh.east) -- ++(0.18,0) |- (clf.west);
+\draw[arr] (enh.east) -- ++(0.16,0) |- (dpt.west);
+\draw[arr] (enh.east) -- ++(0.16,0) |- (tex.west);
+\draw[arr] (enh.east) -- ++(0.16,0) |- (clf.west);
 
 % --- B. Frozen image-score path ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.20,4.55)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.15,4.65)
   {B.\ Frozen image-score path};
-\node[bx] (norm)  at (0.15,2.70) {Cue\\normalization};
-\node[bx] (fuse)  at (2.85,2.70) {Fixed-weight\\fusion};
-\node[bx] (ent)   at (2.85,3.95) {Entropy-weighted\\fusion (specified)};
-\node[bx] (loc)   at (5.55,2.70) {Localization};
-\node[bx] (masks) at (8.20,2.70) {Operational\\masks};
-\node[bx] (valid) at (10.95,2.70) {Valid\\candidates};
+\node[bx] (norm) at (0.00,3.55) {Cue\\normalization};
+\node[bx] (fuse) at (2.45,3.55) {Fixed-coefficient\\fusion};
+\node[bx] (ent)  at (2.45,4.55) {Entropy-weighted\\fusion (specified)};
+\node[bx] (prox) at (5.15,3.55) {Proximity\\modulation};
+\node[bx] (sup)  at (7.65,3.55) {Map\\suppression};
+\node[bx] (loc)  at (10.05,3.55) {Localization\\/ proposals};
+\node[bx] (csc)  at (12.70,3.55) {Candidate scoring\\+ validity gates};
 \draw[arr] (norm) -- (fuse);
 \draw[darr] (fuse.north) -- (ent.south);
-\draw[arr] (fuse) -- (loc);
-\draw[arr] (loc) -- (masks);
-\draw[arr] (masks) -- (valid);
+\draw[arr] (fuse) -- (prox);
+\draw[arr] (prox) -- (sup);
+\draw[arr] (sup) -- (loc);
+\draw[arr] (loc) -- (csc);
+\draw[arr] (clf.south) -- ++(0,-0.55) -| (csc.north);
 
-\node[bx] (score) at (2.20,0.55) {Frozen eval.\\image score};
-\node[anchor=north, font=\scriptsize, align=center] (scorelab) at ([yshift=-1pt]score.south)
+\node[bx] (valid) at (10.05,2.20) {Valid\\candidates};
+\node[bx] (score) at (12.70,2.20) {Frozen eval.\\image score};
+\node[anchor=north, font=\scriptsize, align=center] at ([yshift=-1pt]score.south)
   {\texttt{max\_valid\_candidate\_after\_masks}};
-\draw[arr] (valid.south) -- ++(0,-0.40) -| (score.north);
+\draw[arr] (csc.south) -- ++(0,-0.22) -| (valid.north);
+\draw[arr] (valid) -- (score);
 
 % --- C. Operational ranking (not in frozen v1_1 image-score eval) ---
-\node[anchor=west, font=\scriptsize\bfseries, align=left] at (5.15,1.45)
+\node[anchor=west, font=\scriptsize\bfseries, align=left] at (-0.15,1.35)
   {C.\ Operational ranking (not in frozen v1\_1 image-score eval)};
-\node[bx] (cr)   at (6.15,0.55) {Curiosity $C(r)$};
-\node[bx] (sim)  at (8.55,0.55) {Soft similarity\\/ diversity};
-\node[bx] (clus) at (11.05,0.55) {Feature-space\\clustering};
-\node[bx] (buf)  at (13.55,0.55) {Priority Buffer\\/ Top-$K$};
-\draw[arr] (valid.south) -- ++(0,-0.40) -| (cr.north);
+\node[bx] (cr)   at (0.90,0.45) {Curiosity $C(r)$};
+\node[bx] (sim)  at (4.20,0.45) {Soft similarity\\/ diversity};
+\node[bx] (clus) at (7.65,0.45) {Feature-space\\clustering};
+\node[bx] (buf)  at (11.20,0.45) {Priority Buffer\\/ Top-$K$};
+\draw[arr] (valid.south) -- ++(0,-0.35) -| (cr.north);
 \draw[arr] (cr) -- (sim);
 \draw[arr] (sim) -- (clus);
 \draw[arr] (clus) -- (buf);
