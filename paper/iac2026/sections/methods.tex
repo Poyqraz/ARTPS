@@ -172,10 +172,10 @@ inference from an author-provided RGB candidate pool on the basis of scene struc
 domain suitability.
 Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
 depth, and the candidate-support overlay produced by the frozen image-score path.
-Corner brackets denote the candidate ROI, while available contours indicate the
-anomaly/proposal support associated with the valid candidate; support contours are shown
-where proposal geometry is available and are visualization aids, not pixel-level
-ground-truth segmentations.
+Corner brackets denote the approximate candidate ROI.
+Where proposal support geometry is available, the translucent footprint indicates the
+image-region evidence associated with the candidate; it is not a pixel-level
+segmentation or ground-truth object boundary.
 The depth visualization is relative and non-metric.
 The example is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:qualitative}

@@ -1,15 +1,16 @@
-"""Visualization-only candidate-support overlay (ROI brackets + proposal CC + anchor)."""
+"""Visualization-only candidate-support overlay (ROI brackets + footprint + anchor)."""
 from __future__ import annotations
 
 import cv2
 import numpy as np
 
 BRACKET_COLOR = (0, 200, 80)
-CONTOUR_COLOR = (40, 190, 220)
-POLY_COLOR = (80, 170, 200)
+FOOTPRINT_COLOR = (72, 138, 148)
+FOOTPRINT_ALPHA = 0.14
 ANCHOR_FILL = (255, 255, 255)
-ANCHOR_EDGE = (25, 25, 25)
+ANCHOR_EDGE = (20, 20, 20)
 LABEL_MAX = 3
+OVERLAY_VISUALIZATION_VERSION = "candidate_support_v2"
 
 
 def overlay_geometry_counts(detections: list[dict]) -> dict[str, int]:
@@ -65,6 +66,27 @@ def _draw_open_corners(
     cv2.line(img, (x2, y2), (x2, y2 - length), color, thickness, cv2.LINE_AA)
 
 
+def _scaled_pts(raw, sx: float, sy: float) -> np.ndarray:
+    pts = np.asarray(raw, dtype=np.float32).reshape(-1, 2)
+    pts[:, 0] *= sx
+    pts[:, 1] *= sy
+    return np.round(pts).astype(np.int32)
+
+
+def _blend_footprint(img: np.ndarray, pts: np.ndarray) -> None:
+    if pts.shape[0] < 3:
+        return
+    mask = np.zeros(img.shape[:2], np.uint8)
+    cv2.fillPoly(mask, [pts], 1)
+    if int(mask.sum()) == 0:
+        return
+    tint = np.asarray(FOOTPRINT_COLOR, dtype=np.float32)
+    region = img[mask > 0].astype(np.float32)
+    img[mask > 0] = np.clip(
+        region * (1.0 - FOOTPRINT_ALPHA) + tint * FOOTPRINT_ALPHA, 0, 255
+    ).astype(np.uint8)
+
+
 def _anchor_map_xy(det: dict, combined_map: np.ndarray) -> tuple[int, int]:
     h, w = combined_map.shape[:2]
     x = int(det["x"])
@@ -104,25 +126,23 @@ def draw_candidate_support_overlay(
     sx = w / float(mw)
     sy = h / float(mh)
     n = len(detections)
-    for i, det in enumerate(detections):
+    scaled: list[tuple[dict, int, int, int, int]] = []
+    for det in detections:
         x1 = int(round(float(det["x"]) * sx))
         y1 = int(round(float(det["y"]) * sy))
         x2 = int(round((float(det["x"]) + float(det["w"])) * sx))
         y2 = int(round((float(det["y"]) + float(det["h"])) * sy))
-        _draw_open_corners(out, x1, y1, x2, y2, BRACKET_COLOR, thickness=2)
+        scaled.append((det, x1, y1, x2, y2))
+    for det, _x1, _y1, _x2, _y2 in scaled:
         if det.get("support_geometry") == "cc" and det.get("support_contour"):
-            pts = np.asarray(det["support_contour"], dtype=np.float32).reshape(-1, 2)
-            pts[:, 0] *= sx
-            pts[:, 1] *= sy
-            cv2.polylines(out, [np.round(pts).astype(np.int32)], True, CONTOUR_COLOR, 1, cv2.LINE_AA)
+            _blend_footprint(out, _scaled_pts(det["support_contour"], sx, sy))
         elif det.get("poly"):
-            pts = np.asarray(det["poly"], dtype=np.float32).reshape(-1, 2)
-            pts[:, 0] *= sx
-            pts[:, 1] *= sy
-            cv2.polylines(out, [np.round(pts).astype(np.int32)], True, POLY_COLOR, 1, cv2.LINE_AA)
+            _blend_footprint(out, _scaled_pts(det["poly"], sx, sy))
+    for i, (det, x1, y1, x2, y2) in enumerate(scaled):
+        _draw_open_corners(out, x1, y1, x2, y2, BRACKET_COLOR, thickness=2)
         ax, ay = _anchor_map_xy(det, combined_map)
         px, py = int(round(ax * sx)), int(round(ay * sy))
-        cv2.circle(out, (px, py), 3, ANCHOR_EDGE, -1, cv2.LINE_AA)
+        cv2.circle(out, (px, py), 4, ANCHOR_EDGE, -1, cv2.LINE_AA)
         cv2.circle(out, (px, py), 2, ANCHOR_FILL, -1, cv2.LINE_AA)
         if n <= LABEL_MAX:
             cv2.putText(

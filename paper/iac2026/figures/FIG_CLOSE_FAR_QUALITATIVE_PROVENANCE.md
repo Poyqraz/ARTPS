@@ -19,11 +19,11 @@ Illustration only. Not a quantitative experiment, not a near/far benchmark, and 
 | 13 | Agent-selected outside pool | **NO** |
 | 14 | Quantitative experiment | **NO** |
 | 15 | Qualitative selection rationale | Close 1 + Far 2: Curiosity Mastcam pair with readable post-suppression combined maps and candidate-support overlays. Close 2 rejected: Perseverance MCZ domain mismatch vs manuscript Curiosity-Mastcam framing; overlay misses the two most salient near rocks. Far 1 rejected: valid overlay includes a full-width top-edge frame artefact. Far 3 rejected: rover hardware still dominates RGB; map is sparser than Far 2; not cleaner than Far 1/2. Selection was visual, not score-maximization. |
-| 16 | Overlay visualization | `candidate_support_v1`; `visualization_only=true`; scores/validity/image score unchanged |
-| 17 | `support_geometry_source` | proposal hysteresis/CC contour persisted as visualization-only metadata; no new map threshold |
+| 16 | Overlay visualization | `candidate_support_v2`; `visualization_only=true`; scores/validity/image score unchanged |
+| 17 | `support_geometry_source` | proposal hysteresis/CC contour persisted as visualization-only metadata; drawn as low-alpha footprint, not a polyline silhouette; no new map threshold |
 | 18 | `anchor_definition` | argmax of post-suppression `combined_map` inside support contour, else ROI; `peak_xy` if present |
 | 19 | `fallback_behavior` | open-corner ROI + anchor when no proposal CC survives |
 
-Additional: panel (b)/(e) = returned `combined_map` (post-suppression/refinement), same semantics as Fig.~2(b); overlay = candidate-support visualization of `_score_object_detections` kept candidates (not pixel-level GT segmentation); close `n_support_contour=6` / far `n_support_contour=5` (0 oriented-poly, 0 bracket fallback); Priority Buffer / curiosity / diversity **not** applied; close file SHA256 `4b09d26fdc90e154c661720397277d215e0646a4238893bf46aa5dc278d5d88c`; far file SHA256 `1732bef60212e10724fb6005d5edfe87fff9000b6f08297d7ce971de2a549f8d`.
+Additional: panel (b)/(e) = returned `combined_map` (post-suppression/refinement), same semantics as Fig.~2(b); overlay = candidate-support footprint visualization of `_score_object_detections` kept candidates (not pixel-level GT segmentation); close `n_support_contour=6` / far `n_support_contour=5` (0 oriented-poly, 0 bracket fallback); Priority Buffer / curiosity / diversity **not** applied; close file SHA256 `4b09d26fdc90e154c661720397277d215e0646a4238893bf46aa5dc278d5d88c`; far file SHA256 `1732bef60212e10724fb6005d5edfe87fff9000b6f08297d7ce971de2a549f8d`.
 
 Machine-readable copy: `fig_close_far_qualitative_artps.meta.json`.

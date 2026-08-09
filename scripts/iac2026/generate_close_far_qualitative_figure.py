@@ -40,6 +40,7 @@ from src.artps_inference import (  # noqa: E402
     load_frozen_artps_profile,
 )
 from _candidate_support_overlay import (  # noqa: E402
+    OVERLAY_VISUALIZATION_VERSION,
     candidate_xywh_scores,
     draw_candidate_support_overlay,
     overlay_geometry_counts,
@@ -383,10 +384,10 @@ def generate_figure() -> int:
             "candidates": far_out["candidates"],
             **far_out["overlay_geometry"],
         },
-        "overlay_visualization_version": "candidate_support_v1",
+        "overlay_visualization_version": OVERLAY_VISUALIZATION_VERSION,
         "support_geometry_source": (
             "proposal hysteresis/CC contour persisted as visualization-only metadata; "
-            "no new map threshold"
+            "drawn as low-alpha footprint, not a polyline silhouette; no new map threshold"
         ),
         "anchor_definition": (
             "argmax of post-suppression combined_map inside support contour, else ROI; "

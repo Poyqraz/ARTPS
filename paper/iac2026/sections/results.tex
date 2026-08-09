@@ -87,8 +87,10 @@ opens the test split, or adds an AUROC, AUPRC, F1, or throughput number.
 close-range scene and one distant-scene selected from an author-provided candidate pool.
 For each scene, the figure shows the RGB input, the post-suppression combined map, and the
 candidate-support overlay.
-Corner brackets denote the candidate ROI; support contours are shown where proposal geometry
-is available and are visualization aids, not pixel-level ground-truth segmentations.
+Corner brackets denote the approximate candidate ROI.
+Where proposal support geometry is available, the translucent footprint indicates the
+image-region evidence associated with the candidate; it is not a pixel-level
+segmentation or ground-truth object boundary.
 These examples are illustrative only and are not presented as an additional quantitative
 benchmark or a controlled range-conditioned performance study.}
 \label{fig:close-far}
