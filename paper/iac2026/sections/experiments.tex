@@ -50,31 +50,6 @@ Rover hardware, border artefacts, telemetry overlays, compression or noise artef
 shadow boundary alone, or an exposure/specular artefact alone do not count as positive.
 These labels are not claimed to be equivalent to the historical accepted-abstract ground truth.
 
-\subsection{Baseline scope}
-The PaDiM/PatchCore baseline AUROC~$0.856$ belongs to the historical accepted-IAC track~\citep{defard2020padim,roth2022patchcore}.
-No current-protocol PaDiM/PatchCore comparison is claimed for \texttt{independent\_eval\_v1\_1}.
-PaDiM and PatchCore remain separate baselines and are not active components of the current
-frozen score.
-
-\subsection{Metrics}
-Historical reported metrics are AUROC, AUPRC, F1, the historical baseline AUROC, and
-lightweight-core FPS.
-For the supplementary \texttt{independent\_eval\_v1\_1} validation, AUROC is the principal
-ranking-oriented metric and AP is a secondary metric reported with prevalence context.
-Threshold-dependent F1 is not treated as a performance measure on that track.
-
-\subsection{Reproducibility and evaluation integrity}
-The evaluation uses the frozen configuration, checkpoint hashes, and image-score definition
-stated above.
-There was no test inference, no test metric, and no threshold retuning on held-out images.
-Runs are aborted when required inputs or frozen protocol conditions are incomplete.
-
-\subsection{Hardware scope}
-The reported $28.1$\,FPS value is a historical lightweight-core workstation measurement; it
-excludes learned DPT and autoencoder inference.
-The present study does not report full-pipeline edge-hardware or Jetson timing.
-No flight qualification is claimed.
-
 \FloatBarrier
 \begin{table*}[t]
 \centering
@@ -102,4 +77,28 @@ Reported evidence & AUROC~$0.894$ / AUPRC~$0.847$ / F1~$0.823$; baseline AUROC~$
 \bottomrule
 \end{tabularx}
 \end{table*}
-\FloatBarrier
+
+\subsection{Baseline scope}
+The PaDiM/PatchCore baseline AUROC~$0.856$ belongs to the historical accepted-IAC track~\citep{defard2020padim,roth2022patchcore}.
+No current-protocol PaDiM/PatchCore comparison is claimed for \texttt{independent\_eval\_v1\_1}.
+PaDiM and PatchCore remain separate baselines and are not active components of the current
+frozen score.
+
+\subsection{Metrics}
+Historical reported metrics are AUROC, AUPRC, F1, the historical baseline AUROC, and
+lightweight-core FPS.
+For the supplementary \texttt{independent\_eval\_v1\_1} validation, AUROC is the principal
+ranking-oriented metric and AP is a secondary metric reported with prevalence context.
+Threshold-dependent F1 is not treated as a performance measure on that track.
+
+\subsection{Reproducibility and evaluation integrity}
+The evaluation uses the frozen configuration, checkpoint hashes, and image-score definition
+stated above.
+There was no test inference, no test metric, and no threshold retuning on held-out images.
+Runs are aborted when required inputs or frozen protocol conditions are incomplete.
+
+\subsection{Hardware scope}
+The reported $28.1$\,FPS value is a historical lightweight-core workstation measurement; it
+excludes learned DPT and autoencoder inference.
+The present study does not report full-pipeline edge-hardware or Jetson timing.
+No flight qualification is claimed.

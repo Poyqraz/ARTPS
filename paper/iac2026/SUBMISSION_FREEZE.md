@@ -24,6 +24,8 @@
 
 `final_float_flow_complete: true`
 
+`balanced_float_flow_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -224,3 +226,12 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Science unchanged (historical 0.894/0.847/0.823/0.856/28.1; supp 0.772/0.956; `test_opened: false`)
 - Pages: 14; PDF bytes: 3,447,968; US Letter; overfull `\hbox`: 0
 - Float pages (after): Fig.~1 early Methods; Fig.~2 after 3.3; Fig.~3 after 3.4; Table~1 end Sec.~4 / before Results; Fig.~4 before Discussion
+
+## Balanced float-flow repair
+
+- `balanced_float_flow_complete: true`
+- Supersedes PR #49 repeated post-`figure*` `\FloatBarrier` chain (sparse-page regression on pages 4/6/10 of the 14-page build)
+- Restore PR #48-like float scheduling: no post-Fig.~1–4 barriers; Table~1 after Dataset (4.4); section-level barriers only before Results and Discussion when render-safe
+- Targeted `\Needspace{2--3\baselineskip}` at short closers; AI declaration `\Needspace{8\baselineskip}` retained
+- Geometry lock unchanged; science/metrics/PNG unchanged; `test_opened: false`
+- Pages: 11; PDF bytes: 3,446,054; US Letter; overfull `\hbox`: 0; no EMPTY_OR_NEAR_EMPTY / HALF_COLUMN_STRANDED interior pages

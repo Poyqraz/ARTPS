@@ -18,7 +18,6 @@ Layer~C is the operational ranking stack (curiosity, soft similarity / diversity
 Priority Buffer / Top-$K$) and is not included in frozen v1\_1 image-score evaluation.}
 \label{fig:pipeline}
 \end{figure*}
-\FloatBarrier
 
 \subsection{System overview}
 ARTPS ingests a single RGB field image and produces a ranked list of candidate targets, or an
@@ -65,10 +64,10 @@ Depth values are used as relative ordering cues, not as metric metres, absolute 
 or calibrated stereo geometry.
 The same image can be ordered from nearer to farther surfaces, but those values are not
 transferable across images as a common metric scale.
+\Needspace{3\baselineskip}
 Accordingly, no metric-depth claim is made in the present study.
 Depth supports apparent size--distance policy and spatial structuring of candidates, and it
 feeds the depth-edge cue used in frozen multi-cue fusion.
-Fig.~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
 
 \begin{figure*}[!t]
 \centering
@@ -86,7 +85,8 @@ The depth visualization is relative and non-metric.
 The example is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:qualitative}
 \end{figure*}
-\FloatBarrier
+
+Fig.~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
 
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
@@ -131,18 +131,6 @@ operational selection stack for onboard downlink; it is not applied when forming
 image-level score.
 Conflating Layer~B image scores with Layer~C ranked target lists would misstate what the
 supplementary validation actually measured.
-Fig.~\ref{fig:cue-decomp} shows how that frozen mix is assembled on the same non-test image
-as Fig.~\ref{fig:qualitative}.
-Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
-Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
-image-relative discontinuity cue, not metric distance and not protrusion.
-Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
-gradient magnitude).
-Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
-The classifier / known-value term is enabled in the frozen profile for candidate scoring and
-curiosity, but it is not a term in the fused map.
-Display scaling in the figure is independent of inference percentile normalization and does
-not constitute a new quantitative experiment.
 
 \begin{figure*}[!t]
 \centering
@@ -159,7 +147,20 @@ The depth-derived cue is image-relative and non-metric.
 The figure is illustrative and is not used as an additional quantitative benchmark.}
 \label{fig:cue-decomp}
 \end{figure*}
-\FloatBarrier
+
+Fig.~\ref{fig:cue-decomp} shows how that frozen mix is assembled on the same non-test image
+as Fig.~\ref{fig:qualitative}.
+Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
+Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
+image-relative discontinuity cue, not metric distance and not protrusion.
+Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
+gradient magnitude).
+Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
+The classifier / known-value term is enabled in the frozen profile for candidate scoring and
+curiosity, but it is not a term in the fused map.
+\Needspace{2\baselineskip}
+Display scaling in the figure is independent of inference percentile normalization and does
+not constitute a new quantitative experiment.
 
 \subsection{Candidate localization}
 Fused anomaly responses are converted into discrete candidate regions via localization

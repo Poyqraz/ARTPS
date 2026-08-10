@@ -77,19 +77,27 @@ def test_iac2026_template_conformance_formatting():
     assert r"\Needspace{8\baselineskip}" in decl_src
     assert decl_src.find(r"\Needspace") < decl_src.find(r"\section*{Declaration")
     freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
-    assert "final_float_flow_complete: true" in freeze_md
+    assert "balanced_float_flow_complete: true" in freeze_md
+    # No aggressive post-figure* FloatBarrier chain (PR #49 regression).
     for label in ("fig:pipeline", "fig:qualitative", "fig:cue-decomp"):
         i = methods.find(rf"\label{{{label}}}")
         assert i > 0
-        assert r"\FloatBarrier" in methods[i : i + 120]
+        chunk = methods[i : i + 80]
+        assert r"\end{figure*}" in chunk
+        assert r"\FloatBarrier" not in methods[i : i + 80]
     i4 = results.find(r"\label{fig:close-far}")
     assert i4 > 0
-    assert r"\FloatBarrier" in results[i4 : i4 + 120]
-    assert results.lstrip().startswith(r"\FloatBarrier")
-    assert exp.rfind(r"\subsection{Hardware scope}") < exp.rfind(r"\label{tab:eval-tracks}")
-    end_tab = exp.rfind(r"\end{table*}")
-    assert end_tab > 0
-    assert r"\FloatBarrier" in exp[end_tab : end_tab + 40]
+    assert r"\FloatBarrier" not in results[i4 : i4 + 80]
+    # Table 1 queued in Experimental Protocol after Dataset, not after Hardware.
+    assert exp.find(r"\subsection{Dataset and annotation semantics}") < exp.find(
+        r"\label{tab:eval-tracks}"
+    )
+    assert exp.find(r"\label{tab:eval-tracks}") < exp.find(r"\subsection{Baseline scope}")
+    assert exp.find(r"\label{tab:eval-tracks}") < exp.find(r"\subsection{Hardware scope}")
+    # Optional section-level barriers only (not post-float chains).
+    assert results.lstrip().startswith(r"\FloatBarrier") or r"\section{Results}" in results
+    disc_src = DISCUSSION.read_text(encoding="utf-8")
+    assert disc_src.lstrip().startswith(r"\FloatBarrier") or r"\section{Discussion}" in disc_src
 
 
 def test_historical_abstract_and_table1_unchanged():
