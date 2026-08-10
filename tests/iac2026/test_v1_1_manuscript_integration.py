@@ -72,6 +72,25 @@ def test_iac2026_template_conformance_formatting():
         assert r"Figure~\ref" not in blob
         assert r"Fig.~\ref" in blob
 
+    assert r"\RequirePackage{needspace}" in sty
+    decl_src = DECLARATION.read_text(encoding="utf-8")
+    assert r"\Needspace{8\baselineskip}" in decl_src
+    assert decl_src.find(r"\Needspace") < decl_src.find(r"\section*{Declaration")
+    freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
+    assert "final_float_flow_complete: true" in freeze_md
+    for label in ("fig:pipeline", "fig:qualitative", "fig:cue-decomp"):
+        i = methods.find(rf"\label{{{label}}}")
+        assert i > 0
+        assert r"\FloatBarrier" in methods[i : i + 120]
+    i4 = results.find(r"\label{fig:close-far}")
+    assert i4 > 0
+    assert r"\FloatBarrier" in results[i4 : i4 + 120]
+    assert results.lstrip().startswith(r"\FloatBarrier")
+    assert exp.rfind(r"\subsection{Hardware scope}") < exp.rfind(r"\label{tab:eval-tracks}")
+    end_tab = exp.rfind(r"\end{table*}")
+    assert end_tab > 0
+    assert r"\FloatBarrier" in exp[end_tab : end_tab + 40]
+
 
 def test_historical_abstract_and_table1_unchanged():
     main = MAIN.read_text(encoding="utf-8")

@@ -22,6 +22,8 @@
 
 `official_usletter_geometry_complete: true`
 
+`final_float_flow_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -213,3 +215,12 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Measured ARTPS ≈ official within ±0.03 in (column gap ±0.02 in); grade A
 - Pages: 11; PDF bytes: 3,445,862; US Letter; overfull 0; science unchanged
 - local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK
+
+## Final float-flow pass
+
+- `final_float_flow_complete: true`
+- Wide-float sentence interruptions removed: `\FloatBarrier` after Fig.~1–4; Table~1 moved to end of Sec.~4 with barrier before Results; `\Needspace{8\baselineskip}` before AI declaration
+- Geometry lock unchanged (`0.98/0.95/0.99/1.0` in, `columnsep=0.22in`, 8 pt header, 5.58 in footer)
+- Science unchanged (historical 0.894/0.847/0.823/0.856/28.1; supp 0.772/0.956; `test_opened: false`)
+- Pages: 14; PDF bytes: 3,447,968; US Letter; overfull `\hbox`: 0
+- Float pages (after): Fig.~1 early Methods; Fig.~2 after 3.3; Fig.~3 after 3.4; Table~1 end Sec.~4 / before Results; Fig.~4 before Discussion
