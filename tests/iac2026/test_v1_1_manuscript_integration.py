@@ -37,7 +37,20 @@ def test_iac2026_template_conformance_formatting():
     assert title_fn.find(r"\IACpapercode") < title_fn.find("#1")
     assert r"\large\bfseries #1" in title_fn.replace("\n", "") or r"\large\bfseries #1" in title_fn
     assert r"\Large" not in title_fn
+    assert r"\small\itshape" not in title_fn
+    assert r"\normalsize\itshape\noindent #3" in title_fn.replace("\n", " ")
+    assert r"\normalsize\upshape\noindent\IACcorresponding" in title_fn.replace("\n", "")
+    end_center = title_fn.find(r"\end{center}")
+    assert end_center > 0
+    assert title_fn.find(r"\normalsize\bfseries #2") < end_center
+    assert title_fn.find(r"\noindent #3") > end_center
+    assert title_fn.find(r"\IACcorresponding") > end_center
+    assert r"\footnotesize" in sty
+    assert r"\setstretch{1.0}" in sty or r"\singlespacing" in sty
     assert "IAC-26,A3,IP,109,x109221" in main
+    assert r"Poyraz Baydemir$^{a,*}$" in main
+    assert r"Faculty of Technology" in main
+    assert r"\IACcorresponding" in main and "poyrazbaydemir@gmail.com" in main
     assert r"\textbf{Abstract}" in title_fn or r"\textbf{Abstract}" in sty
     for blob in (methods, results, disc, exp):
         assert r"Figure~\ref" not in blob
