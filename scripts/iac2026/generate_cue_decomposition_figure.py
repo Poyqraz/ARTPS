@@ -21,6 +21,9 @@ import yaml
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
+_SCRIPTS = str(REPO / "scripts" / "iac2026")
+if _SCRIPTS not in sys.path:
+    sys.path.insert(0, _SCRIPTS)
 
 from src.artps_detection_core import compute_combined_anomaly_map, set_runtime_params  # noqa: E402
 from src.artps_inference import (  # noqa: E402
@@ -29,6 +32,11 @@ from src.artps_inference import (  # noqa: E402
     _depth_for_fusion,
     _preprocess_image,
     load_frozen_artps_profile,
+)
+from _figure_typography import (  # noqa: E402
+    FIG_DPI,
+    apply_manuscript_serif,
+    save_manuscript_figure,
 )
 
 FIG2_META = REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json"
@@ -143,7 +151,8 @@ def main() -> int:
     fused = _display_minmax(np.asarray(diag["raw_combined_pre_mask"]))
 
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=200)
+    apply_manuscript_serif()
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=FIG_DPI)
     panels = [
         (axes[0, 0], recon, "a) Reconstruction residual", "inferno"),
         (axes[0, 1], depth_edge, "b) Relative-depth edge", "inferno"),
@@ -152,14 +161,13 @@ def main() -> int:
     ]
     for ax, img, title, cmap in panels:
         ax.imshow(img, cmap=cmap)
-        ax.set_title(title, fontsize=9, pad=4)
+        ax.set_title(title, pad=4)
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
     fig.tight_layout(pad=0.35)
-    fig.savefig(OUT_PNG, dpi=200, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save_manuscript_figure(fig, OUT_PNG, dpi=FIG_DPI)
 
     meta = {
         "sample_id": fig2["sample_id"],

@@ -45,6 +45,11 @@ from _candidate_support_overlay import (  # noqa: E402
     draw_candidate_support_overlay,
     overlay_geometry_counts,
 )
+from _figure_typography import (  # noqa: E402
+    FIG_DPI,
+    apply_manuscript_serif,
+    save_manuscript_figure,
+)
 
 MANIFEST = REPO / "reproduction/iac2026/manifests/independent_eval_v1.csv"
 FREEZE = REPO / "reproduction/iac2026/test_freeze/TEST_OPEN_STATUS.yaml"
@@ -220,7 +225,8 @@ def _run_frozen(cfg: FrozenARTPSConfig, bundle, abs_path: str) -> dict:
 
 
 def _save_row(path: Path, rgb, combined, overlay, titles: tuple[str, str, str]) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(9.6, 3.05), dpi=180)
+    apply_manuscript_serif()
+    fig, axes = plt.subplots(1, 3, figsize=(9.6, 3.05), dpi=FIG_DPI)
     panels = [
         (axes[0], rgb, titles[0], None),
         (axes[1], combined, titles[1], "inferno"),
@@ -231,15 +237,14 @@ def _save_row(path: Path, rgb, combined, overlay, titles: tuple[str, str, str]) 
             ax.imshow(img)
         else:
             ax.imshow(img, cmap=cmap)
-        ax.set_title(title, fontsize=9, pad=3)
+        ax.set_title(title, pad=3)
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
     fig.tight_layout(pad=0.25)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=180, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save_manuscript_figure(fig, path, dpi=FIG_DPI)
 
 
 def _load_profile():
@@ -310,7 +315,8 @@ def generate_figure() -> int:
     far_out = _run_frozen(cfg, bundle, far["abs_path"])
 
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
-    fig, axes = plt.subplots(2, 3, figsize=(9.8, 6.4), dpi=200)
+    apply_manuscript_serif()
+    fig, axes = plt.subplots(2, 3, figsize=(9.8, 6.4), dpi=FIG_DPI)
     panels = [
         (axes[0, 0], close_out["rgb"], "a) Close-range RGB", None),
         (axes[0, 1], close_out["combined_map"], "b) Post-suppression combined map", "inferno"),
@@ -324,14 +330,13 @@ def generate_figure() -> int:
             ax.imshow(img)
         else:
             ax.imshow(img, cmap=cmap)
-        ax.set_title(title, fontsize=9, pad=4)
+        ax.set_title(title, pad=4)
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
     fig.tight_layout(pad=0.35)
-    fig.savefig(OUT_PNG, dpi=200, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save_manuscript_figure(fig, OUT_PNG, dpi=FIG_DPI)
 
     meta = {
         "author_provided_pool_only": True,

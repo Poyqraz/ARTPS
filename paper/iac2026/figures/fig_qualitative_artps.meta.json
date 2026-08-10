@@ -21,7 +21,7 @@
   "score_blind_selection": true,
   "model_output_used_for_selection": false,
   "score_based_cherry_picking": false,
-  "git_sha_at_generation": "37d3045d789f695d7b2acc9f0192c9f967efb535",
+  "git_sha_at_generation": "fe10ca20b2f1d84031315b918a44b467190bee62",
   "config_yaml": "reproduction/iac2026/configs/independent_eval_artps_full_frozen_mars.yaml",
   "config_id": "artps_full_frozen_mars_clf_on_v1",
   "preprocessing_profile": "mars_enhancement_v1",

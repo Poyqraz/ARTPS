@@ -17,6 +17,38 @@ DISCUSSION = REPO / "paper/iac2026/sections/discussion.tex"
 LIMITATIONS = REPO / "paper/iac2026/sections/limitations.tex"
 
 
+def test_iac2026_template_conformance_formatting():
+    sty = (REPO / "paper/iac2026/iac2026.sty").read_text(encoding="utf-8")
+    main = MAIN.read_text(encoding="utf-8")
+    methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
+    results = RESULTS.read_text(encoding="utf-8")
+    disc = DISCUSSION.read_text(encoding="utf-8")
+    exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8")
+    assert "newtxtext" in sty and "newtxmath" in sty
+    assert "mathptmx" not in sty
+    assert r"name=Fig." in sty
+    assert r"headrulewidth}{0pt}" in sty.replace(" ", "")
+    assert r"footrulewidth}{0pt}" in sty.replace(" ", "")
+    assert "2.25cm" in sty and "3.35cm" in sty and "0.8cm" in sty
+    title_fn = sty[sty.find(r"\newcommand{\IACmaketitle}") : sty.find(r"\setlength{\parskip}")]
+    assert r"\normalsize\IACpapercode" in title_fn
+    assert title_fn.find(r"\IACpapercode") < title_fn.find("#1")
+    assert r"\large\bfseries #1" in title_fn.replace("\n", "") or r"\large\bfseries #1" in title_fn
+    assert r"\Large" not in title_fn
+    assert "IAC-26,A3,IP,109,x109221" in main
+    assert r"\textbf{Abstract}" in title_fn or r"\textbf{Abstract}" in sty
+    for blob in (methods, results, disc, exp):
+        assert r"Figure~\ref" not in blob
+        assert r"Fig.~\ref" in blob
+    freeze = yaml.safe_load(FREEZE.read_text(encoding="utf-8"))
+    assert freeze["test_opened"] is False
+    assert freeze["final_test_authorized"] is False
+    decl = DECLARATION.read_text(encoding="utf-8").lower()
+    assert "language verification" in decl
+    for token in ("0.894", "0.847", "0.823", "0.856", "28.1"):
+        assert token in main
+
+
 def test_historical_abstract_and_table1_unchanged():
     main = MAIN.read_text(encoding="utf-8")
     results = RESULTS.read_text(encoding="utf-8")

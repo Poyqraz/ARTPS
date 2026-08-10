@@ -1,39 +1,39 @@
 % iac2026.sty — informal IAC 2026 layout helper (NOT an official IAF class).
-% Visual reference: repo-root "IAC 2026_manuscript_template.doc" + IAF PDF guidelines.
-% US Letter, ~25 mm margins, Times 10 pt, ~6 mm column gutter, congress header, paper-code footer.
+% Primary: IAC 2026 Manuscript Guidelines (IAF PDF).
+% Secondary visual/LaTeX reference: grande-dev IAC_style.cls (2024-based / 2025 update).
+% US Letter, ~2.25/3.35 cm margins, Times-compatible 10 pt, 0.8 cm column gutter.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{iac2026}[2026/08/03 Informal IAC 2026 manuscript style]
+\ProvidesPackage{iac2026}[2026/08/10 Informal IAC 2026 manuscript style]
 
 \RequirePackage[
   letterpaper,
-  left=25mm,
-  right=25mm,
-  top=25mm,
-  bottom=25mm,
-  includehead,
-  includefoot,
-  headheight=40pt,
-  headsep=5mm,
-  footskip=10mm
+  left=2.25cm,
+  right=2.25cm,
+  top=3.35cm,
+  bottom=3.35cm,
+  headheight=32pt,
+  headsep=10pt,
+  footskip=28pt
 ]{geometry}
-\RequirePackage{mathptmx}
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
+\RequirePackage{amsmath}
+\RequirePackage{newtxtext}
+\RequirePackage{newtxmath}
 \RequirePackage{microtype}
 \RequirePackage{graphicx}
 \RequirePackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit}
 \RequirePackage{booktabs}
 \RequirePackage{tabularx}
-\RequirePackage{amsmath}
 \RequirePackage{url}
 \RequirePackage[numbers,sort&compress]{natbib}
-\RequirePackage[hidelinks]{hyperref}
 \RequirePackage{fancyhdr}
 \RequirePackage{lastpage}
 \RequirePackage{caption}
 \RequirePackage{setspace}
 \RequirePackage{titlesec}
+\RequirePackage[hidelinks]{hyperref}
 
 \hypersetup{
   pdftitle={ARTPS: Operationally Safe Target Prioritization via Depth-Enhanced Hybrid Anomaly Detection},
@@ -42,8 +42,13 @@
   pdfkeywords={Mars rover, autonomous exploration, anomaly detection, relative depth, target prioritization, operational safety}
 }
 
-\setlength{\columnsep}{6mm}
+\pdfcompresslevel=9
+\pdfobjcompresslevel=3
+
+\setlength{\columnsep}{0.8cm}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
+\captionsetup[figure]{name=Fig.,format=hang,indention=-20pt}
+\captionsetup[table]{format=hang,indention=-24pt}
 
 \newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 October 2026.}
 \newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
@@ -61,8 +66,8 @@
   }%
   \fancyfoot[L]{\footnotesize\IACpapercode}%
   \fancyfoot[R]{\footnotesize Page~\thepage\ of~\pageref{LastPage}}%
-  \renewcommand{\headrulewidth}{0.4pt}%
-  \renewcommand{\footrulewidth}{0.4pt}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
 }
 
 \pagestyle{fancy}
@@ -73,15 +78,19 @@
 \newcommand{\IACmaketitle}[5]{%
   \twocolumn[{%
     \begin{center}
-      {\Large\bfseries #1\par}
+      {\normalsize\IACpapercode\par}
+      \vspace{1em}
+      {\large\bfseries #1\par}
       \vspace{0.6em}
-      {\normalsize #2\par}
+      {\normalsize\bfseries #2\par}
       \vspace{0.35em}
       {\small\itshape #3\par}
     \end{center}
     \vspace{0.8em}
-    \noindent\textbf{Abstract}\\[0.35em]
-    #4\par
+    \begin{center}
+      \textbf{Abstract}
+    \end{center}
+    \noindent #4\par
     \vspace{0.6em}
     \noindent\textbf{Keywords:} #5\par
     \vspace{1.0em}
@@ -89,11 +98,10 @@
 }
 
 \setlength{\parskip}{0pt}
-\setlength{\parindent}{1em}
-% IAC Word template: section bold; subsection/subsubsection italic; no forced uppercase.
+\setlength{\parindent}{12pt}
 \titleformat{\section}{\normalsize\bfseries}{\thesection.}{0.5em}{}
 \titleformat{\subsection}{\normalsize\itshape}{\thesubsection}{0.5em}{}
 \titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
-\titlespacing*{\section}{0pt}{1.1em}{0.45em}
-\titlespacing*{\subsection}{0pt}{0.85em}{0.35em}
-\titlespacing*{\subsubsection}{0pt}{0.7em}{0.3em}
+\titlespacing*{\section}{0pt}{15pt}{3pt}
+\titlespacing*{\subsection}{0pt}{12pt}{2pt}
+\titlespacing*{\subsubsection}{0pt}{12pt}{2pt}
