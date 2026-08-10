@@ -5,6 +5,52 @@ This section distinguishes two evaluation tracks that are not directly interchan
 A qualitative processing example (Fig.~\ref{fig:qualitative}) illustrates the frozen
 image-score path only; it is not a third quantitative track.
 
+\subsection{Historical accepted-abstract track}
+The accepted IAC abstract reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, baseline
+AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight core.
+Table~\ref{tab:accepted-abstract} restates those values; lightweight FPS is reported only
+there.
+
+\subsection{Current reproducible evaluation}
+\texttt{independent\_eval\_v1} protocol definitions, annotation rules, and frozen execution settings are version-controlled
+with the implementation, including image-score aggregation, preprocessing profile, and
+checkpoint hashes.
+The primary image score is \texttt{max\_valid\_candidate\_after\_masks}.
+The held-out test partition was not opened: no test inference, no test metric, and no
+threshold retune on held-out images.
+Numeric supplementary results below use the human-reviewed annotation version only.
+Fig.~\ref{fig:qualitative} shows a qualitative non-test Mars scene selected before inference
+from an author-provided RGB candidate pool on the basis of scene structure and domain
+suitability, under the frozen image-score path.
+Fig.~\ref{fig:close-far} adds one close-range and one distant-scene illustration from a
+fixed author-provided pool; it is not a range-conditioned performance study.
+
+\subsection{Supplementary human-reviewed annotation}
+\texttt{independent\_eval\_v1\_1} records a model-blind repeat-author review of all 360
+included images under the same annotation guide.
+The original \texttt{independent\_eval\_v1} manifest remains immutable.
+Split assignments are unchanged; the test split remains unopened (human viewing only;
+no ARTPS inference).
+Scores were remapped onto the reviewed labels with no tuning and no inference rerun.
+This is not an independent second annotation.
+
+\subsection{Dataset and annotation semantics}
+One homogeneous Curiosity Mastcam-oriented image domain was selected from inventory metadata
+without model-score inspection.
+The frozen supplementary benchmark comprises $360$ included images with fixed split
+assignments of $252$ train / $54$ validation / $54$ test.
+All $360$ images received a repeat-author model-blind review; this is not independent double
+annotation.
+Test images could be viewed for annotation, but no ARTPS inference was performed on the
+held-out test split.
+A positive label denotes at least one real surface object or region that is visually distinct
+from its surroundings and scientifically worth follow-up under the annotation guide.
+A negative label denotes no distinct science-interest target under that guide.
+Rover hardware, border artefacts, telemetry overlays, compression or noise artefacts, a
+shadow boundary alone, or an exposure/specular artefact alone do not count as positive.
+These labels are not claimed to be equivalent to the historical accepted-abstract ground truth.
+
+\FloatBarrier
 \begin{table*}[t]
 \centering
 \small
@@ -31,51 +77,6 @@ Reported evidence & AUROC~$0.894$ / AUPRC~$0.847$ / F1~$0.823$; baseline AUROC~$
 \bottomrule
 \end{tabularx}
 \end{table*}
-
-\subsection{Historical accepted-abstract track}
-The accepted IAC abstract reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, baseline
-AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight core.
-Table~\ref{tab:accepted-abstract} restates those values; lightweight FPS is reported only
-there.
-
-\subsection{Current reproducible evaluation (\texttt{independent\_eval\_v1})}
-Protocol definitions, annotation rules, and frozen execution settings are version-controlled
-with the implementation, including image-score aggregation, preprocessing profile, and
-checkpoint hashes.
-The primary image score is \texttt{max\_valid\_candidate\_after\_masks}.
-The held-out test partition was not opened: no test inference, no test metric, and no
-threshold retune on held-out images.
-Numeric supplementary results below use the human-reviewed annotation version only.
-Fig.~\ref{fig:qualitative} shows a qualitative non-test Mars scene selected before inference
-from an author-provided RGB candidate pool on the basis of scene structure and domain
-suitability, under the frozen image-score path.
-Fig.~\ref{fig:close-far} adds one close-range and one distant-scene illustration from a
-fixed author-provided pool; it is not a range-conditioned performance study.
-
-\subsection{Supplementary human-reviewed annotation (\texttt{independent\_eval\_v1\_1})}
-\texttt{independent\_eval\_v1\_1} records a model-blind repeat-author review of all 360
-included images under the same annotation guide.
-The original \texttt{independent\_eval\_v1} manifest remains immutable.
-Split assignments are unchanged; the test split remains unopened (human viewing only;
-no ARTPS inference).
-Scores were remapped onto the reviewed labels with no tuning and no inference rerun.
-This is not an independent second annotation.
-
-\subsection{Dataset and annotation semantics}
-One homogeneous Curiosity Mastcam-oriented image domain was selected from inventory metadata
-without model-score inspection.
-The frozen supplementary benchmark comprises $360$ included images with fixed split
-assignments of $252$ train / $54$ validation / $54$ test.
-All $360$ images received a repeat-author model-blind review; this is not independent double
-annotation.
-Test images could be viewed for annotation, but no ARTPS inference was performed on the
-held-out test split.
-A positive label denotes at least one real surface object or region that is visually distinct
-from its surroundings and scientifically worth follow-up under the annotation guide.
-A negative label denotes no distinct science-interest target under that guide.
-Rover hardware, border artefacts, telemetry overlays, compression or noise artefacts, a
-shadow boundary alone, or an exposure/specular artefact alone do not count as positive.
-These labels are not claimed to be equivalent to the historical accepted-abstract ground truth.
 
 \subsection{Baseline scope}
 The PaDiM/PatchCore baseline AUROC~$0.856$ belongs to the historical accepted-IAC track~\citep{defard2020padim,roth2022patchcore}.

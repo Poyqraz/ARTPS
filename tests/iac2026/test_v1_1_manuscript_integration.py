@@ -27,6 +27,8 @@ def test_iac2026_template_conformance_formatting():
     assert "newtxtext" in sty and "newtxmath" in sty
     assert "mathptmx" not in sty
     assert r"name=Fig." in sty
+    assert r"\raggedright" in sty
+    assert "justification=raggedright" in sty
     assert r"headrulewidth}{0pt}" in sty.replace(" ", "")
     assert r"footrulewidth}{0pt}" in sty.replace(" ", "")
     assert "2.25cm" in sty and "3.35cm" in sty and "0.8cm" in sty
@@ -63,6 +65,14 @@ def test_v1_1_supplementary_table_and_auroc_headline():
     results = RESULTS.read_text(encoding="utf-8")
     assert "tab:indep-v11" in results
     assert "Supplementary Human-Reviewed Evaluation" in results
+    v11_cap = results[results.find(r"\label{tab:indep-v11}") - 500 : results.find(r"\label{tab:indep-v11}")]
+    assert "Supplementary human-reviewed evaluation" in v11_cap
+    assert "independent_eval" not in v11_cap
+    exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8")
+    assert r"\subsection{Current reproducible evaluation}" in exp
+    assert r"\texttt{independent\_eval\_v1}" in exp.split(r"\subsection{Current reproducible evaluation}", 1)[1][:400]
+    assert r"\subsection{Current frozen evaluation protocol}" in results
+    assert r"\texttt{independent\_eval\_v1}" in results.split(r"\subsection{Current frozen evaluation protocol}", 1)[1][:400]
     assert "0.772" in results
     assert "0.956" in results
     assert "0.852" in results
@@ -421,8 +431,8 @@ def test_candidate_support_overlay_invariance_and_language():
     _assert_same_candidates(fig4["close"]["candidates"], fixture["fig4_close"]["candidates"])
     _assert_same_candidates(fig4["far"]["candidates"], fixture["fig4_far"]["candidates"])
     assert fig2.get("visualization_only") is True
-    assert fig2.get("overlay_visualization_version") == "candidate_support_v2"
-    assert fig4.get("overlay_visualization_version") == "candidate_support_v2"
+    assert fig2.get("overlay_visualization_version") == "candidate_support_v3"
+    assert fig4.get("overlay_visualization_version") == "candidate_support_v3"
     methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8").lower()
     results = RESULTS.read_text(encoding="utf-8").lower()
     disc = DISCUSSION.read_text(encoding="utf-8").lower()

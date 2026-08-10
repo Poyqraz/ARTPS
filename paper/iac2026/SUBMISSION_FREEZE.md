@@ -16,6 +16,8 @@
 
 `iac2026_template_conformance_complete: true`
 
+`final_visual_flow_polish_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -171,3 +173,15 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - `test_opened: false`; `final_test_authorized: false`
 - Paper code: `IAC-26,A3,IP,109,x109221` (title block + footer)
 - local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean; overfull `\hbox` 0
+
+## Final visual-flow polish
+
+- `final_visual_flow_polish_complete: true`
+- Subsection headings ragged-right; 4.2/4.3/5.2 titles shortened; protocol IDs retained in first body sentence
+- Table 1 after complete 4.4 paragraph: no mid-sentence split; still `table*`
+- Table 3 caption ragged, no monospaced protocol ID; captions remain above
+- Fig. 2 after 3.3; Fig. 3 after 3.4; Fig. 4 after qualitative subsection (`\FloatBarrier`); order Fig. 1–4 unchanged
+- Fig. 4 canvas `(7.4, 4.83)` / 9 pt titles (~8 pt physical); overlay `candidate_support_v3` dual-stroke halo; Fig. 3 PNG unchanged
+- Pages: 11; PDF bytes: 3,446,057; US Letter; overfull 0
+- Metrics unchanged; `test_opened: false`; no new experiment
+- local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean

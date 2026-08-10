@@ -69,6 +69,23 @@ Depth supports apparent size--distance policy and spatial structuring of candida
 feeds the depth-edge cue used in frozen multi-cue fusion.
 Fig.~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_qualitative_artps.png}
+\caption{Qualitative ARTPS processing example from a non-test Mars scene selected before
+inference from an author-provided RGB candidate pool on the basis of scene structure and
+domain suitability.
+Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
+depth, and the candidate-support overlay produced by the frozen image-score path.
+Corner brackets denote the approximate candidate ROI.
+Where proposal support geometry is available, the translucent footprint indicates the
+image-region evidence associated with the candidate; it is not a pixel-level
+segmentation or ground-truth object boundary.
+The depth visualization is relative and non-metric.
+The example is illustrative and is not used as an additional quantitative benchmark.}
+\label{fig:qualitative}
+\end{figure*}
+
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
 The ARTPS specification defines an entropy-weighted fusion rule: for normalized cue maps
@@ -125,6 +142,22 @@ curiosity, but it is not a term in the fused map.
 Display scaling in the figure is independent of inference percentile normalization and does
 not constitute a new quantitative experiment.
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_cue_decomposition_artps.png}
+\caption{Cue decomposition of the frozen multi-cue score on the same non-test image as
+Fig.~\ref{fig:qualitative}.
+Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
+pre-suppression fused map after proximity mixing.
+Smaller depth-Laplacian and fine-detail terms also enter the mix but are not shown as
+separate panels.
+Each panel is independently min-max scaled for visualization; color intensities are therefore
+not numerically comparable across panels.
+The depth-derived cue is image-relative and non-metric.
+The figure is illustrative and is not used as an additional quantitative benchmark.}
+\label{fig:cue-decomp}
+\end{figure*}
+
 \subsection{Candidate localization}
 Fused anomaly responses are converted into discrete candidate regions via localization
 (thresholding / connected components / peak extraction---implementation detail retained in
@@ -163,39 +196,6 @@ example, not a curiosity-ranked downlink list.
 A candidate that survives suppression is still only a localization hypothesis: it is not a
 confirmed science target and is not automatically queued for downlink.
 Suppression is policy-driven and auditable; it is not a claim of perfect distractor rejection.
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig_qualitative_artps.png}
-\caption{Qualitative ARTPS processing example from a non-test Mars scene selected before
-inference from an author-provided RGB candidate pool on the basis of scene structure and
-domain suitability.
-Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
-depth, and the candidate-support overlay produced by the frozen image-score path.
-Corner brackets denote the approximate candidate ROI.
-Where proposal support geometry is available, the translucent footprint indicates the
-image-region evidence associated with the candidate; it is not a pixel-level
-segmentation or ground-truth object boundary.
-The depth visualization is relative and non-metric.
-The example is illustrative and is not used as an additional quantitative benchmark.}
-\label{fig:qualitative}
-\end{figure*}
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig_cue_decomposition_artps.png}
-\caption{Cue decomposition of the frozen multi-cue score on the same non-test image as
-Fig.~\ref{fig:qualitative}.
-Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
-pre-suppression fused map after proximity mixing.
-Smaller depth-Laplacian and fine-detail terms also enter the mix but are not shown as
-separate panels.
-Each panel is independently min-max scaled for visualization; color intensities are therefore
-not numerically comparable across panels.
-The depth-derived cue is image-relative and non-metric.
-The figure is illustrative and is not used as an additional quantitative benchmark.}
-\label{fig:cue-decomp}
-\end{figure*}
 
 \subsection{Frozen candidate and image score}
 After localization and validity gates, each remaining candidate \(r\) receives a frozen score

@@ -33,6 +33,7 @@
 \RequirePackage{caption}
 \RequirePackage{setspace}
 \RequirePackage{titlesec}
+\RequirePackage{placeins}
 \RequirePackage[hidelinks]{hyperref}
 
 \hypersetup{
@@ -48,7 +49,7 @@
 \setlength{\columnsep}{0.8cm}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
 \captionsetup[figure]{name=Fig.,format=hang,indention=-20pt}
-\captionsetup[table]{format=hang,indention=-24pt}
+\captionsetup[table]{format=hang,justification=raggedright,singlelinecheck=false,indention=-24pt}
 
 \newcommand{\IACcongress}{77th International Astronautical Congress (IAC 2026), Antalya, T\"urkiye, 5--9 October 2026.}
 \newcommand{\IACcopyright}{Copyright \textcopyright\ 2026 by the International Astronautical Federation (IAF). All rights reserved.}
@@ -99,9 +100,9 @@
 
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{12pt}
-\titleformat{\section}{\normalsize\bfseries}{\thesection.}{0.5em}{}
-\titleformat{\subsection}{\normalsize\itshape}{\thesubsection}{0.5em}{}
-\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
+\titleformat{\section}{\normalsize\bfseries\raggedright}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\itshape\raggedright}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\raggedright}{\thesubsubsection}{0.5em}{}
 \titlespacing*{\section}{0pt}{15pt}{3pt}
 \titlespacing*{\subsection}{0pt}{12pt}{2pt}
 \titlespacing*{\subsubsection}{0pt}{12pt}{2pt}

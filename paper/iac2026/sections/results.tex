@@ -23,7 +23,7 @@ FPS @ $256\times256$ (lightweight core) & $28.1$ \\
 \end{tabular}
 \end{table}
 
-\subsection{Current frozen evaluation protocol (\texttt{independent\_eval\_v1})}
+\subsection{Current frozen evaluation protocol}
 The \texttt{independent\_eval\_v1} heuristic-label track remains a separate frozen protocol.
 The held-out test set remains unopened, so the current protocol is reported as validation-only.
 Numeric supplementary validation below uses the human-reviewed annotation version only.
@@ -39,7 +39,7 @@ AUROC is the principal ranking-oriented metric for this supplementary validation
 
 \begin{table}[t]
 \centering
-\caption{Supplementary human-reviewed evaluation (\texttt{independent\_eval\_v1\_1}).
+\caption{Supplementary human-reviewed evaluation.
 Not a reproduction of Table~\ref{tab:accepted-abstract} and not a final-test result.}
 \label{tab:indep-v11}
 \small
@@ -80,6 +80,7 @@ These examples are qualitative and are not a controlled near/far benchmark.
 None of these figures enters Table~\ref{tab:accepted-abstract} or Table~\ref{tab:indep-v11},
 opens the test split, or adds an AUROC, AUPRC, F1, or throughput number.
 
+\FloatBarrier
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_close_far_qualitative_artps.png}

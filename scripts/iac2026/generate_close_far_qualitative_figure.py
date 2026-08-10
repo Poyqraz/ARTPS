@@ -315,8 +315,8 @@ def generate_figure() -> int:
     far_out = _run_frozen(cfg, bundle, far["abs_path"])
 
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
-    apply_manuscript_serif()
-    fig, axes = plt.subplots(2, 3, figsize=(9.8, 6.4), dpi=FIG_DPI)
+    apply_manuscript_serif(title_pt=9.0)
+    fig, axes = plt.subplots(2, 3, figsize=(7.4, 4.83), dpi=FIG_DPI)
     panels = [
         (axes[0, 0], close_out["rgb"], "a) Close-range RGB", None),
         (axes[0, 1], close_out["combined_map"], "b) Post-suppression combined map", "inferno"),

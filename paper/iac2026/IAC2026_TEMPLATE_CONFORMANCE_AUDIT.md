@@ -30,9 +30,9 @@ Preview pages / contact sheet: `paper/iac2026/_preview_pages/` (untracked).
 
 | Requirement | Official 2026 rule | 2025 LaTeX reference | Current ARTPS (baseline) | Action | Final status | Tag |
 | --- | --- | --- | --- | --- | --- | --- |
-| Paper size | US Letter | letterpaper | 612×792 | keep | PASS | OFFICIAL_2026 |
-| Margins | ~2.25 cm L/R, ~3.35 cm T/B | geometry in `IAC_style.cls` | 25 mm + `includehead`/`includefoot` | 2.25/3.35 cm, no includehead/foot unless collision | PASS (post-pass) | OFFICIAL_2026 |
-| Column gutter | ~0.8 cm | `columnsep` ~0.8 cm | 6 mm | `columnsep=0.8cm` | PASS (post-pass) | OFFICIAL_2026 |
+| Paper size | US Letter preferred; two-column except title/abstract | letterpaper | 612×792 | keep | PASS | OFFICIAL_2026 |
+| Margins | If A4: minimum 2.25 cm L/R and 3.35 cm T/B. US Letter: no explicit centimetre rule; leave adequate space | `IAC_style.cls` geometry (visual) | 2.25/3.35 cm on US Letter | Adopt A4 minimum as community/template visual reference on US Letter; do not treat as official US-Letter numbers | PASS | OFFICIAL_2026 + COMMUNITY_2025_REFERENCE |
+| Column gutter | Adequate separation between columns | `columnsep` ~0.8 cm in `IAC_style.cls` | 0.8 cm | Official: adequate gap. 0.8 cm adopted from community LaTeX visual reference | PASS | OFFICIAL_2026 + COMMUNITY_2025_REFERENCE |
 | Body font | Times 10 pt, embedded | `newtx` / Times-like | `mathptmx` 10 pt | `newtxtext`+`newtxmath`, T1 | PASS (post-pass) | OFFICIAL_2026 |
 | Paper ID | on manuscript | `\IACpapernumber` above title | footer only | ID `\normalsize` above title; keep footer | PASS (post-pass) | OFFICIAL_2026 |
 | Title | large bold, not oversized | `\large\bfseries` | `\Large\bfseries` | drop `\Large` → `\large\bfseries` | PASS (post-pass) | OFFICIAL_2026 |
