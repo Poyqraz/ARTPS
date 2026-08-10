@@ -31,11 +31,20 @@ def test_iac2026_template_conformance_formatting():
     assert "justification=raggedright" in sty
     assert r"headrulewidth}{0pt}" in sty.replace(" ", "")
     assert r"footrulewidth}{0pt}" in sty.replace(" ", "")
-    assert "2.25cm" in sty and "3.35cm" in sty and "0.8cm" in sty
+    assert "0.98in" in sty and "0.95in" in sty
+    assert "0.22in" in sty
+    assert "2.25cm" not in sty and "3.35cm" not in sty
+    assert r"\fontsize{8}{9.5}" in sty
+    assert r"\fontsize{10}{12}" in sty
+    assert "5.58in" in sty
+    assert "5--9 Oct 2026" in sty
+    assert r"\singlespacing" in sty
+    assert "1.0in" in sty  # bottom (and possibly top-adjacent)
     title_fn = sty[sty.find(r"\newcommand{\IACmaketitle}") : sty.find(r"\setlength{\parskip}")]
     assert r"\normalsize\IACpapercode" in title_fn
     assert title_fn.find(r"\IACpapercode") < title_fn.find("#1")
-    assert r"\large\bfseries #1" in title_fn.replace("\n", "") or r"\large\bfseries #1" in title_fn
+    assert r"\normalsize\bfseries #1" in title_fn.replace("\n", "") or r"\normalsize\bfseries #1" in title_fn
+    assert r"\large\bfseries #1" not in title_fn
     assert r"\Large" not in title_fn
     assert r"\small\itshape" not in title_fn
     assert r"\normalsize\itshape\noindent #3" in title_fn.replace("\n", " ")
@@ -45,16 +54,12 @@ def test_iac2026_template_conformance_formatting():
     assert title_fn.find(r"\normalsize\bfseries #2") < end_center
     assert title_fn.find(r"\noindent #3") > end_center
     assert title_fn.find(r"\IACcorresponding") > end_center
-    assert r"\footnotesize" in sty
-    assert r"\setstretch{1.0}" in sty or r"\singlespacing" in sty
     assert "IAC-26,A3,IP,109,x109221" in main
-    assert r"Poyraz Baydemir$^{a,*}$" in main
+    assert r"Poyraz Baydemir\textsuperscript{a,*}" in main
     assert r"Faculty of Technology" in main
+    assert r"\textsuperscript{a}" in main
     assert r"\IACcorresponding" in main and "poyrazbaydemir@gmail.com" in main
-    assert r"\textbf{Abstract}" in title_fn or r"\textbf{Abstract}" in sty
-    for blob in (methods, results, disc, exp):
-        assert r"Figure~\ref" not in blob
-        assert r"Fig.~\ref" in blob
+    assert r"Abstract" in title_fn
     freeze = yaml.safe_load(FREEZE.read_text(encoding="utf-8"))
     assert freeze["test_opened"] is False
     assert freeze["final_test_authorized"] is False
@@ -62,6 +67,10 @@ def test_iac2026_template_conformance_formatting():
     assert "language verification" in decl
     for token in ("0.894", "0.847", "0.823", "0.856", "28.1"):
         assert token in main
+
+    for blob in (methods, results, disc, exp):
+        assert r"Figure~\ref" not in blob
+        assert r"Fig.~\ref" in blob
 
 
 def test_historical_abstract_and_table1_unchanged():

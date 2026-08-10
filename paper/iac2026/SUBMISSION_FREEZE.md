@@ -20,6 +20,8 @@
 
 `titleblock_affiliation_align_complete: true`
 
+`official_usletter_geometry_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -199,3 +201,15 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Spacing variant B kept: author→affil 0.25em, affil→corresponding 0.35em, corresponding→Abstract 0.6em
 - Pages: 11; PDF bytes: 3,446,871; US Letter; overfull 0
 - local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean
+
+## Official US-Letter geometry (Word/PDF template)
+
+- `official_usletter_geometry_complete: true`
+- Oracle: `paper/template/IAC 2026_manuscript_template (2).pdf` (SHA256 `27137db38af98a26cc879287b0c2914985260fffec7d1e492e92311782db888f`); PyMuPDF coords
+- Geometry: `left=0.98in`, `right=0.95in`, `top=0.99in`, `bottom=1.0in`, `columnsep=0.22in`
+- Header: 8 pt fancyhdr; `5--9 Oct 2026`; Form A copyright `\textcopyright2026`
+- Title: `\normalsize\bfseries` (10 pt bold; matches official template)
+- Footer: 10 pt; centered `\makebox[5.58in]`; no footnotesize
+- Measured ARTPS ≈ official within ±0.03 in (column gap ±0.02 in); grade A
+- Pages: 11; PDF bytes: 3,445,862; US Letter; overfull 0; science unchanged
+- local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK
