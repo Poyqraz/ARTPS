@@ -31,18 +31,18 @@ Preview pages / contact sheet: `paper/iac2026/_preview_pages/` (untracked).
 | Requirement | Official 2026 rule | 2025 LaTeX reference | Current ARTPS (baseline) | Action | Final status | Tag |
 | --- | --- | --- | --- | --- | --- | --- |
 | Paper size | US Letter preferred; two-column except title/abstract | letterpaper | 612×792 | keep | PASS | OFFICIAL_2026 |
-| Margins | If A4: minimum 2.25 cm L/R and 3.35 cm T/B. US Letter: no explicit centimetre rule; leave adequate space | `IAC_style.cls` geometry (visual) | 2.25/3.35 cm on US Letter | Adopt A4 minimum as community/template visual reference on US Letter; do not treat as official US-Letter numbers | PASS | OFFICIAL_2026 + COMMUNITY_2025_REFERENCE |
-| Column gutter | Adequate separation between columns | `columnsep` ~0.8 cm in `IAC_style.cls` | 0.8 cm | Official: adequate gap. 0.8 cm adopted from community LaTeX visual reference | PASS | OFFICIAL_2026 + COMMUNITY_2025_REFERENCE |
-| Body font | Times 10 pt, embedded | `newtx` / Times-like | `mathptmx` 10 pt | `newtxtext`+`newtxmath`, T1 | PASS (post-pass) | OFFICIAL_2026 |
-| Paper ID | on manuscript | `\IACpapernumber` above title | footer only | ID `\normalsize` above title; keep footer | PASS (post-pass) | OFFICIAL_2026 |
-| Title | large bold, not oversized | `\large\bfseries` | `\Large\bfseries` | drop `\Large` → `\large\bfseries` | PASS (post-pass) | OFFICIAL_2026 |
-| Author / affil | readable | bold author; italic affil left; corresponding left | similar | `\normalsize\bfseries` author centered; `\normalsize\itshape` affil left; corresponding `\normalsize` upright left | PASS (post-pass) | OFFICIAL_2026 |
+| Margins | If A4: minimum 2.25 cm L/R and 3.35 cm T/B. US Letter: adequate space (no fixed cm) | community geometry | was 2.25/3.35 cm (wrongly treated as US Letter) | Match Word/PDF template render: body left ≈0.98 in, right ≈0.94–0.95 in (`left=0.98in`,`right=0.95in`) | PASS (post-pass) | OFFICIAL_TEMPLATE_MEASURED |
+| Column gutter | Adequate separation | `columnsep` ~0.8 cm in community class | was 0.8 cm | Match measured text-edge gap ≈0.17–0.20 in (`columnsep=0.22in` → rendered ≈0.197 in) | PASS (post-pass) | OFFICIAL_TEMPLATE_MEASURED |
+| Body font | Times 10 pt, embedded | `newtx` / Times-like | `mathptmx` 10 pt | `newtxtext`+`newtxmath`, T1 | PASS (post-pass) | OFFICIAL_GUIDELINE |
+| Paper ID | on manuscript | `\IACpapernumber` above title | footer only | ID `\normalsize` above title; keep footer | PASS (post-pass) | OFFICIAL_GUIDELINE |
+| Title | large bold, not oversized | often `\large` | was `\large` | Official template PDF title is **10 pt bold** → `\normalsize\bfseries` | PASS (post-pass) | OFFICIAL_TEMPLATE_MEASURED |
+| Author / affil | readable | bold author; italic/left affil | similar | `\normalsize\bfseries` author centered; `\normalsize\itshape` affil left @ ≈0.98 in; corresponding upright left | PASS (post-pass) | OFFICIAL_TEMPLATE_MEASURED |
 | Abstract heading | centered bold Abstract | centered **Abstract** | flush-left bold | centered bold Abstract | PASS (post-pass) | OFFICIAL_2026 |
 | Abstract body | as submitted | n/a | 5-arg `\IACmaketitle` #4 | byte-for-byte unchanged | PASS | OFFICIAL_2026 |
 | Keywords | present | Keywords line | present | keep | PASS | OFFICIAL_2026 |
 | Header/footer rules | no heavy rules required | often rule-less | 0.4 pt head/foot rules | `headrulewidth`/`footrulewidth=0pt` | PASS (post-pass) | OFFICIAL_2026 |
-| Header content | congress + copyright | two-line header | two-line + rules | keep wording; no rules; `headheight=32pt` | PASS (post-pass) | OFFICIAL_2026 |
-| Footer | paper code + Page X of Y | left ID / right pages | same | keep | PASS | OFFICIAL_2026 |
+| Header content | congress + copyright | two-line header | two-line | 8 pt (`\fontsize{8}{9.5}`); date `5--9 Oct 2026`; header top ≈0.49 in / copyright bottom ≈0.75 in | PASS (post-pass) | OFFICIAL_TEMPLATE_MEASURED |
+| Footer | paper code + Page X of Y | left ID / right pages | footnotesize full-width | 10 pt; centered `\makebox[5.58in]`; code x0≈1.48 in; page x1≈7.06 in; from bottom ≈0.49 in | PASS (post-pass) | OFFICIAL_TEMPLATE_MEASURED |
 | Copyright notice | Form A / IAF-held | community B/C variants exist | IAF-held wording | **do not** switch to B1/B2/C | PASS (unchanged) | OFFICIAL_2026 |
 | Section numbering | arabic 1. / 1.1 / 1.1.1 | community also has Roman+underline variant | arabic bold/italic flush left | keep arabic; tighten spacing; **no** Roman+underline | PASS (post-pass) | COMMUNITY_2025_REFERENCE |
 | Figure captions | Fig. n, hanging | `name=Fig.` | `Figure` default | `\captionsetup[figure]{name=Fig.,format=hang}` | PASS (post-pass) | OFFICIAL_2026 |
@@ -84,3 +84,19 @@ Post-pass fonts: TeXGyreTermes / NewTX (embedded Type 1); no Type3; US Letter 61
 - Roman (I, II, …) + underline section headings
 - Copyright forms B1 / B2 / C
 - Wholesale `IAC_style.cls` (we keep `article` + helper sty)
+- Community `columnsep` 0.8 cm as US-Letter gutter (superseded by Word/PDF template measurement)
+
+## Official Word/PDF template measurement (2026-08-10)
+
+- **SOURCE:** `paper/template/IAC 2026_manuscript_template (2).pdf`
+- **SHA256:** `27137db38af98a26cc879287b0c2914985260fffec7d1e492e92311782db888f`
+- **METHOD:** PyMuPDF text bboxes / span fonts (not OCR; not claimed written IAF centimetre rules)
+- Page: 612 × 792 pt US Letter
+- Header 8 pt: top ≈ 0.493 in; copyright bottom ≈ 0.749 in; date `5-9 Oct 2026`
+- Body paper code 10 pt: top ≈ 0.990 in
+- Title / author: **10 pt bold** (not `\large`)
+- Affiliation / corresponding left x0 ≈ 0.984 in
+- Body left ≈ 0.98 in; right extent ≈ 7.55 in; multi-line column gap ≈ 0.17–0.20 in
+- Footer 10 pt: from bottom ≈ 0.49 in; code x0 ≈ 1.477 in; page x1 ≈ 7.058 in; span ≈ 5.58 in centered
+- ARTPS after geometry pass: all listed deltas within stated tolerances; visual grade **A**
+- Portal copyright assignment must match printed Form A / IAF-held header
