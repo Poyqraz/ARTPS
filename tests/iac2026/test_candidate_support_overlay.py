@@ -25,8 +25,8 @@ def _greenish(px: np.ndarray) -> bool:
     return int(px[1]) > 120 and int(px[1]) > int(px[0]) + 40 and int(px[1]) > int(px[2]) + 20
 
 
-def test_overlay_version_is_v2():
-    assert OVERLAY_VISUALIZATION_VERSION == "candidate_support_v2"
+def test_overlay_version_is_v3():
+    assert OVERLAY_VISUALIZATION_VERSION == "candidate_support_v3"
     assert FOOTPRINT_ALPHA <= 0.20
 
 
@@ -41,6 +41,8 @@ def test_open_corners_not_full_rectangle():
     corner = out[20, 20]
     assert _greenish(corner), corner.tolist()
     assert not _greenish(mid_top), mid_top.tolist()
+    gray = cv2.cvtColor(out, cv2.COLOR_RGB2GRAY)
+    assert abs(int(gray[20, 20]) - int(gray[35, 40])) >= 25
 
 
 def test_cc_footprint_tints_interior_not_bright_edge():

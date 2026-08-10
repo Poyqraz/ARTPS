@@ -5,12 +5,13 @@ import cv2
 import numpy as np
 
 BRACKET_COLOR = (0, 200, 80)
+HALO_COLOR = (255, 255, 255)
 FOOTPRINT_COLOR = (72, 138, 148)
 FOOTPRINT_ALPHA = 0.14
 ANCHOR_FILL = (255, 255, 255)
 ANCHOR_EDGE = (20, 20, 20)
 LABEL_MAX = 3
-OVERLAY_VISUALIZATION_VERSION = "candidate_support_v2"
+OVERLAY_VISUALIZATION_VERSION = "candidate_support_v3"
 
 
 def overlay_geometry_counts(detections: list[dict]) -> dict[str, int]:
@@ -139,20 +140,15 @@ def draw_candidate_support_overlay(
         elif det.get("poly"):
             _blend_footprint(out, _scaled_pts(det["poly"], sx, sy))
     for i, (det, x1, y1, x2, y2) in enumerate(scaled):
+        _draw_open_corners(out, x1, y1, x2, y2, HALO_COLOR, thickness=4)
         _draw_open_corners(out, x1, y1, x2, y2, BRACKET_COLOR, thickness=2)
         ax, ay = _anchor_map_xy(det, combined_map)
         px, py = int(round(ax * sx)), int(round(ay * sy))
+        cv2.circle(out, (px, py), 6, HALO_COLOR, -1, cv2.LINE_AA)
         cv2.circle(out, (px, py), 4, ANCHOR_EDGE, -1, cv2.LINE_AA)
         cv2.circle(out, (px, py), 2, ANCHOR_FILL, -1, cv2.LINE_AA)
         if n <= LABEL_MAX:
-            cv2.putText(
-                out,
-                f"T{i + 1}",
-                (x1, max(12, y1 - 4)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.35,
-                BRACKET_COLOR,
-                1,
-                cv2.LINE_AA,
-            )
+            org = (x1, max(12, y1 - 4))
+            cv2.putText(out, f"T{i + 1}", org, cv2.FONT_HERSHEY_SIMPLEX, 0.35, HALO_COLOR, 3, cv2.LINE_AA)
+            cv2.putText(out, f"T{i + 1}", org, cv2.FONT_HERSHEY_SIMPLEX, 0.35, BRACKET_COLOR, 1, cv2.LINE_AA)
     return out
