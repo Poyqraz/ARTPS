@@ -36,7 +36,7 @@ Preview pages / contact sheet: `paper/iac2026/_preview_pages/` (untracked).
 | Body font | Times 10 pt, embedded | `newtx` / Times-like | `mathptmx` 10 pt | `newtxtext`+`newtxmath`, T1 | PASS (post-pass) | OFFICIAL_2026 |
 | Paper ID | on manuscript | `\IACpapernumber` above title | footer only | ID `\normalsize` above title; keep footer | PASS (post-pass) | OFFICIAL_2026 |
 | Title | large bold, not oversized | `\large\bfseries` | `\Large\bfseries` | drop `\Large` → `\large\bfseries` | PASS (post-pass) | OFFICIAL_2026 |
-| Author / affil | readable | bold author; italic affil | similar | `\normalsize\bfseries` author; `\small\itshape` affil; corresponding upright | PASS (post-pass) | OFFICIAL_2026 |
+| Author / affil | readable | bold author; italic affil left; corresponding left | similar | `\normalsize\bfseries` author centered; `\normalsize\itshape` affil left; corresponding `\normalsize` upright left | PASS (post-pass) | OFFICIAL_2026 |
 | Abstract heading | centered bold Abstract | centered **Abstract** | flush-left bold | centered bold Abstract | PASS (post-pass) | OFFICIAL_2026 |
 | Abstract body | as submitted | n/a | 5-arg `\IACmaketitle` #4 | byte-for-byte unchanged | PASS | OFFICIAL_2026 |
 | Keywords | present | Keywords line | present | keep | PASS | OFFICIAL_2026 |

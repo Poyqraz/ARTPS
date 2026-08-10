@@ -18,6 +18,8 @@
 
 `final_visual_flow_polish_complete: true`
 
+`titleblock_affiliation_align_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -36,9 +38,9 @@ It is **not** an official IAF submission receipt and **not** an accepted full-pa
 ## Author metadata
 
 - Corresponding author: Poyraz Baydemir
-- Affiliation: Selçuk University, Konya, Türkiye (unchanged)
+- Affiliation: Faculty of Technology, Selçuk University, Konya, Türkiye (author-supplied; left-aligned 10 pt italic)
 - Email: `poyrazbaydemir@gmail.com` (author-supplied; replaced `CORRESPONDING_EMAIL_TBD` only)
-- Authorship order / affiliation text: unchanged
+- Authorship order unchanged; affiliation marker `a`; corresponding line left-aligned upright
 
 ## Scientific freeze snapshot
 
@@ -184,4 +186,16 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Fig. 4 canvas `(7.4, 4.83)` / 9 pt titles (~8 pt physical); overlay `candidate_support_v3` dual-stroke halo; Fig. 3 PNG unchanged
 - Pages: 11; PDF bytes: 3,446,057; US Letter; overfull 0
 - Metrics unchanged; `test_opened: false`; no new experiment
+- local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean
+
+## Title-block affiliation alignment
+
+- `titleblock_affiliation_align_complete: true`
+- Centered: paper code, title (`\large\bfseries`), author (`\normalsize\bfseries`, `$^{a,*}$`)
+- Left-aligned: `$^{a}$ Faculty of Technology, Selçuk University, Konya, Türkiye` (`\normalsize\itshape`)
+- Left-aligned: `* Corresponding author: poyrazbaydemir@gmail.com` (`\normalsize\upshape`)
+- Header/footer wording and rules unchanged; paper code `IAC-26,A3,IP,109,x109221`
+- Abstract/keywords/metrics unchanged; `\setstretch{1.0}`; `\parskip=0pt`; `\parindent=12pt`
+- Spacing variant B kept: author→affil 0.25em, affil→corresponding 0.35em, corresponding→Abstract 0.6em
+- Pages: 11; PDF bytes: 3,446,871; US Letter; overfull 0
 - local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean
