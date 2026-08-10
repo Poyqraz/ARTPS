@@ -36,6 +36,9 @@ jobs:
             texlive-latex-recommended \
             texlive-latex-extra \
             texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-plain-generic \
+            tex-gyre \
             texlive-science \
             lmodern \
             python3 \
@@ -125,11 +128,33 @@ jobs:
             fi
           done
           overfull=$(grep -c 'Overfull \\hbox' main.log || true)
-          echo "Overfull \\hbox count (warn-only): $overfull"
+          echo "Overfull \\hbox count: $overfull"
           if [ "$overfull" -gt 0 ]; then
             grep -n 'Overfull \\hbox' main.log | head -n 20 || true
+            echo "ERROR: overfull \\hbox is a blocker"
+            fail=1
           fi
           exit $fail
+
+      - name: PDF size and page count
+        run: |
+          set -e
+          bytes=$(stat -c%s main.pdf)
+          pages=$(pdfinfo main.pdf | awk -F: '/^Pages:/ {gsub(/ /,"",$2); print $2}')
+          echo "PDF bytes: $bytes"
+          echo "PDF pages: $pages"
+          if [ "$bytes" -ge 4500000 ]; then
+            echo "WARNING: PDF exceeds 4.5 MB target ($bytes bytes)"
+          fi
+          if [ "$bytes" -ge 5000000 ]; then
+            echo "ERROR: PDF must be under 5 MB ($bytes bytes)"
+            exit 1
+          fi
+          if [ "$pages" -gt 15 ]; then
+            echo "ERROR: PDF exceeds 15-page hard max ($pages pages)"
+            exit 1
+          fi
+          echo "OK: size and page count"
 
       - name: Upload manuscript preview
         uses: actions/upload-artifact@v4

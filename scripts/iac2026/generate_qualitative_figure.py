@@ -44,6 +44,11 @@ from _candidate_support_overlay import (  # noqa: E402
     draw_candidate_support_overlay,
     overlay_geometry_counts,
 )
+from _figure_typography import (  # noqa: E402
+    FIG_DPI,
+    apply_manuscript_serif,
+    save_manuscript_figure,
+)
 
 MANIFEST = REPO / "reproduction/iac2026/manifests/independent_eval_v1.csv"
 FREEZE = REPO / "reproduction/iac2026/test_freeze/TEST_OPEN_STATUS.yaml"
@@ -213,7 +218,8 @@ def main() -> int:
     depth_n = (depth_n - depth_n.min()) / (float(depth_n.max() - depth_n.min()) + 1e-8)
 
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=200)
+    apply_manuscript_serif()
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=FIG_DPI)
     panels = [
         (axes[0, 0], rgb_disp, "a) RGB input", None),
         (axes[0, 1], combined_map, "b) Post-suppression combined map", "inferno"),
@@ -225,14 +231,13 @@ def main() -> int:
             ax.imshow(img)
         else:
             ax.imshow(img, cmap=cmap)
-        ax.set_title(title, fontsize=9, pad=4)
+        ax.set_title(title, pad=4)
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
     fig.tight_layout(pad=0.35)
-    fig.savefig(OUT_PNG, dpi=200, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save_manuscript_figure(fig, OUT_PNG, dpi=FIG_DPI)
 
     meta = {
         "sample_id": sample["sample_id"],

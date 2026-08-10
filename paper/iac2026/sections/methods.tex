@@ -54,7 +54,7 @@ Cue maps therefore highlight unusual appearance or structure relative to a refer
 distribution of ``normal'' terrain context.
 No single cue is treated as a mineral detector, lithology classifier, or complete science
 label; each map is an input to fusion and localization.
-Figure~\ref{fig:qualitative}(b) shows the post-suppression combined anomaly map on a non-test
+Fig.~\ref{fig:qualitative}(b) shows the post-suppression combined anomaly map on a non-test
 example.
 
 \subsection{Monocular relative depth}
@@ -67,7 +67,7 @@ transferable across images as a common metric scale.
 Accordingly, no metric-depth claim is made in the present study.
 Depth supports apparent size--distance policy and spatial structuring of candidates, and it
 feeds the depth-edge cue used in frozen multi-cue fusion.
-Figure~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
+Fig.~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
 
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
@@ -106,14 +106,14 @@ These are the frozen fusion coefficients used to generate the scores evaluated u
 They are not claimed to be optimal or learned.
 The proximity multiplier lies in a narrow band near \(0.75\), so far-field responses are
 down-weighted rather than zeroed.
-That fixed-coefficient mix is the measured Layer~B path in Figure~\ref{fig:pipeline}.
+That fixed-coefficient mix is the measured Layer~B path in Fig.~\ref{fig:pipeline}.
 Layer~C ranking---curiosity, soft similarity / diversity, and the Priority Buffer---is an
 operational selection stack for onboard downlink; it is not applied when forming the frozen
 image-level score.
 Conflating Layer~B image scores with Layer~C ranked target lists would misstate what the
 supplementary validation actually measured.
-Figure~\ref{fig:cue-decomp} shows how that frozen mix is assembled on the same non-test image
-as Figure~\ref{fig:qualitative}.
+Fig.~\ref{fig:cue-decomp} shows how that frozen mix is assembled on the same non-test image
+as Fig.~\ref{fig:qualitative}.
 Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
 Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
 image-relative discontinuity cue, not metric distance and not protrusion.
@@ -134,7 +134,7 @@ Candidates that fail validity checks after masks do not contribute to
 the frozen image-level score.
 The frozen aggregation is the maximum among remaining valid candidates, not a mean over the
 full anomaly map and not a curiosity-weighted sum.
-Figure~\ref{fig:qualitative}(d) overlays only those remaining valid regions; it is not a
+Fig.~\ref{fig:qualitative}(d) overlays only those remaining valid regions; it is not a
 downlink ranking and does not apply curiosity, diversity, or the Priority Buffer.
 
 \subsection{Operational false-positive suppression}
@@ -158,7 +158,7 @@ They reduce invalid candidates; they do not establish that a surviving region is
 relevant.
 
 Only candidates that remain valid after these checks contribute to the frozen image-level
-score; Figure~\ref{fig:qualitative}(d) shows that candidate-support overlay on one non-test
+score; Fig.~\ref{fig:qualitative}(d) shows that candidate-support overlay on one non-test
 example, not a curiosity-ranked downlink list.
 A candidate that survives suppression is still only a localization hypothesis: it is not a
 confirmed science target and is not automatically queued for downlink.
@@ -185,7 +185,7 @@ The example is illustrative and is not used as an additional quantitative benchm
 \centering
 \includegraphics[width=\textwidth]{figures/fig_cue_decomposition_artps.png}
 \caption{Cue decomposition of the frozen multi-cue score on the same non-test image as
-Figure~\ref{fig:qualitative}.
+Fig.~\ref{fig:qualitative}.
 Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
 pre-suppression fused map after proximity mixing.
 Smaller depth-Laplacian and fine-detail terms also enter the mix but are not shown as

@@ -14,6 +14,8 @@
 
 `close_far_qualitative_figure: true`
 
+`iac2026_template_conformance_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -153,3 +155,19 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 
 - `close_far_qualitative_figure: true`
 - Author-provided non-test pool only; Fig.~4 illustrative close/far pair; no new metric, no test split
+
+## Template conformance pass
+
+- `iac2026_template_conformance_complete: true`
+- Official: IAC 2026 Manuscript Guidelines (IAF PDF)
+- Community reference only: grande-dev `IAC_style.cls` (2024-based / 2025 update); not adopted wholesale; no Roman+underline headings; copyright Form A / IAF-held unchanged
+- Geometry: left/right 2.25 cm, top/bottom 3.35 cm, `columnsep` 0.8 cm; US Letter 612×792
+- Font: `newtxtext` + `newtxmath`, 10 pt T1 (embedded TeXGyreTermes / NewTX)
+- Fig. caption naming: `Fig.`; in-text `Fig.~\ref`; tables remain `Table` above
+- Fig. 1: B heading / entropy text overlap fixed (bbox intersection area 0); A/B/C topology unchanged
+- Raster: 180 dpi + PNG optimize; Fig. 2/3/4 sources, xywh, scores unchanged
+- Pages: 11; PDF bytes: 4,060,416 (≤4.5 MB target; CI hard &lt;5 MB)
+- Metrics unchanged (historical 0.894/0.847/0.823/0.856/28.1; supp 0.772/0.956)
+- `test_opened: false`; `final_test_authorized: false`
+- Paper code: `IAC-26,A3,IP,109,x109221` (title block + footer)
+- local verify: `pytest -q tests/iac2026` 232 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean; overfull `\hbox` 0
