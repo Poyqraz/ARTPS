@@ -78,6 +78,15 @@ def test_iac2026_template_conformance_formatting():
     assert decl_src.find(r"\Needspace") < decl_src.find(r"\section*{Declaration")
     freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
     assert "balanced_float_flow_complete: true" in freeze_md
+    assert "heading_first_indent_complete: true" in freeze_md
+    assert r"\titlespacing*{\section}" not in sty
+    assert r"\titlespacing*{\subsection}" not in sty
+    assert r"\titlespacing*{\subsubsection}" not in sty
+    assert r"\titlespacing{\section}" in sty
+    assert r"\titlespacing{\subsection}" in sty
+    assert r"\titlespacing{\subsubsection}" in sty
+    assert "indentfirst" not in sty
+    assert r"\setlength{\parindent}{12pt}" in sty
     # No aggressive post-figure* FloatBarrier chain (PR #49 regression).
     for label in ("fig:pipeline", "fig:qualitative", "fig:cue-decomp"):
         i = methods.find(rf"\label{{{label}}}")

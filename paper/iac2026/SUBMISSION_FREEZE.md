@@ -26,6 +26,8 @@
 
 `balanced_float_flow_complete: true`
 
+`heading_first_indent_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -235,3 +237,11 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Targeted `\Needspace{2--3\baselineskip}` at short closers; AI declaration `\Needspace{8\baselineskip}` retained
 - Geometry lock unchanged; science/metrics/PNG unchanged; `test_opened: false`
 - Pages: 11; PDF bytes: 3,446,054; US Letter; overfull `\hbox`: 0; no EMPTY_OR_NEAR_EMPTY / HALF_COLUMN_STRANDED interior pages
+
+## Heading first-paragraph indent
+
+- `heading_first_indent_complete: true`
+- Unstarred `\titlespacing` for section/subsection/subsubsection so `\parindent=12pt` applies to the first paragraph after a heading (official template first-line offset ≈14 pt; 12 pt kept)
+- No `indentfirst`; no manual `\hspace`; column/page continuations remain flush
+- Geometry/science/PNG/float policy unchanged
+- Pages: 11; PDF bytes: 3,446,095; overfull `\hbox`: 0
