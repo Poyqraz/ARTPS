@@ -1,9 +1,9 @@
 \FloatBarrier
 \section{Discussion}
 \label{sec:discussion}
-ARTPS is best read as an operational architecture: anomaly cues and relative depth feed
-fusion, localization, suppression, diversity, and buffering, with explicit no-selection
-when evidence is insufficient.
+ARTPS is an operational target-prioritization architecture in which anomaly cues and relative
+depth feed fusion, localization, suppression, diversity, and buffering, with explicit
+no-selection when evidence is insufficient.
 The design goal is structured prioritization under rover constraints, not unconstrained
 claim of superior detection in all regimes.
 Anomaly-only policies miss that a high cue is not automatically a science-interest target
@@ -28,8 +28,8 @@ Corner brackets and, where available, a translucent support footprint on the ove
 valid localization hypothesis under the image-level scoring path, not a pixel-level segmentation,
 not a measured curiosity rank, and not a claim that the region is scientifically confirmed.
 
-The entropy-weighted fusion rule remains the architectural specification; the reported
-evaluation uses fixed-coefficient multi-cue fusion.
+The entropy-weighted fusion rule remains the specified adaptive fusion mode.
+The human-reviewed validation uses the fixed-coefficient image-level scoring configuration.
 Table~\ref{tab:eval-tracks} summarizes the primary performance evaluation and the
 human-reviewed validation.
 The initial binary labels were produced by a classical-image heuristic with forced $180/180$

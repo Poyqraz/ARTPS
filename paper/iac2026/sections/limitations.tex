@@ -11,15 +11,15 @@ The human-reviewed set is a repeat-author review, not an independent second anno
 The human-reviewed set contains only $20$ negatives among $360$ images ($8$ validation,
 $2$ test).
 The present human-reviewed validation subset contains only eight negative
-examples, making operating-threshold calibration unstable.
-The small number of negative validation examples limits both operating-threshold calibration
-and the precision of the AUROC estimate.
+examples, making operating-threshold calibration unstable and limiting the precision of
+the AUROC estimate.
 The image-level score does not include curiosity ranking, diversity
 penalty, or the Priority Buffer.
 The training-set lineage of the fixed checkpoints was not independently cross-checked against
 the human-reviewed corpus; the human-reviewed analysis is therefore treated as an additional
 validation study rather than an external benchmark.
-No embedded/Jetson or full-pipeline timing result is added here.
+Full-pipeline edge-hardware timing, including Jetson deployment, was not evaluated in this
+study.
 
 ARTPS is a safety-aware, flight-readiness-oriented software architecture.
 It is not flight-qualified avionics, not mission-certified, and does not assert

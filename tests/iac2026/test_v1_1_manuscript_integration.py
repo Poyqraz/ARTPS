@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import yaml
@@ -80,6 +81,7 @@ def test_iac2026_template_conformance_formatting():
     assert "balanced_float_flow_complete: true" in freeze_md
     assert "heading_first_indent_complete: true" in freeze_md
     assert "publication_language_complete: true" in freeze_md
+    assert "primary_evaluation_completeness_complete: true" in freeze_md
     assert r"\titlespacing*{\section}" not in sty
     assert r"\titlespacing*{\subsection}" not in sty
     assert r"\titlespacing*{\subsubsection}" not in sty
@@ -511,3 +513,93 @@ def test_candidate_support_overlay_invariance_and_language():
     assert "translucent footprint" in results
     assert "support footprint" in disc or "translucent support footprint" in disc
     assert "deterministically selected" not in methods
+
+
+def _visible_tex(path: Path) -> str:
+    return "\n".join(
+        ln for ln in path.read_text(encoding="utf-8").splitlines() if not ln.lstrip().startswith("%")
+    )
+
+
+def test_primary_evaluation_completeness_and_fusion_scope():
+    intro = REPO / "paper/iac2026/sections/introduction.tex"
+    methods = REPO / "paper/iac2026/sections/methods.tex"
+    exp_p = REPO / "paper/iac2026/sections/experiments.tex"
+    results_p = RESULTS
+    disc_p = DISCUSSION
+    lim_p = LIMITATIONS
+    conc = REPO / "paper/iac2026/sections/conclusion.tex"
+    body_paths = (intro, methods, exp_p, results_p, disc_p, lim_p, conc)
+    body = "\n".join(_visible_tex(p) for p in body_paths)
+    body_l = body.lower()
+    exp = _visible_tex(exp_p)
+    exp_l = exp.lower()
+    methods_l = _visible_tex(methods).lower()
+    results = _visible_tex(results_p)
+    freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
+    audit = (REPO / "paper/iac2026/PRIMARY_EVALUATION_DEFINITION_AUDIT.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "entropy-weighted" in methods_l
+    assert "specified adaptive fusion mode" in methods_l
+    assert "fixed fusion coefficients" in methods_l
+    assert "the human-reviewed validation uses the fixed-coefficient" in body_l
+    for banned in (
+        "the reported evaluation uses",
+        "reported evaluation applies",
+        "reported evaluation uses the fixed",
+        "coefficients used to generate the reported image-level",
+    ):
+        assert banned not in body_l
+
+    flat = " ".join(body.split())
+    for sent in re.split(r"(?<=[A-Za-z\}])\.\s+", flat):
+        sl = sent.lower()
+        if "0.894" in sl:
+            assert "fixed-coefficient" not in sl
+            assert "entropy-weighted" not in sl
+        if "708" in sent:
+            assert "comprising" not in sl
+
+    assert r"2{,}847" in exp or "2,847" in exp
+    assert r"1{,}247" in exp or "1,247" in exp
+    assert "892" in exp
+    assert "708" in exp
+    assert "sol 100" in exp_l and "sol 1" in exp_l
+    assert "diverse field conditions" in exp_l
+    assert "wrn-50-2" in exp_l
+    assert "selected on validation" in exp_l
+    assert "measured on the test set" in exp_l
+    assert "reference labels" in exp_l
+    assert "primary anomaly-discrimination" in exp_l
+    assert "artps evaluation ground truth" not in exp_l
+    assert "summarizes detection and lightweight runtime" in exp_l
+    assert "restates" not in exp_l
+    assert "primary artps detection configuration" in exp_l
+    assert "layer~c ranking not applied" in exp_l
+
+    fig2 = _visible_tex(methods)
+    fig2_cap = fig2[fig2.find(r"\label{fig:qualitative}") - 1200 : fig2.find(r"\label{fig:qualitative}")]
+    fig2_flat = " ".join(fig2_cap.split())
+    assert "from a non-test Mars scene selected before inference" in fig2_flat
+    fig4_cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
+    fig4_flat = " ".join(fig4_cap.split())
+    assert "Qualitative examples of the ARTPS pipeline" in fig4_flat
+    assert "Reviewed / unchanged / relabeled" in results
+    assert "None of these figures" not in results
+
+    disc = _visible_tex(disc_p)
+    assert "operational target-prioritization architecture" in disc
+    lim = _visible_tex(lim_p)
+    assert "Full-pipeline edge-hardware timing, including Jetson deployment, was not evaluated" in lim
+
+    main = MAIN.read_text(encoding="utf-8")
+    assert "0.772" not in main
+    for token in ("0.894", "0.847", "0.823", "0.856", "28.1"):
+        assert token in main
+        assert token in results
+    assert "0.772" in results
+    assert "UNRESOLVED (C)" in audit
+    assert "primary_evaluation_completeness_complete: true" in freeze_md
+    assert "fusion-mode C" in freeze_md.lower() or "UNRESOLVED (C)" in freeze_md
