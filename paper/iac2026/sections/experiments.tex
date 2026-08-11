@@ -6,13 +6,19 @@ A qualitative processing example (Fig.~\ref{fig:qualitative}) illustrates the im
 scoring path only; it is not a third quantitative evaluation.
 
 \subsection{Primary performance evaluation}
-ARTPS was evaluated for detection and lightweight runtime performance on NASA Mars rover
-imagery.
-The study reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, a PaDiM/PatchCore baseline
-AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight preprocessing--fusion--localization
-core.
-Table~\ref{tab:accepted-abstract} restates those values; lightweight FPS is reported only
-there.
+ARTPS was evaluated for detection and lightweight runtime performance on a $2{,}847$-image
+Mars-rover dataset, including $1{,}247$ Curiosity Mastcam images (Sol 100--1700) and
+$892$ Perseverance Mastcam-Z images (Sol 1--400).
+A $708$-image evaluation subset was used under diverse field conditions.
+Imagery spans approximately $640\times480$ to $1920\times1080$.
+The evaluation used identical train/validation/test splits and consistent random seeds.
+Decision thresholds were selected on validation data and the reported primary performance
+was measured on the test set.
+PaDiM and PatchCore, with a WRN-50-2 backbone, were evaluated under the same partition and
+preprocessing policy as the primary ARTPS evaluation; the combined baseline AUROC is $0.856$.
+The study reports ARTPS AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, and $28.1$\,FPS at
+$256\times256$ for a lightweight preprocessing--fusion--localization core.
+Table~\ref{tab:accepted-abstract} summarizes detection and lightweight runtime performance.
 
 \subsection{Human-reviewed validation protocol}
 A homogeneous Curiosity Mastcam-oriented corpus of $360$ images was assembled with fixed split
@@ -59,26 +65,32 @@ Attribute & Primary ARTPS evaluation & Human-reviewed validation \\
 \midrule
 Objective & Overall detection and runtime performance
   & Image-level ranking under reviewed labels \\
-Data basis & NASA Mars rover imagery used for ARTPS performance evaluation
+Data basis & $2{,}847$ Mars-rover images from Curiosity Mastcam and Perseverance Mastcam-Z
   & 360-image Curiosity Mastcam-oriented corpus \\
-Annotation & ARTPS evaluation ground truth
+Evaluation protocol & Validation-selected operating threshold; performance measured on test data
+  & 252 / 54 / 54 split; reserved test unused \\
+Annotation & Reference labels for primary anomaly-discrimination evaluation
   & Model-blind human review \\
-Scoring / system scope & ARTPS evaluation configuration
-  & Fixed-coefficient image-level score before curiosity/diversity ranking \\
-Evaluation subset & ARTPS performance-evaluation dataset
+Scoring / system scope & Primary ARTPS detection configuration (Layer~C ranking not applied to these metrics)
+  & Fixed-coefficient image-level score before Layer~C ranking \\
+Evaluation subset & 708-image evaluation subset under diverse field conditions
   & 54-image validation partition (46 positive / 8 negative) \\
-Metrics & AUROC, AUPRC, F1, baseline AUROC, FPS
+Baseline & PaDiM/PatchCore (WRN-50-2)
+  & --- \\
+Metrics & AUROC, AUPRC, F1, lightweight FPS
   & AUROC, AP \\
-Operational ranking & ARTPS system evaluation as reported
+Operational ranking & Layer~C ranking not applied to these metrics
   & Curiosity, diversity, and Priority Buffer excluded from this score analysis \\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
 \subsection{Baselines and metrics}
-PaDiM/PatchCore is the anomaly-detection baseline~\citep{defard2020padim,roth2022patchcore}.
-PaDiM and PatchCore remain separate baselines and are not active components of the reported
-image-level score.
+PaDiM/PatchCore is the anomaly-detection baseline~\citep{defard2020padim,roth2022patchcore},
+with a WRN-50-2 backbone under the same partition and preprocessing policy as the primary
+evaluation.
+PaDiM and PatchCore remain separate baselines and are not active components of the
+human-reviewed image-level score.
 Primary evaluation metrics are AUROC, AUPRC, F1, the baseline AUROC, and lightweight-core FPS.
 For the human-reviewed validation, AUROC is the principal ranking-oriented metric and AP is a
 secondary metric reported with prevalence context.
@@ -95,5 +107,5 @@ Runs are aborted when required inputs or predefined evaluation conditions are in
 The lightweight preprocessing--fusion--localization configuration achieved $28.1$\,FPS at
 $256\times256$ on the development workstation.
 This measurement excludes learned DPT and autoencoder inference.
-The present study does not report full-pipeline edge-hardware or Jetson timing.
+Full-pipeline edge-hardware timing, including Jetson deployment, was not evaluated in this study.
 No flight qualification is claimed.

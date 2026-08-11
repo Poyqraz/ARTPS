@@ -45,7 +45,7 @@ AUROC is the principal ranking-oriented metric for this analysis.
 Item & Value \\
 \midrule
 \multicolumn{2}{@{}l}{\emph{Annotation review (360 images)}} \\
-Reviewed / agreement / disagreement & $360$ / $188$ / $172$ \\
+Reviewed / unchanged / relabeled & $360$ / $188$ / $172$ \\
 Initial heuristic labels (pos./neg.) & $180$ / $180$ \\
 Human-reviewed labels (pos./neg.) & $340$ / $20$ \\
 \midrule
@@ -74,14 +74,12 @@ shows one close-range and one distant-scene illustration from preselected non-te
 to show how the ARTPS pipeline behaves under different apparent object-scale
 contexts.
 These examples are qualitative and are not a controlled near/far benchmark.
-None of these figures enters Table~\ref{tab:accepted-abstract} or Table~\ref{tab:indep-v11},
-or adds an AUROC, AUPRC, F1, or throughput number.
 
 \FloatBarrier
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_close_far_qualitative_artps.png}
-\caption{Qualitative ARTPS examples illustrating the ARTPS pipeline on one
+\caption{Qualitative examples of the ARTPS pipeline on one
 close-range scene and one distant-scene from preselected non-test scenes.
 For each scene, the figure shows the RGB input, the post-suppression combined map, and the
 candidate-support overlay.

@@ -9,11 +9,11 @@ Quantitative performance claims appear only in Section~\ref{sec:results}.
 Layer~A generates optional enhancement, reconstruction, relative-depth, and texture cues.
 The optional classifier contributes a known-value scalar to candidate-level scoring, not to
 fixed map fusion.
-Layer~B is the image-level scoring path: cue normalization, fixed-coefficient fusion,
+Layer~B is the image-level scoring path: cue normalization, fusion,
 proximity modulation, map-level suppression, localization, candidate scoring with
 validity gates, and aggregation of remaining valid candidates.
-Entropy-weighted fusion is the architectural specification (dashed); the reported evaluation
-uses the fixed-coefficient mix.
+Entropy-weighted fusion is the specified adaptive fusion mode (dashed).
+The human-reviewed validation uses the fixed-coefficient image-level scoring configuration.
 Layer~C is the operational ranking stack (curiosity, soft similarity / diversity, clustering,
 Priority Buffer / Top-$K$) and is not included in the image-level score.
 The human-reviewed validation uses the image-level scoring path in Layer~B; Layer~C performs
@@ -25,15 +25,14 @@ operational target ranking.}
 ARTPS ingests a single RGB field image and produces a ranked list of candidate targets, or an
 explicit no-selection outcome when evidence is insufficient.
 Primary modules are: (i)~multi-cue anomaly responses, (ii)~monocular relative depth,
-(iii)~multi-cue fusion (entropy-weighted specification; reported evaluation uses fixed
-coefficients),
+(iii)~multi-cue fusion (entropy-weighted specification as the adaptive fusion mode),
 (iv)~candidate localization, (v)~operational false-positive
 suppression, (vi)~apparent size / image-relative size--distance policy,
 (vii)~feature-space diversity, (viii)~Priority Buffer, and (ix)~runtime fail-safe behaviour
 with evaluation-integrity checks.
 The image-level ARTPS score is defined as the maximum score among candidates that remain
 valid after operational filtering.
-The same aggregation is used throughout the reported evaluation.
+The human-reviewed validation uses this aggregation.
 Curiosity ranking, feature-space diversity, and the Priority Buffer are operational
 selection mechanisms; they are \emph{not} applied on the image-level score.
 Optional Mars-oriented enhancement may precede cue extraction; it is preprocessing, not a
@@ -74,7 +73,7 @@ feeds the depth-edge cue used in fixed-coefficient multi-cue fusion.
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_qualitative_artps.png}
-\caption{Qualitative ARTPS processing example from a preselected non-test Mars scene
+\caption{Qualitative ARTPS processing example from a non-test Mars scene
 selected before inference using predefined scene-composition criteria.
 Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
 depth, and the candidate-support overlay produced by the ARTPS image-level scoring path.
@@ -97,7 +96,7 @@ The ARTPS specification defines an entropy-weighted fusion rule: for normalized 
 \(A_{\mathrm{comb}}=\sum_i w_i A_i'\).
 Low-entropy (peaked) maps receive higher weight.
 Those normalized entropy weights sum to one.
-The reported evaluation applies a
+The human-reviewed validation applies a
 \emph{fixed-coefficient} linear mix instead of this entropy rule.
 Let \(R\), \(E_D\), \(T\), \(L_D\), and \(F_D\) denote inference-normalized reconstruction
 residual, relative-depth Sobel edge, texture / local-contrast, depth-Laplacian, and
@@ -121,11 +120,12 @@ The values \(0.50/0.30/0.20/0.08/0.12\) are \emph{fixed fusion coefficients}: th
 implementation coefficients, they are not required to sum to one, and the output is
 subsequently modulated and clipped.
 They are distinct from the entropy-weighted architectural specification.
-These are the fusion coefficients used to generate the reported image-level scores.
+These are the fusion coefficients used to generate the human-reviewed image-level scores.
 They are not claimed to be optimal or learned.
 The proximity multiplier lies in a narrow band near \(0.75\), so far-field responses are
 down-weighted rather than zeroed.
-That fixed-coefficient mix is the measured Layer~B path in Fig.~\ref{fig:pipeline}.
+That fixed-coefficient mix is the Layer~B path used in the human-reviewed validation
+(Fig.~\ref{fig:pipeline}).
 Layer~C ranking---curiosity, soft similarity / diversity, and the Priority Buffer---is an
 operational selection stack for onboard downlink; it is not applied when forming the
 image-level score.
@@ -157,8 +157,8 @@ Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed wit
 gradient magnitude).
 Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
 \Needspace{4\baselineskip}
-The classifier / known-value term is enabled in the reported configuration for candidate scoring and
-curiosity, but it is not a term in the fused map.
+The classifier / known-value term is enabled in the implemented Layer~B configuration for
+candidate scoring and curiosity, but it is not a term in the fused map.
 Display scaling in the figure is independent of inference percentile normalization and does
 not constitute a new quantitative experiment.
 
@@ -210,7 +210,7 @@ Let \(F_r\) be the pooled combined-map response, \(D_r\) the pooled relative-dep
 classifier and not a claimed lithology label).
 The ARTPS scoring function supports optional PaDiM and PatchCore responses.
 These terms were disabled in the human-reviewed validation and therefore contribute zero to
-the reported image-level score.
+the human-reviewed image-level score.
 PaDiM/PatchCore is evaluated separately as a baseline.
 The candidate equations are
 \[
@@ -241,12 +241,12 @@ ordering).
 This is a relative heuristic, not a physical size measurement in metres.
 
 \subsection{Operational ranking sequence}
-Candidates that remain valid after perception and masks may enter an operational ranking
+Candidates that remain valid after perception and masks enter an operational ranking
 stack for onboard downlink.
 The sequence is: a surviving candidate receives a curiosity score; a soft similarity penalty
-may then reduce its priority among already selected items; the Priority Buffer may retain a
+then reduces its priority among already selected items; the Priority Buffer retains a
 high-anomaly candidate that lost that diversity contest for later reconsideration.
-This operational ranking path is not part of the reported image-level score.
+This operational ranking path is not part of the image-level score.
 
 \subsection{Curiosity score}
 For operational ranking, ARTPS computes a curiosity score as a non-negative weighted
@@ -282,7 +282,7 @@ every rare target is recovered, and it is not part of the image-level score.
 
 \subsection{Runtime and safety-aware fail-closed behaviour}
 ARTPS is intended for edge-oriented operation with bounded compute.
-Runtime processing may return an explicit no-selection outcome when evidence is insufficient.
+Runtime processing returns an explicit no-selection outcome when evidence is insufficient.
 Evaluation is aborted when required inputs or predefined evaluation conditions are incomplete,
 rather than emitting an unverified priority list.
 Safety bounds are stated in Section~\ref{sec:limitations}.

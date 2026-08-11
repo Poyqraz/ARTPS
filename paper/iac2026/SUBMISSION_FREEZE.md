@@ -256,3 +256,15 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Table 1 is evaluation design only (no result cells); Table 2/3 captions and Results headings updated
 - Metrics, counts, equations, PNGs, test embargo, and official geometry unchanged
 - Pages: 11; PDF bytes: 3,439,872; overfull `\hbox`: 0; `frozen` reviewer-visible count: 0
+
+## Primary evaluation completeness
+
+- `primary_evaluation_completeness_complete: true`
+- Fusion-mode C recorded: primary AUROC 0.894 remains UNRESOLVED (C); manuscript does not attach entropy-weighted or fixed-coefficient fusion to the primary result
+- Human-reviewed validation uses the fixed-coefficient Layer B image-level scoring configuration (AUROC 0.772)
+- Dataset LEVEL B: 2,847 total; 1,247 Curiosity Mastcam (Sol 100–1700); 892 Perseverance Mastcam-Z (Sol 1–400); 708-image evaluation subset under diverse field conditions (not claimed as a disjoint three-way partition)
+- Primary GT: reference labels for anomaly-discrimination evaluation (per-file labels not located; not invented)
+- Table 1 primary column concrete (design only); Section 4.1 expanded; no new numeric results
+- Abstract unchanged; `test_opened: false`
+- Pages: 11; PDF bytes: 3,440,153; US Letter; overfull `\hbox`: 0; no EMPTY_OR_NEAR_EMPTY / HALF_COLUMN_STRANDED interior pages
+- local verify: `pytest -q tests/iac2026` 233 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean
