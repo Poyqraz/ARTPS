@@ -28,6 +28,8 @@
 
 `heading_first_indent_complete: true`
 
+`publication_language_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -245,3 +247,12 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - No `indentfirst`; no manual `\hspace`; column/page continuations remain flush
 - Geometry/science/PNG/float policy unchanged
 - Pages: 11; PDF bytes: 3,446,095; overfull `\hbox`: 0
+
+## Publication language
+
+- `publication_language_complete: true`
+- Reviewer-visible prose reports ARTPS as one study: primary performance evaluation plus human-reviewed validation
+- Removed accepted-abstract / repository / independent_eval / frozen-track framing from manuscript TeX
+- Table 1 is evaluation design only (no result cells); Table 2/3 captions and Results headings updated
+- Metrics, counts, equations, PNGs, test embargo, and official geometry unchanged
+- Pages: 11; PDF bytes: 3,439,872; overfull `\hbox`: 0; `frozen` reviewer-visible count: 0

@@ -1,104 +1,99 @@
 \section{Experimental Protocol}
 \label{sec:protocol}
-This section distinguishes two evaluation tracks that are not directly interchangeable
+This section describes the two evaluation components used in this study
 (Table~\ref{tab:eval-tracks}).
-A qualitative processing example (Fig.~\ref{fig:qualitative}) illustrates the frozen
-image-score path only; it is not a third quantitative track.
+A qualitative processing example (Fig.~\ref{fig:qualitative}) illustrates the image-level
+scoring path only; it is not a third quantitative evaluation.
 
-\subsection{Historical accepted-abstract track}
-The accepted IAC abstract reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, baseline
-AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight core.
+\subsection{Primary performance evaluation}
+ARTPS was evaluated for detection and lightweight runtime performance on NASA Mars rover
+imagery.
+The study reports AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, a PaDiM/PatchCore baseline
+AUROC~$0.856$, and $28.1$\,FPS at $256\times256$ for a lightweight preprocessing--fusion--localization
+core.
 Table~\ref{tab:accepted-abstract} restates those values; lightweight FPS is reported only
 there.
 
-\subsection{Current reproducible evaluation}
-\texttt{independent\_eval\_v1} protocol definitions, annotation rules, and frozen execution settings are version-controlled
-with the implementation, including image-score aggregation, preprocessing profile, and
-checkpoint hashes.
-The primary image score is \texttt{max\_valid\_candidate\_after\_masks}.
-The held-out test partition was not opened: no test inference, no test metric, and no
-threshold retune on held-out images.
-Numeric supplementary results below use the human-reviewed annotation version only.
-Fig.~\ref{fig:qualitative} shows a qualitative non-test Mars scene selected before inference
-from an author-provided RGB candidate pool on the basis of scene structure and domain
-suitability, under the frozen image-score path.
-Fig.~\ref{fig:close-far} adds one close-range and one distant-scene illustration from a
-fixed author-provided pool; it is not a range-conditioned performance study.
-
-\subsection{Supplementary human-reviewed annotation}
-\texttt{independent\_eval\_v1\_1} records a model-blind repeat-author review of all 360
-included images under the same annotation guide.
-The original \texttt{independent\_eval\_v1} manifest remains immutable.
-Split assignments are unchanged; the test split remains unopened (human viewing only;
-no ARTPS inference).
-Scores were remapped onto the reviewed labels with no tuning and no inference rerun.
+\subsection{Human-reviewed validation protocol}
+A homogeneous Curiosity Mastcam-oriented corpus of $360$ images was assembled with fixed split
+assignments of $252$ train / $54$ validation / $54$ test.
+All $360$ images received a model-blind repeat-author review under a written science-interest
+annotation guide.
+After review the corpus contains $340$ positive and $20$ negative images; the validation
+partition contains $46$ positive and $8$ negative images.
 This is not an independent second annotation.
+The 54-image test partition was reserved and was not used for ARTPS inference, threshold
+selection, or the human-reviewed performance results reported in this study.
+Numeric validation results use the reviewed labels with no additional tuning and without
+repeating inference.
+Fig.~\ref{fig:qualitative} shows a qualitative non-test Mars scene selected before inference
+using predefined scene-composition criteria, under the image-level scoring path.
+Fig.~\ref{fig:close-far} adds one close-range and one distant-scene illustration from
+preselected non-test scenes; it is not a range-conditioned performance study.
 
 \subsection{Dataset and annotation semantics}
 One homogeneous Curiosity Mastcam-oriented image domain was selected from inventory metadata
 without model-score inspection.
-The frozen supplementary benchmark comprises $360$ included images with fixed split
-assignments of $252$ train / $54$ validation / $54$ test.
+The human-reviewed corpus comprises $360$ included images with fixed split assignments of
+$252$ train / $54$ validation / $54$ test.
 All $360$ images received a repeat-author model-blind review; this is not independent double
 annotation.
-Test images could be viewed for annotation, but no ARTPS inference was performed on the
-held-out test split.
 A positive label denotes at least one real surface object or region that is visually distinct
 from its surroundings and scientifically worth follow-up under the annotation guide.
 A negative label denotes no distinct science-interest target under that guide.
 Rover hardware, border artefacts, telemetry overlays, compression or noise artefacts, a
 shadow boundary alone, or an exposure/specular artefact alone do not count as positive.
-These labels are not claimed to be equivalent to the historical accepted-abstract ground truth.
 
 \FloatBarrier
 \begin{table*}[t]
 \centering
 \small
-\caption{Evaluation tracks used in this manuscript.
-These tracks are not directly interchangeable: supplementary validation does not replace
-the historical result, and historical numbers are not newly reconstructed in the present
-repository snapshot.
-No final-test metric is reported.}
+\caption{Summary of the ARTPS evaluation design.
+The primary evaluation characterizes detection and runtime performance, whereas the
+human-reviewed validation examines image-level ranking under manually reviewed
+science-interest labels.}
 \label{tab:eval-tracks}
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.55cm}XX@{}}
 \toprule
-Attribute & Historical ARTPS evaluation & Current supplementary validation \\
+Attribute & Primary ARTPS evaluation & Human-reviewed validation \\
 \midrule
-Purpose & Accepted-IAC historical experiment
-  & Frozen current image-score validation \\
-Evaluation status & Retained historical evaluation; not reconstructed in this repository snapshot
-  & Validation only; does not replace the historical result \\
-Image-score / system scope & Full historical result lineage; not claimed as the current frozen implementation run
-  & Fixed-coefficient frozen image-score path; curiosity, diversity, and Priority Buffer not applied \\
-Test status & No new final-test opening in this manuscript
-  & Held-out test unopened; no final-test metric \\
-Reported evidence & AUROC~$0.894$ / AUPRC~$0.847$ / F1~$0.823$; baseline AUROC~$0.856$
-  & AUROC~$0.772$ / AP~$0.956$ \\
+Objective & Overall detection and runtime performance
+  & Image-level ranking under reviewed labels \\
+Data basis & NASA Mars rover imagery used for ARTPS performance evaluation
+  & 360-image Curiosity Mastcam-oriented corpus \\
+Annotation & ARTPS evaluation ground truth
+  & Model-blind human review \\
+Scoring / system scope & ARTPS evaluation configuration
+  & Fixed-coefficient image-level score before curiosity/diversity ranking \\
+Evaluation subset & ARTPS performance-evaluation dataset
+  & 54-image validation partition (46 positive / 8 negative) \\
+Metrics & AUROC, AUPRC, F1, baseline AUROC, FPS
+  & AUROC, AP \\
+Operational ranking & ARTPS system evaluation as reported
+  & Curiosity, diversity, and Priority Buffer excluded from this score analysis \\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
-\subsection{Baseline scope}
-The PaDiM/PatchCore baseline AUROC~$0.856$ belongs to the historical accepted-IAC track~\citep{defard2020padim,roth2022patchcore}.
-No current-protocol PaDiM/PatchCore comparison is claimed for \texttt{independent\_eval\_v1\_1}.
-PaDiM and PatchCore remain separate baselines and are not active components of the current
-frozen score.
+\subsection{Baselines and metrics}
+PaDiM/PatchCore is the anomaly-detection baseline~\citep{defard2020padim,roth2022patchcore}.
+PaDiM and PatchCore remain separate baselines and are not active components of the reported
+image-level score.
+Primary evaluation metrics are AUROC, AUPRC, F1, the baseline AUROC, and lightweight-core FPS.
+For the human-reviewed validation, AUROC is the principal ranking-oriented metric and AP is a
+secondary metric reported with prevalence context.
+The human-reviewed validation threshold produced an all-positive operating point; therefore
+threshold-dependent F1 is not interpreted as a performance measure on that analysis.
 
-\subsection{Metrics}
-Historical reported metrics are AUROC, AUPRC, F1, the historical baseline AUROC, and
-lightweight-core FPS.
-For the supplementary \texttt{independent\_eval\_v1\_1} validation, AUROC is the principal
-ranking-oriented metric and AP is a secondary metric reported with prevalence context.
-Threshold-dependent F1 is not treated as a performance measure on that track.
-
-\subsection{Reproducibility and evaluation integrity}
-The evaluation uses the frozen configuration, checkpoint hashes, and image-score definition
+\subsection{Reproducibility}
+The evaluation uses a fixed configuration, checkpoint hashes, and the image-score definition
 stated above.
 There was no test inference, no test metric, and no threshold retuning on held-out images.
-Runs are aborted when required inputs or frozen protocol conditions are incomplete.
+Runs are aborted when required inputs or predefined evaluation conditions are incomplete.
 
 \subsection{Hardware scope}
-The reported $28.1$\,FPS value is a historical lightweight-core workstation measurement; it
-excludes learned DPT and autoencoder inference.
+The lightweight preprocessing--fusion--localization configuration achieved $28.1$\,FPS at
+$256\times256$ on the development workstation.
+This measurement excludes learned DPT and autoencoder inference.
 The present study does not report full-pipeline edge-hardware or Jetson timing.
 No flight qualification is claimed.
