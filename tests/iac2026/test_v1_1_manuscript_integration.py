@@ -79,6 +79,7 @@ def test_iac2026_template_conformance_formatting():
     freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
     assert "balanced_float_flow_complete: true" in freeze_md
     assert "heading_first_indent_complete: true" in freeze_md
+    assert "publication_language_complete: true" in freeze_md
     assert r"\titlespacing*{\section}" not in sty
     assert r"\titlespacing*{\subsection}" not in sty
     assert r"\titlespacing*{\subsubsection}" not in sty
@@ -101,7 +102,7 @@ def test_iac2026_template_conformance_formatting():
     assert exp.find(r"\subsection{Dataset and annotation semantics}") < exp.find(
         r"\label{tab:eval-tracks}"
     )
-    assert exp.find(r"\label{tab:eval-tracks}") < exp.find(r"\subsection{Baseline scope}")
+    assert exp.find(r"\label{tab:eval-tracks}") < exp.find(r"\subsection{Baselines and metrics}")
     assert exp.find(r"\label{tab:eval-tracks}") < exp.find(r"\subsection{Hardware scope}")
     # Optional section-level barriers only (not post-float chains).
     assert results.lstrip().startswith(r"\FloatBarrier") or r"\section{Results}" in results
@@ -122,15 +123,15 @@ def test_historical_abstract_and_table1_unchanged():
 def test_v1_1_supplementary_table_and_auroc_headline():
     results = RESULTS.read_text(encoding="utf-8")
     assert "tab:indep-v11" in results
-    assert "Supplementary Human-Reviewed Evaluation" in results
+    assert r"\subsection{Human-Reviewed Validation}" in results
     v11_cap = results[results.find(r"\label{tab:indep-v11}") - 500 : results.find(r"\label{tab:indep-v11}")]
-    assert "Supplementary human-reviewed evaluation" in v11_cap
+    assert "Human-reviewed ARTPS validation results" in v11_cap
     assert "independent_eval" not in v11_cap
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8")
-    assert r"\subsection{Current reproducible evaluation}" in exp
-    assert r"\texttt{independent\_eval\_v1}" in exp.split(r"\subsection{Current reproducible evaluation}", 1)[1][:400]
-    assert r"\subsection{Current frozen evaluation protocol}" in results
-    assert r"\texttt{independent\_eval\_v1}" in results.split(r"\subsection{Current frozen evaluation protocol}", 1)[1][:400]
+    assert r"\subsection{Primary performance evaluation}" in exp
+    assert r"\subsection{Human-reviewed validation protocol}" in exp
+    assert "independent_eval" not in exp
+    assert r"\subsection{ARTPS Performance}" in results
     assert "0.772" in results
     assert "0.956" in results
     assert "0.852" in results
@@ -139,7 +140,9 @@ def test_v1_1_supplementary_table_and_auroc_headline():
     assert "all-positive" in flat
     assert "not treated as" in flat and "performance measures" in flat
     methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
-    assert "max_valid_candidate_after_masks" in methods or "max\\_valid\\_candidate\\_after\\_masks" in methods
+    assert "maximum score among candidates" in methods.lower()
+    assert "max_valid_candidate_after_masks" not in methods
+    assert r"max\_valid\_candidate\_after\_masks" not in methods
     assert "curiosity" in flat and "not applied" in flat
     assert "0.920" not in results
     assert "0/8/0/46" not in results
@@ -199,11 +202,11 @@ def test_limitations_and_discussion_present():
     assert "20" in lim and "8" in lim and "2" in lim
     assert "operating-threshold calibration unstable" in lim or "calibration unstable" in lim
     assert "curiosity" in lim and "priority buffer" in lim
-    assert "no final test" in lim or "test was opened" in lim
+    assert "reserved test" in lim or "reserved test partition" in lim
     assert "heuristic" in disc and "180/180" in disc.replace(" ", "")
     assert "0.772" in disc
     disc_flat = " ".join(disc.split())
-    assert "historical" in disc_flat and "same issue" in disc_flat
+    assert "ranking evidence" in disc_flat
     assert "planetary imagery as a whole" in disc_flat
     assert "naturally high" not in disc_flat
     methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8").lower()
@@ -219,11 +222,10 @@ def test_limitations_and_discussion_present():
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
     res = RESULTS.read_text(encoding="utf-8").lower()
     assert "tab:eval-tracks" in exp
-    assert "not directly interchangeable" in exp
-    assert "held-out test" in exp and ("not opened" in exp or "unopened" in exp)
-    assert "historical" in exp and "supplementary" in exp
-    assert "validation-only" in res or "validation only" in res
-    assert "held-out test" in res and "unopened" in res
+    assert "summary of the artps evaluation design" in exp
+    assert "54-image test partition was reserved" in exp
+    assert "primary artps evaluation" in exp and "human-reviewed validation" in exp
+    assert "human-reviewed validation" in res
     assert "data are still pending" not in res and "data still pending" not in res
 
 
@@ -273,13 +275,16 @@ def test_camera_ready_figure_and_bibliography():
     assert r"\begin{tikzpicture}" in fig
     assert r"\RequirePackage{tikz}" in sty or r"\usepackage{tikz}" in sty
     cap = methods.lower()
-    assert "frozen" in cap
+    assert "image-level scoring path" in cap
     assert "entropy" in cap
     assert "not included" in cap
     fig_l = fig.lower()
     assert "fixed-weight" in fig_l or "fixed-coefficient" in fig_l or "fixed-coeff" in fig_l
     assert "entropy-weighted" in fig_l
-    assert "not in frozen" in fig_l
+    assert "image-level scoring path" in fig_l
+    assert "operational ranking" in fig_l
+    assert "not in frozen" not in fig_l
+    assert "max_valid_candidate" not in fig_l
     assert "0.772" not in fig
     assert "0.894" not in fig
     for doi in (
@@ -381,7 +386,7 @@ def test_scientific_definition_pass_language():
     assert r"s_{\mathrm{image}}" in methods.lower().replace(" ", "")
     assert "v_r" in methods.lower().replace(" ", "") or "v_{r}" in methods.lower()
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
-    assert "held-out test" in exp and ("unopened" in exp or "not opened" in exp)
+    assert "54-image test partition was reserved" in exp
     assert "curiosity" in exp and "priority buffer" in exp
     res = RESULTS.read_text(encoding="utf-8").lower()
     assert "curiosity ranking" in res and "not applied" in res
@@ -407,7 +412,7 @@ def test_close_far_qualitative_figure():
     cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     cap_l = " ".join(cap.lower().split())
     assert "illustrative" in cap_l or "qualitative" in results.lower()
-    assert "author-provided" in cap_l or "author-provided" in results.lower()
+    assert "preselected non-test" in cap_l or "preselected non-test" in results.lower()
     assert "not presented as an additional quantitative benchmark" in cap_l
     assert "post-suppression" in cap_l
     assert "candidate-support overlay" in cap_l

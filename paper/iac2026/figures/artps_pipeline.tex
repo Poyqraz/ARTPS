@@ -1,6 +1,6 @@
 % Code-faithful ARTPS Fig.~1 (no performance numbers).
-% Layer B = frozen eval image score; Layer C = UI ranking (not in v1_1 scores).
-% Entropy-weighted fusion is specified, not the frozen default.
+% Layer B = image-level score; Layer C = operational ranking.
+% Entropy-weighted fusion is specified, not the reported default.
 % Classifier feeds candidate scoring, not map fusion.
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
@@ -32,9 +32,9 @@
 \draw[arr] (enh.east) -- ++(0.16,0) |- (tex.west);
 \draw[arr] (enh.east) -- ++(0.16,0) |- (clf.west);
 
-% --- B. Frozen image-score path ---
+% --- B. Image-level scoring path ---
 \node[anchor=west, font=\scriptsize\bfseries] at (-0.15,4.90)
-  {B.\ Frozen image-score path};
+  {B.\ Image-level scoring path};
 \node[bx] (norm) at (0.00,3.55) {Cue\\normalization};
 \node[bx] (fuse) at (2.45,3.55) {Fixed-coefficient\\fusion};
 \node[bx] (ent)  at (2.45,4.35) {Entropy-weighted\\fusion (specified)};
@@ -51,15 +51,13 @@
 \draw[arr] (clf.south) -- ++(0,-0.55) -| (csc.north);
 
 \node[bx] (valid) at (10.05,2.20) {Valid\\candidates};
-\node[bx] (score) at (12.70,2.20) {Frozen eval.\\image score};
-\node[anchor=north, font=\scriptsize, align=center] at ([yshift=-1pt]score.south)
-  {\texttt{max\_valid\_candidate\_after\_masks}};
+\node[bx] (score) at (12.70,2.20) {Image-level\\score};
 \draw[arr] (csc.south) -- ++(0,-0.22) -| (valid.north);
 \draw[arr] (valid) -- (score);
 
-% --- C. Operational ranking (not in frozen v1_1 image-score eval) ---
+% --- C. Operational ranking ---
 \node[anchor=west, font=\scriptsize\bfseries, align=left] at (-0.15,1.35)
-  {C.\ Operational ranking (not in frozen v1\_1 image-score eval)};
+  {C.\ Operational ranking};
 \node[bx] (cr)   at (0.90,0.45) {Curiosity $C(r)$};
 \node[bx] (sim)  at (4.20,0.45) {Soft similarity\\/ diversity};
 \node[bx] (clus) at (7.65,0.45) {Feature-space\\clustering};

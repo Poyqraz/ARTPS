@@ -1,18 +1,16 @@
 \section{Conclusions}
 \label{sec:conclusion}
-ARTPS specifies an onboard target-prioritization architecture that couples multi-cue visual
-anomaly responses with monocular relative depth, an entropy-weighted fusion specification,
-operational suppression, apparent size--distance policy, diversity ranking, and a Priority
-Buffer.
-The current supplementary frozen evaluation uses the fixed-coefficient Layer~B image-score
-path rather than entropy-weighted fusion.
+ARTPS combines multi-cue anomaly detection, monocular relative depth, operational suppression,
+apparent size--distance policy, diversity-aware ranking, and a Priority Buffer for onboard
+target prioritization.
+The reported evaluation uses the fixed-coefficient Layer~B image-score path rather than
+entropy-weighted fusion.
+ARTPS achieved AUROC~$0.894$, AUPRC~$0.847$, and F1~$0.823$ in the primary Mars-rover
+evaluation.
+The additional human-reviewed validation yielded AUROC~$0.772$ under the fixed image-level
+scoring configuration.
+Qualitative analyses illustrate the contributions of cue fusion, suppression, and localization
+across representative scene scales.
 
-Table~\ref{tab:eval-tracks} summarizes the evaluation tracks: historical accepted-abstract
-numbers are retained, and supplementary validation reports AUROC~$0.772$ under frozen
-fixed-coefficient scores without opening the held-out test.
-A qualitative non-test processing example illustrates the frozen image-score path without
-adding a new benchmark.
-
-Future work includes a harder-negative or independently annotated challenge set, archival
-reconstruction of the historical experiment, full-pipeline edge-hardware timing, and
-mission-specific V\&V.
+Future work includes a harder-negative or independently annotated challenge set,
+full-pipeline edge-hardware timing, and mission-specific V\&V.

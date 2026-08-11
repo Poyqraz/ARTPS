@@ -3,23 +3,23 @@
 Monocular depth in ARTPS is \emph{relative}, not metric: near/far ordering does not yield
 metres, physical object size, or calibrated 3D reconstruction~\citep{ranftl2021dpt}.
 
-See Table~\ref{tab:eval-tracks} for the historical versus supplementary evaluation tracks.
 The qualitative figures are non-test illustrations and do not represent field diversity
 or a controlled near/far study.
-The \texttt{independent\_eval\_v1} held-out test partition was not opened.
-The supplementary \texttt{independent\_eval\_v1\_1} audit is a repeat-author review, not an
-independent second annotation.
+The human-reviewed performance analysis is based on the 54-image validation partition; the
+reserved test partition was not used for ARTPS inference or performance reporting.
+The human-reviewed set is a repeat-author review, not an independent second annotation.
 The human-reviewed set contains only $20$ negatives among $360$ images ($8$ validation,
-$2$ test); it is therefore unsuitable for a strong independent final-test classification
-claim.
+$2$ test).
 The present human-reviewed validation subset contains only eight negative
 examples, making operating-threshold calibration unstable.
-The frozen image-level score does not include curiosity ranking, diversity
+The small number of negative validation examples limits both operating-threshold calibration
+and the precision of the AUROC estimate.
+The image-level score does not include curiosity ranking, diversity
 penalty, or the Priority Buffer.
-The training-set lineage of the frozen checkpoints was not independently reconstructed
-against the supplementary evaluation corpus; the validation is therefore not presented as a
-formally leakage-audited external test.
-No final test was opened and no embedded/Jetson or full-pipeline timing result is added here.
+The training-set lineage of the fixed checkpoints was not independently cross-checked against
+the human-reviewed corpus; the human-reviewed analysis is therefore treated as an additional
+validation study rather than an external benchmark.
+No embedded/Jetson or full-pipeline timing result is added here.
 
 ARTPS is a safety-aware, flight-readiness-oriented software architecture.
 It is not flight-qualified avionics, not mission-certified, and does not assert

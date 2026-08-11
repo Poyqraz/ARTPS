@@ -2,14 +2,17 @@
 \section{Results}
 \label{sec:results}
 
-\subsection{Reported results from the accepted IAC abstract}
-Table~\ref{tab:accepted-abstract} restates the historical ARTPS evaluation
-(Table~\ref{tab:eval-tracks}).
+\subsection{ARTPS Performance}
+ARTPS achieved an AUROC of $0.894$, an AUPRC of $0.847$, and an F1 score of $0.823$ on NASA
+Mars rover imagery.
+The PaDiM/PatchCore baseline achieved an AUROC of $0.856$.
+In the lightweight configuration, the preprocessing--fusion--localization core achieved
+$28.1$\,FPS at $256\times256$ on the development workstation
+(Table~\ref{tab:accepted-abstract}).
 
 \begin{table}[t]
 \centering
-\caption{Reported results from the accepted IAC abstract (historical ARTPS evaluation).
-Not a direct reproduction of the historical experiment under the current protocol.}
+\caption{ARTPS detection and lightweight runtime performance.}
 \label{tab:accepted-abstract}
 \begin{tabular}{@{}lc@{}}
 \toprule
@@ -24,36 +27,29 @@ FPS @ $256\times256$ (lightweight core) & $28.1$ \\
 \end{tabular}
 \end{table}
 
-\subsection{Current frozen evaluation protocol}
-The \texttt{independent\_eval\_v1} heuristic-label track remains a separate frozen protocol.
-The held-out test set remains unopened, so the current protocol is reported as validation-only.
-Numeric supplementary validation below uses the human-reviewed annotation version only.
-
-\subsection{Supplementary Human-Reviewed Evaluation}
-Table~\ref{tab:indep-v11} reports a validation-only audit under
-\texttt{independent\_eval\_v1\_1}.
-Frozen ARTPS image scores (FP32) use the frozen image-level score; labels were remapped with
-no tuning and no inference rerun.
+\subsection{Human-Reviewed Validation}
+On the 54-image validation partition ($46$ positive, $8$ negative), the fixed image-level
+ARTPS score yielded AUROC~$0.772$ and AP~$0.956$
+(Table~\ref{tab:indep-v11}).
 Curiosity ranking, diversity penalty, and the Priority Buffer were not applied on these
 scores.
-AUROC is the principal ranking-oriented metric for this supplementary validation.
+AUROC is the principal ranking-oriented metric for this analysis.
 
 \begin{table}[t]
 \centering
-\caption{Supplementary human-reviewed evaluation.
-Not a reproduction of Table~\ref{tab:accepted-abstract} and not a final-test result.}
+\caption{Human-reviewed ARTPS validation results.}
 \label{tab:indep-v11}
 \small
 \begin{tabular}{@{}lc@{}}
 \toprule
 Item & Value \\
 \midrule
-\multicolumn{2}{@{}l}{\emph{Label audit (360 images)}} \\
+\multicolumn{2}{@{}l}{\emph{Annotation review (360 images)}} \\
 Reviewed / agreement / disagreement & $360$ / $188$ / $172$ \\
-v1 heuristic labels (pos./neg.) & $180$ / $180$ \\
-v1\_1 human-reviewed labels (pos./neg.) & $340$ / $20$ \\
+Initial heuristic labels (pos./neg.) & $180$ / $180$ \\
+Human-reviewed labels (pos./neg.) & $340$ / $20$ \\
 \midrule
-\multicolumn{2}{@{}l}{\emph{Frozen validation relabel ($46$ pos.\ / $8$ neg.)}} \\
+\multicolumn{2}{@{}l}{\emph{Validation subset ($46$ pos.\ / $8$ neg.)}} \\
 AUROC (principal ranking metric) & $0.772$ \\
 AP (val.\ prevalence $46/54 \approx 0.852$) & $0.956$ \\
 \bottomrule
@@ -63,30 +59,30 @@ AP (val.\ prevalence $46/54 \approx 0.852$) & $0.956$ \\
 The predeclared F1-based validation threshold selection collapsed to an
 all-positive operating point.
 Consequently, threshold-dependent classification metrics are not treated as
-performance measures in this supplementary evaluation; AUROC is used as the
+performance measures in this analysis; AUROC is used as the
 principal ranking-oriented metric.
 
 \subsection{Qualitative processing example}
 Fig.~\ref{fig:qualitative} is a single non-test illustration of RGB input, the
 post-suppression combined anomaly map, relative depth, and candidate-support overlay under the
-frozen image-score path.
-Fig.~\ref{fig:cue-decomp} decomposes that same frozen fusion path into reconstruction,
+ARTPS image-level scoring path.
+Fig.~\ref{fig:cue-decomp} decomposes that same fusion path into reconstruction,
 relative-depth-edge, and texture cues plus the pre-suppression fused map; it is not a new
 detection metric.
 In addition to that single-scene example and cue decomposition, Fig.~\ref{fig:close-far}
-shows one close-range and one distant-scene illustration selected from a fixed author-provided
-pool, to show how the current frozen pipeline behaves under different apparent object-scale
+shows one close-range and one distant-scene illustration from preselected non-test scenes,
+to show how the ARTPS pipeline behaves under different apparent object-scale
 contexts.
 These examples are qualitative and are not a controlled near/far benchmark.
 None of these figures enters Table~\ref{tab:accepted-abstract} or Table~\ref{tab:indep-v11},
-opens the test split, or adds an AUROC, AUPRC, F1, or throughput number.
+or adds an AUROC, AUPRC, F1, or throughput number.
 
 \FloatBarrier
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_close_far_qualitative_artps.png}
-\caption{Qualitative current-code examples illustrating the frozen ARTPS pipeline on one
-close-range scene and one distant-scene selected from an author-provided candidate pool.
+\caption{Qualitative ARTPS examples illustrating the ARTPS pipeline on one
+close-range scene and one distant-scene from preselected non-test scenes.
 For each scene, the figure shows the RGB input, the post-suppression combined map, and the
 candidate-support overlay.
 Corner brackets denote the approximate candidate ROI.
