@@ -204,7 +204,11 @@ def test_limitations_and_discussion_present():
     assert "20" in lim and "8" in lim and "2" in lim
     assert "operating-threshold calibration unstable" in lim or "calibration unstable" in lim
     assert "curiosity" in lim and "priority buffer" in lim
-    assert "reserved test" in lim or "reserved test partition" in lim
+    assert (
+        "reserved test" in lim
+        or "reserved test partition" in lim
+        or "reserved 54-image test partition" in lim
+    )
     assert "heuristic" in disc and "180/180" in disc.replace(" ", "")
     assert "0.772" in disc
     disc_flat = " ".join(disc.split())
@@ -603,3 +607,17 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     assert "UNRESOLVED (C)" in audit
     assert "primary_evaluation_completeness_complete: true" in freeze_md
     assert "fusion-mode C" in freeze_md.lower() or "UNRESOLVED (C)" in freeze_md
+    assert "there was no test inference" not in body_l
+    assert "no test metric" not in body_l
+    assert "combined baseline" not in body_l
+    assert "the evaluation uses a fixed configuration" not in body_l
+    assert "within this corpus" in exp_l
+    assert "test/validation" in exp_l
+    assert "padim/patchcore baseline entry" in exp_l
+    repro = exp_l[exp_l.find("reproducibility") :]
+    assert "for the human-reviewed validation" in repro
+    assert "checkpoint hashes" in repro
+    assert "54-image test partition" in repro
+    assert "measured on the test set" in exp_l
+    lim_flat = " ".join(lim.lower().split())
+    assert "its reserved 54-image test partition" in lim_flat

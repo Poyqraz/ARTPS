@@ -7,15 +7,16 @@ scoring path only; it is not a third quantitative evaluation.
 
 \subsection{Primary performance evaluation}
 ARTPS was evaluated for detection and lightweight runtime performance on a $2{,}847$-image
-Mars-rover dataset, including $1{,}247$ Curiosity Mastcam images (Sol 100--1700) and
+Mars-rover corpus including $1{,}247$ Curiosity Mastcam images (Sol 100--1700) and
 $892$ Perseverance Mastcam-Z images (Sol 1--400).
-A $708$-image evaluation subset was used under diverse field conditions.
+Within this corpus, a $708$-image test/validation evaluation subset was used under diverse
+field conditions.
 Imagery spans approximately $640\times480$ to $1920\times1080$.
 The evaluation used identical train/validation/test splits and consistent random seeds.
 Decision thresholds were selected on validation data and the reported primary performance
 was measured on the test set.
-PaDiM and PatchCore, with a WRN-50-2 backbone, were evaluated under the same partition and
-preprocessing policy as the primary ARTPS evaluation; the combined baseline AUROC is $0.856$.
+The PaDiM/PatchCore baseline entry used WRN-50-2 features under the same partition and
+preprocessing policy as ARTPS and achieved AUROC~$0.856$.
 The study reports ARTPS AUROC~$0.894$, AUPRC~$0.847$, F1~$0.823$, and $28.1$\,FPS at
 $256\times256$ for a lightweight preprocessing--fusion--localization core.
 Table~\ref{tab:accepted-abstract} summarizes detection and lightweight runtime performance.
@@ -73,7 +74,7 @@ Annotation & Reference labels for primary anomaly-discrimination evaluation
   & Model-blind human review \\
 Scoring / system scope & Primary ARTPS detection configuration (Layer~C ranking not applied to these metrics)
   & Fixed-coefficient image-level score before Layer~C ranking \\
-Evaluation subset & 708-image evaluation subset under diverse field conditions
+Evaluation subset & 708-image test/validation subset under diverse field conditions
   & 54-image validation partition (46 positive / 8 negative) \\
 Baseline & PaDiM/PatchCore (WRN-50-2)
   & --- \\
@@ -98,9 +99,10 @@ The human-reviewed validation threshold produced an all-positive operating point
 threshold-dependent F1 is not interpreted as a performance measure on that analysis.
 
 \subsection{Reproducibility}
-The evaluation uses a fixed configuration, checkpoint hashes, and the image-score definition
-stated above.
-There was no test inference, no test metric, and no threshold retuning on held-out images.
+For the human-reviewed validation, the inference configuration, checkpoint hashes,
+preprocessing profile, and image-score definition were fixed.
+Its reserved 54-image test partition was not used for ARTPS inference, metric reporting, or
+threshold selection.
 Runs are aborted when required inputs or predefined evaluation conditions are incomplete.
 
 \subsection{Hardware scope}
