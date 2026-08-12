@@ -6,17 +6,16 @@
 \begin{tikzpicture}[
   font=\scriptsize,
   >=Latex,
-  node distance=2.55cm and 0.28cm,
   proc/.style={
     draw=black!75,
     fill=black!4,
     line width=0.55pt,
     rounded corners=1.0pt,
     align=center,
-    inner xsep=2.2pt,
-    inner ysep=1.6pt,
-    minimum height=6.6mm,
-    minimum width=18mm,
+    inner xsep=2.6pt,
+    inner ysep=2.0pt,
+    minimum height=7.0mm,
+    minimum width=20mm,
   },
   state/.style={
     draw=black,
@@ -24,10 +23,10 @@
     line width=0.7pt,
     rounded corners=1.0pt,
     align=center,
-    inner xsep=2.2pt,
-    inner ysep=1.6pt,
-    minimum height=6.6mm,
-    minimum width=18mm,
+    inner xsep=2.6pt,
+    inner ysep=2.0pt,
+    minimum height=7.0mm,
+    minimum width=20mm,
   },
   opt/.style={
     draw=black!55,
@@ -36,61 +35,71 @@
     dashed,
     rounded corners=1.0pt,
     align=center,
-    inner xsep=2.2pt,
-    inner ysep=1.6pt,
-    minimum height=6.6mm,
-    minimum width=18mm,
+    inner xsep=2.6pt,
+    inner ysep=2.0pt,
+    minimum height=7.0mm,
+    minimum width=20mm,
+  },
+  ent/.style={
+    proc,
+    minimum width=42mm,
+    inner xsep=4.0pt,
+    inner ysep=2.4pt,
   },
   arr/.style={-{Latex}, thick},
   darr/.style={-{Latex}, thick, dashed},
 ]
 % --- A. Perception / cue generation ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,6.20)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,6.85)
   {A.\ Perception / cue generation};
-\node[proc] (rgb) at (0.00,5.40) {RGB input};
-\node[opt]  (enh) at (2.35,5.40) {Optional\\enhancement};
-\node[proc] (ae)  at (4.90,5.40) {AE recon.\\/ latent};
-\node[proc] (dpt) at (7.45,5.40) {DPT Large\\rel.\ depth};
-\node[proc] (tex) at (10.00,5.40) {RGB / texture\\cues};
-\node[opt]  (clf) at (12.55,5.40) {Optional\\classifier};
+\node[proc] (rgb) at (0.00,6.00) {RGB input};
+\node[opt]  (enh) at (2.40,6.00) {Optional\\enhancement};
+\node[proc] (ae)  at (5.00,6.00) {AE recon.\\/ latent};
+\node[proc] (dpt) at (7.55,6.00) {DPT Large\\rel.\ depth};
+\node[proc] (tex) at (10.10,6.00) {RGB / texture\\cues};
+\node[opt]  (clf) at (12.65,6.00) {Optional\\classifier};
 \draw[arr] (rgb) -- (enh);
 \draw[arr] (enh) -- (ae);
-\draw[arr] (enh.east) -- ++(0.14,0) |- (dpt.west);
-\draw[arr] (enh.east) -- ++(0.14,0) |- (tex.west);
-\draw[arr] (enh.east) -- ++(0.14,0) |- (clf.west);
+% Fan below row A so the AE box is not crossed.
+\draw[arr] (enh.south) -- ++(0,-0.52) coordinate (afan);
+\draw[-, thick] (afan) -- (afan -| tex.south);
+\draw[arr] (afan -| dpt.south) -- (dpt.south);
+\draw[arr] (afan -| tex.south) -- (tex.south);
+\draw[arr] (afan) -| (clf.west);
 
 % --- B. Image-level scoring path ---
 % Heading cleared above entropy box (prior overlap fix).
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,4.72)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,4.90)
   {B.\ Image-level scoring path};
-\node[proc] (norm) at (0.00,3.45) {Cue\\normalization};
-\node[proc] (fuse) at (2.45,3.45) {Fixed-coefficient\\fusion};
-\node[proc] (ent)  at (2.45,4.22) {Entropy-weighted\\fusion (specified)};
-\node[proc] (prox) at (5.10,3.45) {Proximity\\modulation};
-\node[proc] (sup)  at (7.55,3.45) {Map\\suppression};
-\node[proc] (loc)  at (10.00,3.45) {Localization\\/ proposals};
-\node[proc] (csc)  at (12.55,3.45) {Candidate scoring\\+ validity gates};
+\node[proc] (norm) at (0.00,2.85) {Cue\\normalization};
+\node[proc] (fuse) at (2.50,2.85) {Fixed-coefficient\\fusion};
+\node[ent]  (ent)  at (2.50,4.00) {Entropy-weighted fusion\\(specified)};
+\node[proc] (prox) at (5.20,2.85) {Proximity\\modulation};
+\node[proc] (sup)  at (7.70,2.85) {Map\\suppression};
+\node[proc] (loc)  at (10.10,2.85) {Localization\\/ proposals};
+\node[proc] (csc)  at (12.65,2.85) {Candidate scoring\\+ validity gates};
 \draw[arr] (norm) -- (fuse);
 \draw[darr] (fuse.north) -- (ent.south);
 \draw[arr] (fuse) -- (prox);
 \draw[arr] (prox) -- (sup);
 \draw[arr] (sup) -- (loc);
 \draw[arr] (loc) -- (csc);
-\draw[arr] (clf.south) -- ++(0,-0.50) -| (csc.north);
+\draw[arr] (clf.south) -- (csc.north);
 
-\node[state] (valid) at (10.00,2.15) {Valid\\candidates};
-\node[state] (score) at (12.55,2.15) {Image-level\\score};
-\draw[arr] (csc.south) -- ++(0,-0.20) -| (valid.north);
+\node[state] (valid) at (10.10,1.70) {Valid\\candidates};
+\node[state] (score) at (12.65,1.70) {Image-level\\score};
+\draw[arr] (csc.south) -- ++(0,-0.28) -| (valid.north);
 \draw[arr] (valid) -- (score);
 
 % --- C. Operational ranking ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,1.30)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,1.12)
   {C.\ Operational ranking};
-\node[proc] (cr)   at (0.90,0.42) {Curiosity $C(r)$};
-\node[proc] (sim)  at (4.20,0.42) {Soft similarity\\/ diversity};
-\node[proc] (clus) at (7.55,0.42) {Feature-space\\clustering};
-\node[proc] (buf)  at (11.10,0.42) {Priority Buffer\\/ Top-$K$};
-\draw[arr] (valid.south) -- ++(0,-0.32) -| (cr.north);
+\node[proc] (cr)   at (0.90,0.18) {Curiosity $C(r)$};
+\node[proc] (sim)  at (4.30,0.18) {Soft similarity\\/ diversity};
+\node[proc] (clus) at (7.70,0.18) {Feature-space\\clustering};
+\node[proc] (buf)  at (11.20,0.18) {Priority Buffer\\/ Top-$K$};
+% Channel below the C heading and above the C boxes.
+\draw[arr] (valid.south) -- ++(0,-0.55) -| (cr.north);
 \draw[arr] (cr) -- (sim);
 \draw[arr] (sim) -- (clus);
 \draw[arr] (clus) -- (buf);
