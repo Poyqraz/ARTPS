@@ -19,6 +19,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
@@ -219,12 +220,15 @@ def main() -> int:
 
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     apply_manuscript_serif()
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=FIG_DPI)
+    # ImageGrid keeps equal-aspect panels adjacent; subplots_adjust+imshow
+    # left ~148–240 px mid-column dead space on a wide figsize.
+    fig = plt.figure(figsize=(7.2, 5.2), dpi=FIG_DPI)
+    grid = ImageGrid(fig, 111, nrows_ncols=(2, 2), axes_pad=(0.08, 0.24))
     panels = [
-        (axes[0, 0], rgb_disp, "a) RGB input", None),
-        (axes[0, 1], combined_map, "b) Post-suppression combined map", "inferno"),
-        (axes[1, 0], depth_n, "c) Relative depth (near to far)", "viridis"),
-        (axes[1, 1], overlay, "d) Candidate-support overlay", None),
+        (grid[0], rgb_disp, "a) RGB input", None),
+        (grid[1], combined_map, "b) Post-suppression combined map", "inferno"),
+        (grid[2], depth_n, "c) Relative depth (near to far)", "viridis"),
+        (grid[3], overlay, "d) Candidate-support overlay", None),
     ]
     for ax, img, title, cmap in panels:
         if cmap is None:
@@ -236,7 +240,6 @@ def main() -> int:
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
-    fig.tight_layout(pad=0.35)
     save_manuscript_figure(fig, OUT_PNG, dpi=FIG_DPI)
 
     meta = {

@@ -6,63 +6,91 @@
 \begin{tikzpicture}[
   font=\scriptsize,
   >=Latex,
-  bx/.style={
-    draw,
-    rounded corners=1.2pt,
+  node distance=2.55cm and 0.28cm,
+  proc/.style={
+    draw=black!75,
+    fill=black!4,
+    line width=0.55pt,
+    rounded corners=1.0pt,
     align=center,
-    inner xsep=2.4pt,
-    inner ysep=1.8pt,
-    minimum height=6.4mm,
+    inner xsep=2.2pt,
+    inner ysep=1.6pt,
+    minimum height=6.6mm,
+    minimum width=18mm,
+  },
+  state/.style={
+    draw=black,
+    fill=black!8,
+    line width=0.7pt,
+    rounded corners=1.0pt,
+    align=center,
+    inner xsep=2.2pt,
+    inner ysep=1.6pt,
+    minimum height=6.6mm,
+    minimum width=18mm,
+  },
+  opt/.style={
+    draw=black!55,
+    fill=black!2,
+    line width=0.5pt,
+    dashed,
+    rounded corners=1.0pt,
+    align=center,
+    inner xsep=2.2pt,
+    inner ysep=1.6pt,
+    minimum height=6.6mm,
+    minimum width=18mm,
   },
   arr/.style={-{Latex}, thick},
   darr/.style={-{Latex}, thick, dashed},
 ]
 % --- A. Perception / cue generation ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.15,6.35)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,6.20)
   {A.\ Perception / cue generation};
-\node[bx] (rgb) at (0.00,5.50) {RGB input};
-\node[bx] (enh) at (2.35,5.50) {Optional\\enhancement};
-\node[bx] (ae)  at (5.00,5.50) {AE recon.\\/ latent};
-\node[bx] (dpt) at (7.50,5.50) {DPT Large\\rel.\ depth};
-\node[bx] (tex) at (10.05,5.50) {RGB / texture\\cues};
-\node[bx] (clf) at (12.70,5.50) {Optional\\classifier};
+\node[proc] (rgb) at (0.00,5.40) {RGB input};
+\node[opt]  (enh) at (2.35,5.40) {Optional\\enhancement};
+\node[proc] (ae)  at (4.90,5.40) {AE recon.\\/ latent};
+\node[proc] (dpt) at (7.45,5.40) {DPT Large\\rel.\ depth};
+\node[proc] (tex) at (10.00,5.40) {RGB / texture\\cues};
+\node[opt]  (clf) at (12.55,5.40) {Optional\\classifier};
 \draw[arr] (rgb) -- (enh);
 \draw[arr] (enh) -- (ae);
-\draw[arr] (enh.east) -- ++(0.16,0) |- (dpt.west);
-\draw[arr] (enh.east) -- ++(0.16,0) |- (tex.west);
-\draw[arr] (enh.east) -- ++(0.16,0) |- (clf.west);
+\draw[arr] (enh.east) -- ++(0.14,0) |- (dpt.west);
+\draw[arr] (enh.east) -- ++(0.14,0) |- (tex.west);
+\draw[arr] (enh.east) -- ++(0.14,0) |- (clf.west);
 
 % --- B. Image-level scoring path ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.15,4.90)
+% Heading cleared above entropy box (prior overlap fix).
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,4.72)
   {B.\ Image-level scoring path};
-\node[bx] (norm) at (0.00,3.55) {Cue\\normalization};
-\node[bx] (fuse) at (2.45,3.55) {Fixed-coefficient\\fusion};
-\node[bx] (ent)  at (2.45,4.35) {Entropy-weighted\\fusion (specified)};
-\node[bx] (prox) at (5.15,3.55) {Proximity\\modulation};
-\node[bx] (sup)  at (7.65,3.55) {Map\\suppression};
-\node[bx] (loc)  at (10.05,3.55) {Localization\\/ proposals};
-\node[bx] (csc)  at (12.70,3.55) {Candidate scoring\\+ validity gates};
+\node[proc] (norm) at (0.00,3.45) {Cue\\normalization};
+\node[proc] (fuse) at (2.45,3.45) {Fixed-coefficient\\fusion};
+\node[proc] (ent)  at (2.45,4.22) {Entropy-weighted\\fusion (specified)};
+\node[proc] (prox) at (5.10,3.45) {Proximity\\modulation};
+\node[proc] (sup)  at (7.55,3.45) {Map\\suppression};
+\node[proc] (loc)  at (10.00,3.45) {Localization\\/ proposals};
+\node[proc] (csc)  at (12.55,3.45) {Candidate scoring\\+ validity gates};
 \draw[arr] (norm) -- (fuse);
 \draw[darr] (fuse.north) -- (ent.south);
 \draw[arr] (fuse) -- (prox);
 \draw[arr] (prox) -- (sup);
 \draw[arr] (sup) -- (loc);
 \draw[arr] (loc) -- (csc);
-\draw[arr] (clf.south) -- ++(0,-0.55) -| (csc.north);
+\draw[arr] (clf.south) -- ++(0,-0.50) -| (csc.north);
 
-\node[bx] (valid) at (10.05,2.20) {Valid\\candidates};
-\node[bx] (score) at (12.70,2.20) {Image-level\\score};
-\draw[arr] (csc.south) -- ++(0,-0.22) -| (valid.north);
+\node[state] (valid) at (10.00,2.15) {Valid\\candidates};
+\node[state] (score) at (12.55,2.15) {Image-level\\score};
+\draw[arr] (csc.south) -- ++(0,-0.20) -| (valid.north);
 \draw[arr] (valid) -- (score);
 
 % --- C. Operational ranking ---
-\node[anchor=west, font=\scriptsize\bfseries, align=left] at (-0.15,1.35)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.10,1.30)
   {C.\ Operational ranking};
-\node[bx] (cr)   at (0.90,0.45) {Curiosity $C(r)$};
-\node[bx] (sim)  at (4.20,0.45) {Soft similarity\\/ diversity};
-\node[bx] (clus) at (7.65,0.45) {Feature-space\\clustering};
-\node[bx] (buf)  at (11.20,0.45) {Priority Buffer\\/ Top-$K$};
-\draw[arr] (valid.south) -- ++(0,-0.35) -| (cr.north);
+\node[proc] (cr)   at (0.90,0.42) {Curiosity $C(r)$};
+\node[proc] (sim)  at (4.20,0.42) {Soft similarity\\/ diversity};
+\node[proc] (clus) at (7.55,0.42) {Feature-space\\clustering};
+\node[proc] (buf)  at (11.10,0.42) {Priority Buffer\\/ Top-$K$};
+\draw[arr] (valid.south) -- ++(0,-0.32) -| (cr.north);
 \draw[arr] (cr) -- (sim);
 \draw[arr] (sim) -- (clus);
 \draw[arr] (clus) -- (buf);
