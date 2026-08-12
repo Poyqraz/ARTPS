@@ -58,8 +58,8 @@
 \node[proc] (rgb) at (0.00,6.45) {RGB input};
 \node[opt]  (enh) at (2.35,6.45) {Optional\\enhancement};
 \node[proc] (ae)  at (5.05,6.45) {AE recon.\\/ latent};
-\node[proc] (dpt) at (7.55,6.45) {DPT Large\\rel.\ depth};
-\node[proc] (tex) at (10.05,6.45) {RGB / texture\\cues};
+\node[proc] (dpt) at (7.55,6.15) {DPT Large\\rel.\ depth};
+\node[proc] (tex) at (10.05,6.15) {RGB / texture\\cues};
 \node[opt]  (clf) at (12.90,6.45) {Optional\\classifier};
 \draw[arr] (rgb) -- (enh);
 \draw[arr] (enh) -- (ae);
@@ -119,7 +119,7 @@
 \draw[arr] (valid.east) -- (score.west);
 
 % --- C. Operational ranking ---
-\node[anchor=west, font=\scriptsize\bfseries] at (-0.15,0.68)
+\node[anchor=west, font=\scriptsize\bfseries] at (-0.70,0.68)
   {C.\ Operational ranking};
 \node[proc] (cr)   at (3.30,0.00) {Curiosity $C(r)$};
 \node[proc] (sim)  at (6.70,0.00) {Soft similarity\\/ diversity};
