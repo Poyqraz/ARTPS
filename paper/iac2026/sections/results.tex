@@ -69,25 +69,21 @@ ARTPS image-level scoring path.
 Fig.~\ref{fig:cue-decomp} decomposes that same fusion path into reconstruction,
 relative-depth-edge, and texture cues plus the pre-suppression fused map; it is not a new
 detection metric.
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_close_far_qualitative_artps.png}
+\caption{Qualitative examples of the ARTPS pipeline on a close-range and a distant
+non-test scene.
+Each row shows the RGB input, post-suppression combined map, and candidate-support
+overlay.
+Corner brackets indicate the approximate candidate ROI; where proposal geometry is
+available, the translucent footprint shows supporting image-region evidence and is not a
+pixel-level segmentation or ground-truth object boundary.
+The examples are illustrative and are not presented as an additional quantitative
+benchmark or a controlled range-conditioned performance study.}
+\label{fig:close-far}
+\end{figure*}
 In addition to that single-scene example and cue decomposition, Fig.~\ref{fig:close-far}
 shows one close-range and one distant-scene illustration from preselected non-test scenes,
 to show how the ARTPS pipeline behaves under different apparent object-scale
 contexts.
-These examples are qualitative and are not a controlled near/far benchmark.
-
-\FloatBarrier
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig_close_far_qualitative_artps.png}
-\caption{Qualitative examples of the ARTPS pipeline on one
-close-range scene and one distant-scene from preselected non-test scenes.
-For each scene, the figure shows the RGB input, the post-suppression combined map, and the
-candidate-support overlay.
-Corner brackets denote the approximate candidate ROI.
-Where proposal support geometry is available, the translucent footprint indicates the
-image-region evidence associated with the candidate; it is not a pixel-level
-segmentation or ground-truth object boundary.
-These examples are illustrative only and are not presented as an additional quantitative
-benchmark or a controlled range-conditioned performance study.}
-\label{fig:close-far}
-\end{figure*}
