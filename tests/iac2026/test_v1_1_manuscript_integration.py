@@ -301,6 +301,11 @@ def test_camera_ready_figure_and_bibliography():
         "10.1126/scirobotics.aan4582",
         "10.1016/j.pss.2019.03.007",
         "10.1002/rob.21979",
+        "10.1109/CVPR.2019.00982",
+        "10.1109/TPAMI.2020.3019967",
+        "10.1002/2016EA000252",
+        "10.1007/s11214-020-00755-x",
+        "10.1126/scirobotics.adi3099",
     ):
         assert doi in bib
     assert "Tara and others" not in bib
