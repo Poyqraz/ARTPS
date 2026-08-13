@@ -22,9 +22,10 @@ regions can trigger false positives, while diversity heuristics can suppress hig
 anomalies that appear similar to previously selected targets.
 This paper presents ARTPS, an edge-oriented framework that couples monocular relative-depth
 estimation with multi-cue anomaly detection and robust localization.
-ARTPS fuses image and depth cues via entropy-weighted dynamic fusion, ranks candidates with
-a curiosity score and soft similarity penalty, and uses a Priority Buffer for second-chance
-re-evaluation of high-anomaly targets down-weighted by diversity policy.
+ARTPS combines image and relative-depth cues in a multi-cue scoring architecture that
+supports entropy-weighted adaptive fusion, ranks valid candidates after image-level scoring
+with a curiosity score and soft similarity penalty, and uses a Priority Buffer for
+second-chance reconsideration of high-anomaly targets down-weighted by diversity policy.
 Operational gates address rover-body and boundary-shadow false positives, protect objects
 inside shadows, and apply an image-relative size--distance policy based on apparent size
 (not metric distance).

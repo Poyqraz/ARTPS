@@ -48,8 +48,8 @@
     inner xsep=3.6pt,
     inner ysep=2.2pt,
   },
-  arr/.style={-{Latex}, thick},
-  darr/.style={-{Latex}, thick, dashed},
+  arr/.style={-{Latex[length=1.7mm, width=1.3mm]}, thick},
+  darr/.style={-{Latex[length=1.7mm, width=1.3mm]}, thick, dashed},
 ]
 % --- A. Perception / cue generation ---
 % Heading well above cue fan (~3 mm+ clearance).
@@ -60,9 +60,9 @@
 \node[proc] (ae)  at (5.05,6.45) {AE recon.\\/ latent};
 \node[proc] (dpt) at (7.55,6.15) {DPT Large\\rel.\ depth};
 \node[proc] (tex) at (10.05,6.15) {RGB / texture\\cues};
-\node[opt]  (clf) at (12.90,6.45) {Optional\\classifier};
-\draw[arr] (rgb) -- (enh);
-\draw[arr] (enh) -- (ae);
+\node[opt]  (clf) at (13.70,6.45) {Optional\\classifier};
+\draw[arr] (rgb.east) -- (enh.west);
+\draw[arr] (enh.east) -- (ae.west);
 % Cue fan for DPT/texture only (AE already on the main chain).
 \draw[-, thick] (enh.north) -- ++(0,0.20) coordinate (cuefan);
 \draw[-, thick] (cuefan) -- (cuefan -| tex.north);
@@ -89,10 +89,11 @@
 
 \node[proc] (fuse) at (3.30,4.40) {Fixed-coefficient\\fusion};
 \node[ent]  (ent)  at (3.30,2.85) {Entropy-weighted fusion\\(specified)};
-\node[proc] (prox) at (6.70,3.55) {Proximity\\modulation};
-\node[proc] (sup)  at (8.70,3.55) {Map\\suppression};
-\node[proc] (loc)  at (10.40,3.55) {Localization\\/ proposals};
-\node[proc] (csc)  at (13.15,3.55) {Candidate scoring\\+ validity gates};
+% Layer B chain spaced for visible rightward tips (~4 mm+ gaps).
+\node[proc] (prox) at (6.55,3.55) {Proximity\\modulation};
+\node[proc] (sup)  at (9.00,3.55) {Map\\suppression};
+\node[proc] (loc)  at (11.45,3.55) {Localization\\/ proposals};
+\node[proc] (csc)  at (13.90,3.55) {Candidate scoring\\+ validity gates};
 % Parallel fusion alternatives.
 \draw[arr] (norm.east) -- ++(0.32,0) coordinate (fsplit);
 \fill (fsplit) circle (1.1pt);
@@ -103,14 +104,15 @@
 \draw[-, thick] (fuse.east) -| (fjoin);
 \draw[-, thick, dashed] (ent.east) -| (fjoin);
 \fill (fjoin) circle (1.1pt);
+% Layer B chain: fusion join → prox → sup → loc → csc (tips into downstream only).
 \draw[arr] (fjoin) -- (prox.west);
-\draw[arr] (prox) -- (sup);
-\draw[arr] (sup) -- (loc);
+\draw[arr] (prox.east) -- (sup.west);
+\draw[arr] (sup.east) -- (loc.west);
 \draw[arr] (loc.east) -- (csc.west);
 \draw[arr] (clf.south) -- (csc.north);
 
 \node[state] (valid) at (3.30,1.05) {Valid\\candidates};
-\node[state] (score) at (6.70,1.05) {Image-level\\score};
+\node[state] (score) at (6.55,1.05) {Image-level\\score};
 % Dedicated channel ~6 mm above valid.north (never along box border).
 \coordinate (channel) at (3.30,2.15);
 \draw[-, thick] (csc.south) -- (csc.south |- channel);
@@ -122,12 +124,12 @@
 \node[anchor=west, font=\scriptsize\bfseries] at (-0.70,0.68)
   {C.\ Operational ranking};
 \node[proc] (cr)   at (3.30,0.00) {Curiosity $C(r)$};
-\node[proc] (sim)  at (6.70,0.00) {Soft similarity\\/ diversity};
-\node[proc] (clus) at (9.50,0.00) {Feature-space\\clustering};
-\node[proc] (buf)  at (12.30,0.00) {Priority Buffer\\/ Top-$K$};
+\node[proc] (sim)  at (6.55,0.00) {Soft similarity\\/ diversity};
+\node[proc] (clus) at (9.55,0.00) {Feature-space\\clustering};
+\node[proc] (buf)  at (12.55,0.00) {Priority Buffer\\/ Top-$K$};
 \draw[arr] (valid.south) -- (cr.north);
-\draw[arr] (cr) -- (sim);
-\draw[arr] (sim) -- (clus);
-\draw[arr] (clus) -- (buf);
+\draw[arr] (cr.east) -- (sim.west);
+\draw[arr] (sim.east) -- (clus.west);
+\draw[arr] (clus.east) -- (buf.west);
 \end{tikzpicture}%
 }
