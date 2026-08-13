@@ -60,7 +60,10 @@ example.
 
 \subsection{Monocular relative depth}
 A dense monocular estimator provides an image-relative depth field for near/far
-organization~\citep{ranftl2021dpt}.
+organization~\citep{ranftl2021dpt,ranftl2022robust}.
+Monocular depth estimation is affected by scale/range ambiguity and cross-dataset variation;
+ARTPS therefore uses the depth output as relative scene structure rather than absolute metric
+range.
 Depth values are used as relative ordering cues, not as metric metres, absolute physical size,
 or calibrated stereo geometry.
 The same image can be ordered from nearer to farther surfaces, but those values are not

@@ -30,6 +30,8 @@
 
 `publication_language_complete: true`
 
+`literature_strengthening_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
