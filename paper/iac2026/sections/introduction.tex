@@ -20,10 +20,18 @@ entropy-weighted dynamic fusion, candidate localization, operational false-posit
 suppression, apparent size / image-relative size--distance policy, feature-space diversity,
 and a Priority Buffer for second-chance re-evaluation of high-anomaly candidates that would
 otherwise be discarded by diversity heuristics.
+
+\newpage
+\vspace*{5pt}
 The architecture is designed as a safety-aware, flight-readiness-oriented software path: it
 is not flight-qualified hardware and does not assert universal safety guarantees.
 
 The contributions of this work are as follows:
+\begingroup
+\setlength{\itemsep}{4pt plus 0pt minus 1pt}
+\setlength{\parsep}{0pt}
+\setlength{\topsep}{4pt plus 0pt minus 1pt}
+\setlength{\partopsep}{0pt}
 \begin{enumerate}
   \item A hybrid onboard target-prioritization pipeline that combines visual anomaly cues with
   monocular relative-depth structure for field imagery.
@@ -39,4 +47,5 @@ The contributions of this work are as follows:
   \item A two-component evaluation comprising a primary detection and runtime study and an
   additional human-reviewed validation of image-level ranking.
 \end{enumerate}
+\endgroup
 % Avoid unverified ``first'' / ``state-of-the-art'' claims; contributions are architectural and operational.
