@@ -22,13 +22,13 @@ Feature-distribution and memory-bank methods such as PaDiM and PatchCore are wid
 industrial anomaly baselines~\citep{defard2020padim,roth2022patchcore}.
 Reconstruction- and embedding-based detectors similarly score unusual appearance, but a high
 anomaly score is not identical to an operationally actionable science target under rover
-constraints.
+constraints~\citep{gaines2020srr}.
 ARTPS therefore treats anomaly responses as cues inside a broader prioritization stack that
 includes fusion, localization, suppression, diversity, and buffering.
 
 \subsection{Monocular relative depth}
 Dense monocular depth models provide image-relative structure useful for near/far
-organization~\citep{ranftl2021dpt}.
+organization~\citep{ranftl2021dpt,ranftl2022robust}.
 They do not, by themselves, provide metric distance, physical object size, or calibrated 3D
 reconstruction under planetary scale ambiguity.
 ARTPS uses relative depth as an ordering and policy cue; no metric-distance claim is made.

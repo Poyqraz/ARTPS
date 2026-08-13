@@ -32,6 +32,8 @@
 
 `literature_strengthening_complete: true`
 
+`final_architecture_citation_polish_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -270,3 +272,11 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Abstract unchanged; `test_opened: false`
 - Pages: 11; PDF bytes: 3,440,153; US Letter; overfull `\hbox`: 0; no EMPTY_OR_NEAR_EMPTY / HALF_COLUMN_STRANDED interior pages
 - local verify: `pytest -q tests/iac2026` 233 passed; `_check_submission_ready.py` strict OK; `git diff --check` clean
+
+## Final architecture and citation polish
+
+- `final_architecture_citation_polish_complete: true`
+- Fig.~1 Layer B arrowheads use explicit east→west anchors (topology unchanged)
+- Abstract: multi-cue scoring / supports entropy-weighted adaptive fusion (metrics unchanged; primary fusion mode still UNRESOLVED)
+- Depth-context statements in Related Work §2.3 and Limitations cite `[3,10]` (`ranftl2021dpt,ranftl2022robust`)
+- BibTeX title braces: Opportunity, Perseverance; still 12 references, no new keys
