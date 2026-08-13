@@ -24,7 +24,13 @@ def apply_manuscript_serif(title_pt: float = TITLE_PT) -> None:
 
 
 def save_manuscript_figure(fig, path: Path, dpi: int = FIG_DPI) -> None:
-    fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(
+        path,
+        dpi=dpi,
+        bbox_inches="tight",
+        pad_inches=0.02,
+        facecolor="white",
+    )
     plt.close(fig)
     im = Image.open(path)
     if im.mode not in ("RGB", "L"):

@@ -17,6 +17,7 @@ if hasattr(sys.stderr, "reconfigure"):
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
@@ -152,12 +153,15 @@ def main() -> int:
 
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     apply_manuscript_serif()
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2), dpi=FIG_DPI)
+    # ImageGrid keeps equal-aspect panels adjacent; subplots_adjust+imshow
+    # left ~148–240 px mid-column dead space on a wide figsize.
+    fig = plt.figure(figsize=(7.2, 5.2), dpi=FIG_DPI)
+    grid = ImageGrid(fig, 111, nrows_ncols=(2, 2), axes_pad=(0.08, 0.24))
     panels = [
-        (axes[0, 0], recon, "a) Reconstruction residual", "inferno"),
-        (axes[0, 1], depth_edge, "b) Relative-depth edge", "inferno"),
-        (axes[1, 0], texture, "c) Texture / local contrast", "inferno"),
-        (axes[1, 1], fused, "d) Pre-suppression fused map", "inferno"),
+        (grid[0], recon, "a) Reconstruction residual", "inferno"),
+        (grid[1], depth_edge, "b) Relative-depth edge", "inferno"),
+        (grid[2], texture, "c) Texture / local contrast", "inferno"),
+        (grid[3], fused, "d) Pre-suppression fused map", "inferno"),
     ]
     for ax, img, title, cmap in panels:
         ax.imshow(img, cmap=cmap)
@@ -166,7 +170,6 @@ def main() -> int:
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
-    fig.tight_layout(pad=0.35)
     save_manuscript_figure(fig, OUT_PNG, dpi=FIG_DPI)
 
     meta = {
