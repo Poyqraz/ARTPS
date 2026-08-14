@@ -6,8 +6,8 @@ geometry~\citep{ranftl2021dpt,ranftl2022robust}.
 
 Figures~\ref{fig:qualitative}--\ref{fig:close-far} provide qualitative mechanism illustrations;
 their evidentiary role is separate from the quantitative evaluation.
-Human-reviewed performance is based on the 54-image validation partition; its reserved
-54-image test partition remains held out from inference and reporting.
+Human-reviewed performance is based on the 54-image validation partition; the paired
+54-image test partition is reserved for future evaluation.
 The labels represent repeat-author review.
 The human-reviewed set contains $20$ negatives among $360$ images ($8$ validation,
 $2$ test).
@@ -16,8 +16,8 @@ examples, making operating-threshold calibration unstable and limiting the preci
 the AUROC estimate.
 The image-level score terminates at Layer~B; curiosity, diversity, and Priority Buffer
 operate in Layer~C.
-Checkpoint training-set lineage remains unverified against the human-reviewed corpus; the
-resulting evidence is categorized as internal validation.
+Checkpoint training-set lineage requires independent cross-checking against the
+human-reviewed corpus; accordingly, this evidence is categorized as internal validation.
 The current hardware evidence covers lightweight workstation timing; full-pipeline Jetson
 timing remains a future hardware-validation stage.
 

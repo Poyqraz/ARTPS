@@ -211,6 +211,7 @@ def test_limitations_and_discussion_present():
         or "reserved test partition" in lim
         or "reserved 54-image test partition" in lim
         or "test partition remains" in lim
+        or "test partition is reserved" in lim
     )
     assert "heuristic" in disc and "180/180" in disc.replace(" ", "")
     assert "0.772" in disc
@@ -639,6 +640,10 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     assert "image-score definition" in repro or "image-score" in repro
     assert "measured on the test set" in exp_l
     lim_flat = " ".join(lim.lower().split())
-    assert "reserved 54-image test partition" in lim_flat or "54-image test partition remains" in lim_flat
+    assert (
+        "reserved 54-image test partition" in lim_flat
+        or "54-image test partition remains" in lim_flat
+        or "54-image test partition is reserved" in lim_flat
+    )
     # reserved-test protocol stated in §4.2 (not repeated in Reproducibility)
     assert "54-image test partition" in exp_l and "reserved" in exp_l

@@ -11,8 +11,8 @@ are handled by the operational stack.
 Relative depth supplies near/far structure for apparent-size policy as an image-relative
 ordering cue~\citep{ranftl2021dpt}.
 Diversity management reduces redundant near-duplicates under limited downlink slots;
-the Priority Buffer keeps high-anomaly candidates that the similarity penalty would otherwise
-drop irreversibly.
+the Priority Buffer retains high-anomaly candidates after diversity down-weighting for later
+reconsideration.
 The reported image-level validation terminates at Layer~B; Layer~C supplies downstream
 operational ranking.
 Fig.~\ref{fig:qualitative} visualizes Layer~B products: the post-suppression combined map,
@@ -27,7 +27,8 @@ Read left to right, the panels separate appearance, the post-suppression combine
 image-relative depth, and the candidates that remain after operational masks.
 The overlay represents a Layer~B localization hypothesis supported by candidate-region
 evidence; where available, a translucent support footprint marks that image-region evidence.
-Curiosity ranking and science-target confirmation occur downstream.
+Curiosity ranking operates in Layer~C; mission-level science assessment remains a
+downstream operational function.
 
 The entropy-weighted fusion rule remains the specified adaptive fusion mode.
 The human-reviewed validation uses the fixed-coefficient image-level scoring configuration.

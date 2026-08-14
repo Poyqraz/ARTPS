@@ -30,8 +30,8 @@ After review the corpus contains $340$ positive and $20$ negative images; the va
 partition contains $46$ positive and $8$ negative images.
 Human-reviewed performance is reported on the 54-image validation partition; the corresponding
 54-image test partition remains reserved.
-Numeric validation results use the reviewed labels with no additional tuning and without
-repeating inference.
+Numeric validation results apply the reviewed labels directly to the precomputed inference
+scores under the fixed evaluation configuration.
 Fig.~\ref{fig:qualitative} shows a qualitative non-test Mars scene selected before inference
 using predefined scene-composition criteria, under the image-level scoring path.
 Fig.~\ref{fig:close-far} provides qualitative apparent-scale context across close and distant
