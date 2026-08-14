@@ -1,16 +1,16 @@
 # Assertive Engineering Language Audit
 
-**Date:** 2026-08-14  
-**Base commit:** `93a8da6` (post PR #58 / `main` — architecture + citation polish)  
+**Date:** 2026-08-14
+**Base commit:** `93a8da6` (post PR #58 / `main` — architecture + citation polish)
 **Scope:** Reviewer-visible TeX only (`main.tex` abstract + `sections/*.tex`). TeX not rewritten in this artifact.
 
 **Pre-rewrite inventory (non-comment lines):** ~87 standalone `\bnot\b` hits across abstract + sections; hotspots `methods.tex` (~40) ≫ `experiments.tex` / `discussion.tex` / `limitations.tex`. Approximate class mix before rewrite: **~55–65 A**, **~15–20 B**, **~10–15 C** (retain/rephrase), **~5–10 D** (math / comments / irrelevant). Goal after rewrite + theme dedupe: reviewer-visible defensive negation as close to zero as technically possible while freezing science.
 
-**Problem types:**  
-- **A** = DEFENSIVE NEGATION — rewrite to scope-first prose  
-- **B** = NECESSARY TECHNICAL CONTRAST — prefer rewrite when affirmative scope is clearer  
-- **C** = PRECISE TECHNICAL TERM — retain meaning; rephrase affirmatively where listed (do not delete)  
-- **D** = MATHEMATICAL / bib / irrelevant — ignore  
+**Problem types:**
+- **A** = DEFENSIVE NEGATION — rewrite to scope-first prose
+- **B** = NECESSARY TECHNICAL CONTRAST — prefer rewrite when affirmative scope is clearer
+- **C** = PRECISE TECHNICAL TERM — retain meaning; rephrase affirmatively where listed (do not delete)
+- **D** = MATHEMATICAL / bib / irrelevant — ignore
 
 **Scientific freeze (all replacements must preserve):** relative depth non-metric; Layer C downstream of image-level score; reserved 54-test; candidate = localization hypothesis; no flight certification; qualitative ≠ quantitative; metrics/equations/figure topology unchanged.
 
@@ -260,10 +260,10 @@ After sentence rewrites, enforce preferred frequency (Phase 21):
 
 ## Rewrite priority (for follow-on TeX pass)
 
-1. **Discussion + Limitations + Methods depth/fusion/Layer stacks** (highest A density).  
-2. **Fig. 1–4 captions + Table 1 cells**.  
-3. **Experiments / Results** reserved-test and Layer B characterization.  
-4. **Intro / Related Work** certification + depth.  
-5. **Abstract** metric-distance parenthetical only.  
-6. **Conclusion** fixed-coefficient vs entropy framing.  
+1. **Discussion + Limitations + Methods depth/fusion/Layer stacks** (highest A density).
+2. **Fig. 1–4 captions + Table 1 cells**.
+3. **Experiments / Results** reserved-test and Layer B characterization.
+4. **Intro / Related Work** certification + depth.
+5. **Abstract** metric-distance parenthetical only.
+6. **Conclusion** fixed-coefficient vs entropy framing.
 7. Theme **A–E** dedupe sweep + PDF negation QA.

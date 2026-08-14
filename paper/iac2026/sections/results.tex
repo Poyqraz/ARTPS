@@ -57,8 +57,8 @@ AP (val.\ prevalence $46/54 \approx 0.852$) & $0.956$ \\
 
 The predeclared F1-based validation threshold selection collapsed to an
 all-positive operating point.
-The all-positive operating point makes threshold-dependent classification metrics
-non-discriminative; AUROC serves as the principal ranking measure.
+Threshold-dependent classification metrics are therefore non-discriminative on this
+partition.
 
 \subsection{Qualitative processing example}
 Fig.~\ref{fig:qualitative} is a single non-test illustration of RGB input, the
@@ -69,17 +69,14 @@ reconstruction, relative-depth-edge, and texture cues plus the pre-suppression f
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.96\textwidth]{figures/fig_close_far_qualitative_artps.png}
-\caption{Qualitative examples of the ARTPS pipeline on a close-range and a distant
-non-test scene.
+\caption{Close- and distant-scene non-test examples illustrate apparent-scale context;
+quantitative performance is reported in
+Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.
 Each row shows the RGB input, post-suppression combined map, and candidate-support
 overlay.
 Corner brackets indicate the approximate candidate ROI; where proposal geometry is
 available, the translucent footprint visualizes candidate proposal-support geometry at
-image-region level.
-The examples provide qualitative process visualization; quantitative evaluation is reported
-separately in Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.
-Fig.~\ref{fig:close-far} provides qualitative apparent-scale context across close and distant
-scenes; range-conditioned performance remains outside this analysis.}
+image-region level.}
 \label{fig:close-far}
 \end{figure*}
 In addition to that single-scene example and cue decomposition, Fig.~\ref{fig:close-far}

@@ -430,11 +430,11 @@ def test_close_far_qualitative_figure():
     assert "figures/fig_close_far_qualitative_artps.png" in results
     cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     cap_l = " ".join(cap.lower().split())
-    assert "illustrative" in cap_l or "qualitative" in results.lower()
-    assert "preselected non-test" in cap_l or "preselected non-test" in results.lower()
+    assert "illustrative" in cap_l or "qualitative" in results.lower() or "non-test" in cap_l
+    assert "preselected non-test" in results.lower() or "non-test examples" in cap_l
     assert (
-        "quantitative evaluation is reported separately" in cap_l
-        or "qualitative process visualization" in cap_l
+        "quantitative performance is reported" in cap_l
+        or "apparent-scale context" in cap_l
     )
     assert "post-suppression" in cap_l
     assert "candidate-support overlay" in cap_l
@@ -598,7 +598,7 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     assert "summarizes detection and lightweight runtime" in exp_l
     assert "restates" not in exp_l
     assert "primary artps detection configuration" in exp_l
-    assert "layer~c downstream" in exp_l or "layer~b detection metrics" in exp_l
+    assert "layer~c operational ranking" in exp_l or "layer~b detection metrics" in exp_l
 
     fig2 = _visible_tex(methods)
     fig2_cap = fig2[fig2.find(r"\label{fig:qualitative}") - 1200 : fig2.find(r"\label{fig:qualitative}")]
@@ -606,7 +606,7 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     assert "from a non-test Mars scene selected before inference" in fig2_flat
     fig4_cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     fig4_flat = " ".join(fig4_cap.split())
-    assert "Qualitative examples of the ARTPS pipeline" in fig4_flat
+    assert "apparent-scale context" in fig4_flat.lower()
     assert "Reviewed / unchanged / relabeled" in results
     assert "None of these figures" not in results
 
@@ -636,7 +636,9 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     repro = exp_l[exp_l.find("reproducibility") :]
     assert "for the human-reviewed validation" in repro
     assert "checkpoint hashes" in repro
-    assert "54-image test partition" in repro
+    assert "image-score definition" in repro or "image-score" in repro
     assert "measured on the test set" in exp_l
     lim_flat = " ".join(lim.lower().split())
     assert "reserved 54-image test partition" in lim_flat or "54-image test partition remains" in lim_flat
+    # reserved-test protocol stated in §4.2 (not repeated in Reproducibility)
+    assert "54-image test partition" in exp_l and "reserved" in exp_l

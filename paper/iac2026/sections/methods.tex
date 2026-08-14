@@ -39,8 +39,8 @@ super-resolution module inactive.
 \subsection{Multi-cue visual anomaly detection}
 ARTPS forms visual anomaly responses from embedding- or reconstruction-oriented cues aligned
 with industrial anomaly practice~\citep{defard2020padim,roth2022patchcore}.
-A reconstruction residual emphasizes appearance that the autoencoder cannot explain from
-typical terrain context.
+A reconstruction residual captures deviations from reconstructions of typical terrain
+context.
 Complementary texture and local-contrast cues capture high-frequency structure that a
 reconstruction residual may under-emphasize, including sharp rock edges and mottled surfaces.
 Fixed-coefficient multi-cue fusion uses a relative-depth \emph{edge} cue (image-relative depth
@@ -91,8 +91,8 @@ The ARTPS specification defines an entropy-weighted fusion rule: for normalized 
 \(A_{\mathrm{comb}}=\sum_i w_i A_i'\).
 Low-entropy (peaked) maps receive higher weight.
 Those normalized entropy weights sum to one.
-The human-reviewed validation applies a
-\emph{fixed-coefficient} linear mix instead of this entropy rule.
+For the human-reviewed validation, Layer~B uses the \emph{fixed-coefficient} linear mix
+defined below; entropy-weighted fusion remains the adaptive specification.
 Let \(R\), \(E_D\), \(T\), \(L_D\), and \(F_D\) denote inference-normalized reconstruction
 residual, relative-depth Sobel edge, texture / local-contrast, depth-Laplacian, and
 fine-detail maps (percentile~$2$--$98$ per cue), and let \(P\) be the normalized proximity
@@ -123,8 +123,8 @@ That fixed-coefficient mix is the Layer~B path used in the human-reviewed valida
 Layer~B produces the image-level score; Layer~C operates on the surviving candidate set for
 downstream ranking.
 \Needspace{3\baselineskip}
-Conflating Layer~B image scores with Layer~C ranked target lists would misstate what the
-human-reviewed validation measured.
+Accordingly, the human-reviewed metrics characterize Layer~B image-level scoring, while
+Layer~C processes valid candidates for operational ranking.
 
 \begin{figure*}[!t]
 \centering
@@ -185,16 +185,17 @@ Frame-edge and overlay / telemetry regions are invalidated where those signals a
 The object-in-shadow gate preserves structured candidates within shadowed regions while
 suppressing flat boundary-shadow artefacts.
 These masks act before image-level score aggregation.
-The masks enforce candidate-validity constraints; science-interest confirmation occurs during
-subsequent operational interpretation.
+The masks enforce candidate-validity constraints; mission-level science assessment occurs
+downstream of candidate-validity filtering.
 
 Only candidates that remain valid after these checks contribute to the image-level
 score; Fig.~\ref{fig:qualitative}(d) shows that candidate-support overlay on one non-test
 example.
 A surviving candidate remains a localization hypothesis and proceeds to downstream ranking
 before downlink selection.
-Suppression is policy-driven and inspectable, with residual distractor risk handled by
-downstream ranking and mission-level V\&V.
+Suppression is policy-driven and inspectable.
+Downstream ranking processes surviving candidates, while mission-specific V\&V characterizes
+residual distractor risk.
 
 \subsection{Candidate and image-level score}
 After localization and validity gates, each remaining candidate \(r\) receives a score

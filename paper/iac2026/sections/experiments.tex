@@ -1,9 +1,8 @@
 \section{Experimental Protocol}
 \label{sec:protocol}
-This section describes the two evaluation components used in this study
-(Table~\ref{tab:eval-tracks}).
-The quantitative study comprises the two components summarized in Table~\ref{tab:eval-tracks};
-Fig.~\ref{fig:qualitative} provides qualitative process visualization.
+The quantitative study comprises the two evaluation components summarized in
+Table~\ref{tab:eval-tracks}; Fig.~\ref{fig:qualitative} provides qualitative process
+visualization.
 
 \subsection{Primary performance evaluation}
 ARTPS was evaluated for detection and lightweight runtime performance on a $2{,}847$-image
@@ -29,7 +28,6 @@ All $360$ images received a model-blind repeat-author review under a written sci
 annotation guide.
 After review the corpus contains $340$ positive and $20$ negative images; the validation
 partition contains $46$ positive and $8$ negative images.
-The annotation protocol is a model-blind repeat-author review.
 Human-reviewed performance is reported on the 54-image validation partition; the corresponding
 54-image test partition remains reserved.
 Numeric validation results use the reviewed labels with no additional tuning and without
@@ -72,7 +70,7 @@ Evaluation protocol & Validation-selected operating threshold; performance measu
   & 252 / 54 / 54 split; 54-image validation analysis; 54-image test reserved \\
 Annotation & Reference labels for primary anomaly-discrimination evaluation
   & Model-blind human review \\
-Scoring / system scope & Primary ARTPS detection configuration (Layer~B detection metrics; Layer~C downstream)
+Scoring / system scope & Primary ARTPS detection configuration (Layer~B detection metrics; Layer~C operational ranking)
   & Fixed-coefficient image-level score before Layer~C ranking \\
 Evaluation subset & 708-image test/validation subset under diverse field conditions
   & 54-image validation partition (46 positive / 8 negative) \\
@@ -80,7 +78,7 @@ Baseline & PaDiM/PatchCore (WRN-50-2)
   & --- \\
 Metrics & AUROC, AUPRC, F1, lightweight FPS
   & AUROC, AP \\
-Operational ranking & Layer~B detection metrics; Layer~C downstream
+Operational ranking & Layer~B detection metrics; Layer~C operational ranking
   & Curiosity, diversity, and Priority Buffer downstream of reported image-score analysis \\
 \bottomrule
 \end{tabularx}
@@ -101,7 +99,6 @@ validation; AUROC and AP therefore characterize ranking performance.
 \subsection{Reproducibility}
 For the human-reviewed validation, the inference configuration, checkpoint hashes,
 preprocessing profile, and image-score definition were fixed.
-Human-reviewed performance is reported on the 54-image validation partition; the 54-image test partition remains reserved.
 Runs are aborted when required inputs or predefined evaluation conditions are incomplete.
 
 \subsection{Hardware scope}
