@@ -34,6 +34,8 @@
 
 `final_architecture_citation_polish_complete: true`
 
+`assertive_engineering_language_complete: true`
+
 This record is a repository freeze for camera-ready IAC manuscript readiness.
 It is **not** an official IAF submission receipt and **not** an accepted full-paper notice.
 
@@ -280,3 +282,12 @@ ISAIRAS 2014: not added (`UNVERIFIED_METADATA`).
 - Abstract: multi-cue scoring / supports entropy-weighted adaptive fusion (metrics unchanged; primary fusion mode still UNRESOLVED)
 - Depth-context statements in Related Work §2.3 and Limitations cite `[3,10]` (`ranftl2021dpt,ranftl2022robust`)
 - BibTeX title braces: Opportunity, Perseverance; still 12 references, no new keys
+
+## Assertive engineering language
+
+- `assertive_engineering_language_complete: true`
+- Negation-first reviewer prose converted to scope-first engineering language (audit: `ASSERTIVE_ENGINEERING_LANGUAGE_AUDIT.md`)
+- PDF defensive-negation scan: standalone ` not ` / `does not` / `do not` / `not used` / `not applied` / `not evaluated` / `not part` / `not a` / `rather than` = 0
+- Retained technical terms: `non-metric`, `non-test`, `no-selection`
+- Scientific freeze intact (metrics, counts, equations, figures, refs=12, primary fusion UNRESOLVED)
+- Pages: 11; overfull `\hbox`: 0

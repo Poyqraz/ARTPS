@@ -140,12 +140,14 @@ def test_v1_1_supplementary_table_and_auroc_headline():
     assert "principal ranking" in results.lower() or "principal ranking-oriented" in results.lower()
     flat = " ".join(results.lower().split())
     assert "all-positive" in flat
-    assert "not treated as" in flat and "performance measures" in flat
+    assert "non-discriminative" in flat or (
+        "principal ranking" in flat and "auroc" in flat
+    )
     methods = (REPO / "paper/iac2026/sections/methods.tex").read_text(encoding="utf-8")
     assert "maximum score among candidates" in methods.lower()
     assert "max_valid_candidate_after_masks" not in methods
     assert r"max\_valid\_candidate\_after\_masks" not in methods
-    assert "curiosity" in flat and "not applied" in flat
+    assert "layer~b" in flat and "layer~c" in flat
     assert "0.920" not in results
     assert "0/8/0/46" not in results
     assert "threshold $0.0$" not in results
@@ -208,6 +210,8 @@ def test_limitations_and_discussion_present():
         "reserved test" in lim
         or "reserved test partition" in lim
         or "reserved 54-image test partition" in lim
+        or "test partition remains" in lim
+        or "test partition is reserved" in lim
     )
     assert "heuristic" in disc and "180/180" in disc.replace(" ", "")
     assert "0.772" in disc
@@ -229,7 +233,11 @@ def test_limitations_and_discussion_present():
     res = RESULTS.read_text(encoding="utf-8").lower()
     assert "tab:eval-tracks" in exp
     assert "summary of the artps evaluation design" in exp
-    assert "54-image test partition was reserved" in exp
+    assert (
+        "54-image test partition was reserved" in exp
+        or "54-image test partition remains reserved" in exp
+        or "test partition remains reserved" in exp
+    )
     assert "primary artps evaluation" in exp and "human-reviewed validation" in exp
     assert "human-reviewed validation" in res
     assert "data are still pending" not in res and "data still pending" not in res
@@ -262,7 +270,7 @@ def test_camera_ready_figure_and_bibliography():
     assert "figures/fig_qualitative_artps.png" in methods
     assert "qualitative" in methods.lower()
     assert "non-metric" in methods.lower() or "relative and non-metric" in methods.lower()
-    assert "not used as an additional quantitative benchmark" in methods.lower()
+    assert "quantitative evaluation is reported" in methods.lower()
     assert (REPO / "paper/iac2026/figures/fig_qualitative_artps.png").is_file()
     meta = json.loads(
         (REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json").read_text(encoding="utf-8")
@@ -283,7 +291,7 @@ def test_camera_ready_figure_and_bibliography():
     cap = methods.lower()
     assert "image-level scoring path" in cap
     assert "entropy" in cap
-    assert "not included" in cap
+    assert "layer~b terminates" in cap or "layer~c consumes" in cap
     fig_l = fig.lower()
     assert "fixed-weight" in fig_l or "fixed-coefficient" in fig_l or "fixed-coeff" in fig_l
     assert "entropy-weighted" in fig_l
@@ -333,7 +341,7 @@ def test_cue_decomposition_figure_and_caption():
     cap_l = cap.lower()
     assert "qualitative" in methods.lower() or "illustrative" in cap_l
     assert "non-metric" in cap_l
-    assert "not used as an additional quantitative benchmark" in cap_l
+    assert "quantitative performance is reported separately" in cap_l
     assert cue_meta["sample_id"] == fig2_meta["sample_id"]
     assert cue_meta["file_sha256"] == fig2_meta["file_sha256"]
     assert cue_meta["test_used"] is False
@@ -344,15 +352,15 @@ def test_cue_decomposition_figure_and_caption():
     assert "fig:cue-decomp" in results
     assert "fig:cue-decomp" in disc
     methods_flat = " ".join(methods.lower().split())
-    assert "scientifically relevant" in methods_flat
+    assert "science-interest" in methods_flat
     assert "scientifically irrelevant" not in methods_flat
-    assert "independently min-max" in cap_l or "not numerically comparable" in cap_l
+    assert "independently min-max" in cap_l or "independent min-max" in cap_l
     assert "pre-suppression" in cap_l or "pre-suppression fused" in methods_flat
     fig2_cap = methods[methods.find(r"\label{fig:qualitative}") - 1200 : methods.find(r"\label{fig:qualitative}")]
     assert "post-suppression" in fig2_cap.lower()
     assert "candidate-support overlay" in fig2_cap.lower()
     assert "corner brackets" in fig2_cap.lower()
-    assert "not a pixel-level" in fig2_cap.lower() or "not pixel-level" in fig2_cap.lower()
+    assert "proposal-support geometry" in fig2_cap.lower() or "image-region level" in fig2_cap.lower()
 
 
 def test_scientific_definition_pass_language():
@@ -397,10 +405,11 @@ def test_scientific_definition_pass_language():
     assert r"s_{\mathrm{image}}" in methods.lower().replace(" ", "")
     assert "v_r" in methods.lower().replace(" ", "") or "v_{r}" in methods.lower()
     exp = (REPO / "paper/iac2026/sections/experiments.tex").read_text(encoding="utf-8").lower()
-    assert "54-image test partition was reserved" in exp
+    assert "54-image test partition" in exp and "reserved" in exp
     assert "curiosity" in exp and "priority buffer" in exp
     res = RESULTS.read_text(encoding="utf-8").lower()
-    assert "curiosity ranking" in res and "not applied" in res
+    assert "layer~b" in res and "layer~c" in res
+    assert "before layer~c operational ranking" in res or "layer~b image-level score" in res
 
 
 ALLOWED_CLOSE_FAR_POOL = {
@@ -422,12 +431,16 @@ def test_close_far_qualitative_figure():
     assert "figures/fig_close_far_qualitative_artps.png" in results
     cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     cap_l = " ".join(cap.lower().split())
-    assert "illustrative" in cap_l or "qualitative" in results.lower()
-    assert "preselected non-test" in cap_l or "preselected non-test" in results.lower()
-    assert "not presented as an additional quantitative benchmark" in cap_l
+    assert "illustrative" in cap_l or "qualitative" in results.lower() or "non-test" in cap_l
+    assert "preselected non-test" in results.lower() or "non-test examples" in cap_l
+    assert (
+        "quantitative performance is reported" in cap_l
+        or "apparent-scale context" in cap_l
+    )
     assert "post-suppression" in cap_l
     assert "candidate-support overlay" in cap_l
     assert "corner brackets" in cap_l
+    assert "proposal-support geometry" in cap_l or "image-region level" in cap_l
     for banned in (
         "demonstrates superior",
         "proves robustness",
@@ -586,7 +599,7 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     assert "summarizes detection and lightweight runtime" in exp_l
     assert "restates" not in exp_l
     assert "primary artps detection configuration" in exp_l
-    assert "layer~c ranking not applied" in exp_l
+    assert "layer~c operational ranking" in exp_l or "layer~b detection metrics" in exp_l
 
     fig2 = _visible_tex(methods)
     fig2_cap = fig2[fig2.find(r"\label{fig:qualitative}") - 1200 : fig2.find(r"\label{fig:qualitative}")]
@@ -594,14 +607,16 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     assert "from a non-test Mars scene selected before inference" in fig2_flat
     fig4_cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     fig4_flat = " ".join(fig4_cap.split())
-    assert "Qualitative examples of the ARTPS pipeline" in fig4_flat
+    assert "apparent-scale context" in fig4_flat.lower()
     assert "Reviewed / unchanged / relabeled" in results
     assert "None of these figures" not in results
 
     disc = _visible_tex(disc_p)
     assert "operational target-prioritization architecture" in disc
     lim = _visible_tex(lim_p)
-    assert "Full-pipeline edge-hardware timing, including Jetson deployment, was not evaluated" in lim
+    assert "jetson" in lim.lower() and (
+        "future hardware-validation" in lim.lower() or "hardware-validation stage" in lim.lower()
+    )
 
     main = MAIN.read_text(encoding="utf-8")
     assert "0.772" not in main
@@ -622,7 +637,13 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     repro = exp_l[exp_l.find("reproducibility") :]
     assert "for the human-reviewed validation" in repro
     assert "checkpoint hashes" in repro
-    assert "54-image test partition" in repro
+    assert "image-score definition" in repro or "image-score" in repro
     assert "measured on the test set" in exp_l
     lim_flat = " ".join(lim.lower().split())
-    assert "its reserved 54-image test partition" in lim_flat
+    assert (
+        "reserved 54-image test partition" in lim_flat
+        or "54-image test partition remains" in lim_flat
+        or "54-image test partition is reserved" in lim_flat
+    )
+    # reserved-test protocol stated in §4.2 (not repeated in Reproducibility)
+    assert "54-image test partition" in exp_l and "reserved" in exp_l

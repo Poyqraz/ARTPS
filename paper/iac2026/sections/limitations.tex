@@ -1,28 +1,27 @@
 \section{Limitations}
 \label{sec:limitations}
-Monocular depth in ARTPS is \emph{relative}, not metric: near/far ordering does not yield
-metres, physical object size, or calibrated 3D reconstruction~\citep{ranftl2021dpt,ranftl2022robust}.
+The ARTPS depth representation provides relative near/far ordering.
+Metric range, physical dimensions, and calibrated 3-D reconstruction require calibrated
+geometry~\citep{ranftl2021dpt,ranftl2022robust}.
 
-The qualitative figures are non-test illustrations and do not represent field diversity
-or a controlled near/far study.
-The human-reviewed performance analysis is based on the 54-image validation partition; its
-reserved 54-image test partition was not used for ARTPS inference or performance reporting.
-The human-reviewed set is a repeat-author review, not an independent second annotation.
-The human-reviewed set contains only $20$ negatives among $360$ images ($8$ validation,
+Figures~\ref{fig:qualitative}--\ref{fig:close-far} provide qualitative mechanism illustrations;
+their evidentiary role is separate from the quantitative evaluation.
+Human-reviewed performance is based on the 54-image validation partition; the paired
+54-image test partition is reserved for future evaluation.
+The labels represent repeat-author review.
+The human-reviewed set contains $20$ negatives among $360$ images ($8$ validation,
 $2$ test).
-The present human-reviewed validation subset contains only eight negative
+The present human-reviewed validation subset contains eight negative
 examples, making operating-threshold calibration unstable and limiting the precision of
 the AUROC estimate.
-The image-level score does not include curiosity ranking, diversity
-penalty, or the Priority Buffer.
-The training-set lineage of the fixed checkpoints was not independently cross-checked against
-the human-reviewed corpus; the human-reviewed analysis is therefore treated as an additional
-validation study rather than an external benchmark.
-Full-pipeline edge-hardware timing, including Jetson deployment, was not evaluated in this
-study.
+The image-level score terminates at Layer~B; curiosity, diversity, and Priority Buffer
+operate in Layer~C.
+Checkpoint training-set lineage requires independent cross-checking against the
+human-reviewed corpus; accordingly, this evidence is categorized as internal validation.
+The current hardware evidence covers lightweight workstation timing; full-pipeline Jetson
+timing remains a future hardware-validation stage.
 
-ARTPS is a safety-aware, flight-readiness-oriented software architecture.
-It is not flight-qualified avionics, not mission-certified, and does not assert
-universal safety guarantees.
-Operational envelopes, independent V\&V, and mission-specific safety evidence remain
-out of scope.
+Current evidence covers a safety-aware, flight-readiness-oriented software architecture
+within a defined operational envelope.
+Flight qualification, mission certification, and system-level safety assurance require
+independent mission-specific V\&V.

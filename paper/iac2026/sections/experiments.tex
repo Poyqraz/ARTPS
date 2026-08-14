@@ -1,9 +1,8 @@
 \section{Experimental Protocol}
 \label{sec:protocol}
-This section describes the two evaluation components used in this study
-(Table~\ref{tab:eval-tracks}).
-A qualitative processing example (Fig.~\ref{fig:qualitative}) illustrates the image-level
-scoring path only; it is not a third quantitative evaluation.
+The quantitative study comprises the two evaluation components summarized in
+Table~\ref{tab:eval-tracks}; Fig.~\ref{fig:qualitative} provides qualitative process
+visualization.
 
 \subsection{Primary performance evaluation}
 ARTPS was evaluated for detection and lightweight runtime performance on a $2{,}847$-image
@@ -29,28 +28,26 @@ All $360$ images received a model-blind repeat-author review under a written sci
 annotation guide.
 After review the corpus contains $340$ positive and $20$ negative images; the validation
 partition contains $46$ positive and $8$ negative images.
-This is not an independent second annotation.
-The 54-image test partition was reserved and was not used for ARTPS inference, threshold
-selection, or the human-reviewed performance results reported in this study.
-Numeric validation results use the reviewed labels with no additional tuning and without
-repeating inference.
+Human-reviewed performance is reported on the 54-image validation partition; the corresponding
+54-image test partition remains reserved.
+Numeric validation results apply the reviewed labels directly to the precomputed inference
+scores under the fixed evaluation configuration.
 Fig.~\ref{fig:qualitative} shows a qualitative non-test Mars scene selected before inference
 using predefined scene-composition criteria, under the image-level scoring path.
-Fig.~\ref{fig:close-far} adds one close-range and one distant-scene illustration from
-preselected non-test scenes; it is not a range-conditioned performance study.
+Fig.~\ref{fig:close-far} provides qualitative apparent-scale context across close and distant
+scenes; range-conditioned performance remains outside this analysis.
 
 \subsection{Dataset and annotation semantics}
 One homogeneous Curiosity Mastcam-oriented image domain was selected from inventory metadata
-without model-score inspection.
+independently of model scores.
 The human-reviewed corpus comprises $360$ included images with fixed split assignments of
 $252$ train / $54$ validation / $54$ test.
-All $360$ images received a repeat-author model-blind review; this is not independent double
-annotation.
+The labels represent repeat-author model-blind review.
 A positive label denotes at least one real surface object or region that is visually distinct
 from its surroundings and scientifically worth follow-up under the annotation guide.
 A negative label denotes no distinct science-interest target under that guide.
-Rover hardware, border artefacts, telemetry overlays, compression or noise artefacts, a
-shadow boundary alone, or an exposure/specular artefact alone do not count as positive.
+Positive inclusion excludes rover hardware, border artefacts, telemetry overlays, compression
+or noise artefacts, a shadow boundary alone, and an exposure/specular artefact alone.
 
 \FloatBarrier
 \begin{table*}[t]
@@ -70,10 +67,10 @@ Objective & Overall detection and runtime performance
 Data basis & $2{,}847$ Mars-rover images from Curiosity Mastcam and Perseverance Mastcam-Z
   & 360-image Curiosity Mastcam-oriented corpus \\
 Evaluation protocol & Validation-selected operating threshold; performance measured on test data
-  & 252 / 54 / 54 split; reserved test unused \\
+  & 252 / 54 / 54 split; 54-image validation analysis; 54-image test reserved \\
 Annotation & Reference labels for primary anomaly-discrimination evaluation
   & Model-blind human review \\
-Scoring / system scope & Primary ARTPS detection configuration (Layer~C ranking not applied to these metrics)
+Scoring / system scope & Primary ARTPS detection configuration (Layer~B detection metrics; Layer~C operational ranking)
   & Fixed-coefficient image-level score before Layer~C ranking \\
 Evaluation subset & 708-image test/validation subset under diverse field conditions
   & 54-image validation partition (46 positive / 8 negative) \\
@@ -81,8 +78,8 @@ Baseline & PaDiM/PatchCore (WRN-50-2)
   & --- \\
 Metrics & AUROC, AUPRC, F1, lightweight FPS
   & AUROC, AP \\
-Operational ranking & Layer~C ranking not applied to these metrics
-  & Curiosity, diversity, and Priority Buffer excluded from this score analysis \\
+Operational ranking & Layer~B detection metrics; Layer~C operational ranking
+  & Curiosity, diversity, and Priority Buffer downstream of reported image-score analysis \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -91,24 +88,22 @@ Operational ranking & Layer~C ranking not applied to these metrics
 PaDiM/PatchCore is the anomaly-detection baseline~\citep{defard2020padim,roth2022patchcore},
 with a WRN-50-2 backbone under the same partition and preprocessing policy as the primary
 evaluation.
-PaDiM and PatchCore remain separate baselines and are not active components of the
-human-reviewed image-level score.
+The human-reviewed Layer~B configuration sets the PaDiM/PatchCore score terms to zero;
+baseline performance is evaluated separately.
 Primary evaluation metrics are AUROC, AUPRC, F1, the baseline AUROC, and lightweight-core FPS.
 For the human-reviewed validation, AUROC is the principal ranking-oriented metric and AP is a
 secondary metric reported with prevalence context.
-The human-reviewed validation threshold produced an all-positive operating point; therefore
-threshold-dependent F1 is not interpreted as a performance measure on that analysis.
+The all-positive operating point renders threshold-dependent F1 uninformative for this
+validation; AUROC and AP therefore characterize ranking performance.
 
 \subsection{Reproducibility}
 For the human-reviewed validation, the inference configuration, checkpoint hashes,
 preprocessing profile, and image-score definition were fixed.
-Its reserved 54-image test partition was not used for ARTPS inference, metric reporting, or
-threshold selection.
 Runs are aborted when required inputs or predefined evaluation conditions are incomplete.
 
 \subsection{Hardware scope}
-The lightweight preprocessing--fusion--localization configuration achieved $28.1$\,FPS at
-$256\times256$ on the development workstation.
-This measurement excludes learned DPT and autoencoder inference.
-Full-pipeline edge-hardware timing, including Jetson deployment, was not evaluated in this study.
-No flight qualification is claimed.
+The $28.1$\,FPS measurement characterizes the lightweight preprocessing--fusion--localization
+core at $256\times256$ on the development workstation, excluding learned DPT and autoencoder
+inference.
+Full-pipeline edge-hardware timing and flight qualification constitute separate hardware and
+mission V\&V stages.

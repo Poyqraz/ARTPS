@@ -31,8 +31,7 @@ FPS @ $256\times256$ (lightweight core) & $28.1$ \\
 On the 54-image validation partition ($46$ positive, $8$ negative), the fixed image-level
 ARTPS score yielded AUROC~$0.772$ and AP~$0.956$
 (Table~\ref{tab:indep-v11}).
-Curiosity ranking, diversity penalty, and the Priority Buffer were not applied on these
-scores.
+These results characterize the Layer~B image-level score before Layer~C operational ranking.
 AUROC is the principal ranking-oriented metric for this analysis.
 
 \begin{table}[t]
@@ -58,29 +57,26 @@ AP (val.\ prevalence $46/54 \approx 0.852$) & $0.956$ \\
 
 The predeclared F1-based validation threshold selection collapsed to an
 all-positive operating point.
-Consequently, threshold-dependent classification metrics are not treated as
-performance measures in this analysis; AUROC is used as the
-principal ranking-oriented metric.
+Threshold-dependent classification metrics are therefore non-discriminative on this
+partition.
 
 \subsection{Qualitative processing example}
 Fig.~\ref{fig:qualitative} is a single non-test illustration of RGB input, the
 post-suppression combined anomaly map, relative depth, and candidate-support overlay under the
 ARTPS image-level scoring path.
-Fig.~\ref{fig:cue-decomp} decomposes that same fusion path into reconstruction,
-relative-depth-edge, and texture cues plus the pre-suppression fused map; it is not a new
-detection metric.
+Fig.~\ref{fig:cue-decomp} is a diagnostic decomposition of the existing Layer~B fusion into
+reconstruction, relative-depth-edge, and texture cues plus the pre-suppression fused map.
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.96\textwidth]{figures/fig_close_far_qualitative_artps.png}
-\caption{Qualitative examples of the ARTPS pipeline on a close-range and a distant
-non-test scene.
+\caption{Close- and distant-scene non-test examples illustrate apparent-scale context;
+quantitative performance is reported in
+Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.
 Each row shows the RGB input, post-suppression combined map, and candidate-support
 overlay.
 Corner brackets indicate the approximate candidate ROI; where proposal geometry is
-available, the translucent footprint shows supporting image-region evidence and is not a
-pixel-level segmentation or ground-truth object boundary.
-The examples are illustrative and are not presented as an additional quantitative
-benchmark or a controlled range-conditioned performance study.}
+available, the translucent footprint visualizes candidate proposal-support geometry at
+image-region level.}
 \label{fig:close-far}
 \end{figure*}
 In addition to that single-scene example and cue decomposition, Fig.~\ref{fig:close-far}
