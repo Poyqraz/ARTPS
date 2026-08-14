@@ -27,8 +27,7 @@ supports entropy-weighted adaptive fusion, ranks valid candidates after image-le
 with a curiosity score and soft similarity penalty, and uses a Priority Buffer for
 second-chance reconsideration of high-anomaly targets down-weighted by diversity policy.
 Operational gates address rover-body and boundary-shadow false positives, protect objects
-inside shadows, and apply an image-relative size--distance policy based on apparent size
-(not metric distance).
+inside shadows, and apply an apparent-size policy conditioned on image-relative depth.
 On NASA Mars rover imagery, ARTPS reports 0.894 AUROC, 0.847 AUPRC, and 0.823 F1 versus a
 PaDiM/PatchCore baseline (0.856 AUROC).
 In a lightweight configuration excluding learned depth and autoencoder inference, the core

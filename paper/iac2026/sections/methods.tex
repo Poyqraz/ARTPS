@@ -1,23 +1,20 @@
 \section{ARTPS Methodology}
 This section describes the ARTPS pipeline as implemented for the present study.
-Quantitative performance claims appear only in Section~\ref{sec:results}.
+Quantitative performance claims appear in Section~\ref{sec:results}.
 
 \begin{figure*}[t]
 \centering
 \input{figures/artps_pipeline}
 \caption{ARTPS architecture.
 Layer~A generates optional enhancement, reconstruction, relative-depth, and texture cues.
-The optional classifier contributes a known-value scalar to candidate-level scoring, not to
-fixed map fusion.
+The classifier contributes a known-value scalar directly to candidate scoring.
 Layer~B is the image-level scoring path: cue normalization, fusion,
 proximity modulation, map-level suppression, localization, candidate scoring with
 validity gates, and aggregation of remaining valid candidates.
 Entropy-weighted fusion is the specified adaptive fusion mode (dashed).
 The human-reviewed validation uses the fixed-coefficient image-level scoring configuration.
-Layer~C is the operational ranking stack (curiosity, soft similarity / diversity, clustering,
-Priority Buffer / Top-$K$) and is not included in the image-level score.
-The human-reviewed validation uses the image-level scoring path in Layer~B; Layer~C performs
-operational target ranking.}
+Layer~B terminates at the image-level score, while Layer~C consumes valid candidates for
+curiosity-, diversity-, and buffer-based operational ranking.}
 \label{fig:pipeline}
 \end{figure*}
 
@@ -33,11 +30,11 @@ with evaluation-integrity checks.
 The image-level ARTPS score is defined as the maximum score among candidates that remain
 valid after operational filtering.
 The human-reviewed validation uses this aggregation.
-Curiosity ranking, feature-space diversity, and the Priority Buffer are operational
-selection mechanisms; they are \emph{not} applied on the image-level score.
-Optional Mars-oriented enhancement may precede cue extraction; it is preprocessing, not a
-detection metric.
-Optional super-resolution enhancement was disabled in all reported experiments.
+Image-level scoring terminates at Layer~B.
+Curiosity, feature-space diversity, and the Priority Buffer operate subsequently in Layer~C.
+Optional Mars-oriented enhancement is confined to preprocessing upstream of cue extraction.
+Reported experiments use the native-resolution preprocessing configuration, with the
+super-resolution module inactive.
 
 \subsection{Multi-cue visual anomaly detection}
 ARTPS forms visual anomaly responses from embedding- or reconstruction-oriented cues aligned
@@ -47,29 +44,24 @@ typical terrain context.
 Complementary texture and local-contrast cues capture high-frequency structure that a
 reconstruction residual may under-emphasize, including sharp rock edges and mottled surfaces.
 Fixed-coefficient multi-cue fusion uses a relative-depth \emph{edge} cue (image-relative depth
-discontinuity), not a protrusion map.
-Protrusion remains a candidate geomorph descriptor outside the fused score.
+discontinuity); protrusion remains a candidate geomorph descriptor outside the fused score.
 The depth-edge cue highlights regions that stand out from the surrounding near/far layout
-rather than from appearance alone.
+relative to appearance cues alone.
 Cue maps therefore highlight unusual appearance or structure relative to a reference
 distribution of ``normal'' terrain context.
-No single cue is treated as a mineral detector, lithology classifier, or complete science
-label; each map is an input to fusion and localization.
+Each cue serves as an input to fusion and localization.
+Mineralogical or lithological interpretation requires dedicated sensing and labels beyond
+these anomaly cues.
 Fig.~\ref{fig:qualitative}(b) shows the post-suppression combined anomaly map on a non-test
 example.
 
 \subsection{Monocular relative depth}
 A dense monocular estimator provides an image-relative depth field for near/far
 organization~\citep{ranftl2021dpt,ranftl2022robust}.
-Monocular depth estimation is affected by scale/range ambiguity and cross-dataset variation;
-ARTPS therefore uses the depth output as relative scene structure rather than absolute metric
-range.
-Depth values are used as relative ordering cues, not as metric metres, absolute physical size,
-or calibrated stereo geometry.
-The same image can be ordered from nearer to farther surfaces, but those values are not
-transferable across images as a common metric scale.
-\Needspace{3\baselineskip}
-Accordingly, no metric-depth claim is made in the present study.
+ARTPS maps monocular depth to a within-image relative field used for near/far ordering,
+depth-edge extraction, and apparent-size policy.
+The representation is non-metric; absolute range and physical dimensions require calibrated
+geometry.
 Depth supports apparent size--distance policy and spatial structuring of candidates, and it
 feeds the depth-edge cue used in fixed-coefficient multi-cue fusion.
 
@@ -81,15 +73,15 @@ selected before inference using predefined scene-composition criteria.
 Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
 depth, and the candidate-support overlay produced by the ARTPS image-level scoring path.
 Corner brackets denote the approximate candidate ROI.
-Where proposal support geometry is available, the translucent footprint indicates the
-image-region evidence associated with the candidate; it is not a pixel-level
-segmentation or ground-truth object boundary.
+Where proposal support geometry is available, the translucent footprint visualizes candidate
+proposal-support geometry at image-region level.
 The depth visualization is relative and non-metric.
-The example is illustrative and is not used as an additional quantitative benchmark.}
+The example provides qualitative process visualization; quantitative evaluation is reported
+separately in Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
 \label{fig:qualitative}
 \end{figure*}
 
-Fig.~\ref{fig:qualitative}(c) shows only this image-relative near/far field.
+Fig.~\ref{fig:qualitative}(c) shows this image-relative near/far field.
 
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
@@ -120,18 +112,16 @@ A_{\mathrm{pre}}
 \mathrm{clip}\!\bigl(A_{\mathrm{raw}}\,[0.5+0.5\,P_{\mathrm{mix}}],\,0,1\bigr).
 \]
 The values \(0.50/0.30/0.20/0.08/0.12\) are \emph{fixed fusion coefficients}: they are
-implementation coefficients, they are not required to sum to one, and the output is
-subsequently modulated and clipped.
+implementation weights followed by proximity modulation and clipping; unit-sum normalization
+is therefore unnecessary.
 They are distinct from the entropy-weighted architectural specification.
-These are the fusion coefficients used to generate the human-reviewed image-level scores.
-They are not claimed to be optimal or learned.
-The proximity multiplier lies in a narrow band near \(0.75\), so far-field responses are
-down-weighted rather than zeroed.
+The evaluated configuration uses fixed, manually specified coefficients.
+The proximity multiplier lies in a narrow band near \(0.75\), so far-field responses receive
+reduced but nonzero weight.
 That fixed-coefficient mix is the Layer~B path used in the human-reviewed validation
 (Fig.~\ref{fig:pipeline}).
-Layer~C ranking---curiosity, soft similarity / diversity, and the Priority Buffer---is an
-operational selection stack for onboard downlink; it is not applied when forming the
-image-level score.
+Layer~B produces the image-level score; Layer~C operates on the surviving candidate set for
+downstream ranking.
 \Needspace{3\baselineskip}
 Conflating Layer~B image scores with Layer~C ranked target lists would misstate what the
 human-reviewed validation measured.
@@ -143,12 +133,13 @@ human-reviewed validation measured.
 Fig.~\ref{fig:qualitative}.
 Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
 pre-suppression fused map after proximity mixing.
-Smaller depth-Laplacian and fine-detail terms also enter the mix but are not shown as
-separate panels.
-Each panel is independently min-max scaled for visualization; color intensities are therefore
-not numerically comparable across panels.
+The four displayed panels emphasize the dominant reconstruction, relative-depth-edge, texture,
+and fused responses; depth-Laplacian and fine-detail terms also contribute to the fusion.
+Independent min-max display scaling assigns each panel its own visualization range;
+cross-panel color intensity therefore serves qualitative inspection.
 The depth-derived cue is image-relative and non-metric.
-The figure is illustrative and is not used as an additional quantitative benchmark.}
+Quantitative performance is reported separately in
+Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
 \label{fig:cue-decomp}
 \end{figure*}
 
@@ -156,15 +147,15 @@ Fig.~\ref{fig:cue-decomp} shows how that fixed-coefficient mix is assembled on t
 as Fig.~\ref{fig:qualitative}.
 Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
 Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
-image-relative discontinuity cue, not metric distance and not protrusion.
+image-relative discontinuity cue used for fusion.
 Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
 gradient magnitude).
 Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
 \Needspace{4\baselineskip}
 The classifier / known-value term is enabled in the implemented Layer~B configuration for
-candidate scoring and curiosity, but it is not a term in the fused map.
-Display scaling in the figure is independent of inference percentile normalization and does
-not constitute a new quantitative experiment.
+candidate scoring and curiosity; it enters candidate scoring and remains outside the fused map.
+Display scaling in the figure is independent of inference percentile normalization and serves
+qualitative inspection of the existing Layer~B mix.
 
 \Needspace{8\baselineskip}
 \subsection{Candidate localization}
@@ -172,51 +163,50 @@ Fused anomaly responses are converted into discrete candidate regions via locali
 (thresholding / connected components / peak extraction; implementation detail is in the
 accompanying software).
 Each candidate carries a score, spatial extent, and optional feature descriptor for diversity.
-Candidates that fail validity checks after masks do not contribute to
-the image-level score.
-The image-level aggregation is the maximum among remaining valid candidates, not a mean over the
-full anomaly map and not a curiosity-weighted sum.
-Fig.~\ref{fig:qualitative}(d) overlays only those remaining valid regions; it is not a
-downlink ranking and does not apply curiosity, diversity, or the Priority Buffer.
+Validity gates restrict image-level aggregation to surviving candidates.
+Image-level aggregation uses the maximum candidate score over \(R_{\mathrm{valid}}\);
+curiosity-weighted ranking occurs later in Layer~C.
+Fig.~\ref{fig:qualitative}(d) visualizes the Layer~B surviving-candidate set prior to Layer~C
+ranking.
 
 \subsection{Operational false-positive suppression}
 Rover imagery frequently contains distractors: rover body / hardware, strong boundary shadows,
 frame edges, and telemetry overlays.
-These regions can produce high reconstruction or texture responses that do not correspond to
-science-interest targets.
+These regions can produce high reconstruction or texture responses outside the science-interest
+annotation guide.
 ARTPS applies operational masks and suppressions so that high responses in these regions are
 down-weighted or invalidated before ranking.
 
 Boundary-connected shadow suppression targets dark, low-structure regions connected to the
-image boundary, including cast-shadow wedges and similar artefacts, rather than suppressing
-all dark pixels.
+image boundary, including cast-shadow wedges and similar artefacts, while leaving unstructured
+dark terrain subject to the remaining validity gates.
 Rover-body and nearby hardware are excluded as self-view clutter.
 Frame-edge and overlay / telemetry regions are invalidated where those signals are available.
-A separate object-in-shadow check distinguishes a flat shadow artefact from a structured
-candidate that happens to sit inside a shadowed area: suppressing the artefact must not
-automatically discard the in-shadow object.
+The object-in-shadow gate preserves structured candidates within shadowed regions while
+suppressing flat boundary-shadow artefacts.
 These masks act before image-level score aggregation.
-They reduce invalid candidates; they do not establish that a surviving region is scientifically
-relevant.
+The masks enforce candidate-validity constraints; science-interest confirmation occurs during
+subsequent operational interpretation.
 
 Only candidates that remain valid after these checks contribute to the image-level
 score; Fig.~\ref{fig:qualitative}(d) shows that candidate-support overlay on one non-test
-example, not a curiosity-ranked downlink list.
-A candidate that survives suppression is still only a localization hypothesis: it is not a
-confirmed science target and is not automatically queued for downlink.
-Suppression is policy-driven and inspectable; it is not a claim of perfect distractor rejection.
+example.
+A surviving candidate remains a localization hypothesis and proceeds to downstream ranking
+before downlink selection.
+Suppression is policy-driven and inspectable, with residual distractor risk handled by
+downstream ranking and mission-level V\&V.
 
 \subsection{Candidate and image-level score}
 After localization and validity gates, each remaining candidate \(r\) receives a score
 from pooled map responses and a classifier-derived known-value scalar.
 Let \(F_r\) be the pooled combined-map response, \(D_r\) the pooled relative-depth value,
 \(Q_r\) the proposal confidence, and \(K\) the image-global known-value scalar
-(\(\arg\max\) class index divided by four when the classifier is enabled; not a per-box
-classifier and not a claimed lithology label).
+(\(\arg\max\) class index divided by four when the classifier is enabled).
+$K$ is an image-global known-value scalar used exclusively as a candidate-scoring feature;
+its semantics exclude per-box and lithological interpretation.
 The ARTPS scoring function supports optional PaDiM and PatchCore responses.
-These terms were disabled in the human-reviewed validation and therefore contribute zero to
-the human-reviewed image-level score.
-PaDiM/PatchCore is evaluated separately as a baseline.
+The human-reviewed Layer~B configuration fixes the PaDiM and PatchCore score terms to zero;
+PaDiM/PatchCore performance is reported through the separate baseline evaluation.
 The candidate equations are
 \[
 V_r=\mathrm{clip}(0.55\,K+0.25\,D_r+0.20\,F_r,0,1),
@@ -236,14 +226,17 @@ S_{\mathrm{image}}=\max_{r\in R_{\mathrm{valid}}} S_r,
 \]
 or \(S_{\mathrm{image}}=0\) when no valid candidate remains.
 A slim recall-support pooling step may raise \(F_r\) for some proposal sources before these
-equations; no additional score formula is introduced.
+equations.
+Recall-support pooling modifies \(F_r\) upstream while the equations above remain the sole
+candidate-score formulation.
 
 \subsection{Apparent size / image-relative size--distance policy}
 Given relative depth and image extent, ARTPS applies an image-relative size--distance policy
 to prefer candidates whose apparent size is consistent with the intended operational envelope
 (e.g., avoiding both tiny noise peaks and unrealistically large blobs under relative depth
 ordering).
-This is a relative heuristic, not a physical size measurement in metres.
+The policy operates in normalized image/depth coordinates; metric physical size requires
+calibrated geometry.
 
 \subsection{Operational ranking sequence}
 Candidates that remain valid after perception and masks enter an operational ranking
@@ -251,7 +244,7 @@ stack for onboard downlink.
 The sequence is: a surviving candidate receives a curiosity score; a soft similarity penalty
 then reduces its priority among already selected items; the Priority Buffer retains a
 high-anomaly candidate that lost that diversity contest for later reconsideration.
-This operational ranking path is not part of the image-level score.
+Image-level scoring ends before the Layer~C operational-ranking sequence.
 
 \subsection{Curiosity score}
 For operational ranking, ARTPS computes a curiosity score as a non-negative weighted
@@ -261,7 +254,7 @@ anomaly response, optional combined-map, depth variance, and roughness),
 C(r)=\sum_i w_i S_i(r),\qquad w_i\ge 0.
 \]
 Default deployed weights emphasize known-value and anomaly terms.
-\(C(r)\) is \emph{not} the image-level score.
+\(C(r)\) is reserved for Layer~C operational ranking.
 
 \subsection{Feature-space diversity}
 To avoid redundant near-duplicates in the priority list, ARTPS applies a soft similarity
@@ -272,7 +265,7 @@ If \(s(r)\) is the maximum cosine similarity to already selected items and
 S'_r=S_r\,(1-\lambda s(r)).
 \]
 Diversity improves coverage of distinct visual modes under limited downlink slots.
-This ranking step is not applied when computing the image-level score.
+Diversity acts after Layer~B image scoring.
 
 \subsection{Priority Buffer}
 Aggressive diversity down-weighting can deprioritize rare but potentially valuable candidates.
@@ -280,14 +273,12 @@ The Priority Buffer retains high-anomaly candidates that lose the diversity cont
 \[
 r\in\mathcal{B}\iff S_r>\tau_{\mathrm{high}}\ \mathrm{and}\ \bigl(S_r-S'_r\bigr)>\tau_\Delta.
 \]
-Only candidates that remain valid after operational masks enter this buffer; the buffer does
-not recover mask-invalidated regions.
-The buffer is a recovery mechanism for second-chance re-evaluation, not a guarantee that
-every rare target is recovered, and it is not part of the image-level score.
+Priority Buffer eligibility is restricted to candidates that pass Layer~B validity gates.
+The buffer provides second-chance ranking within Layer~C, while the image-level score remains
+fixed at the Layer~B output.
 
 \subsection{Runtime and safety-aware fail-closed behaviour}
 ARTPS is intended for edge-oriented operation with bounded compute.
 Runtime processing returns an explicit no-selection outcome when evidence is insufficient.
-Evaluation is aborted when required inputs or predefined evaluation conditions are incomplete,
-rather than emitting an unverified priority list.
+Incomplete required inputs trigger deterministic abort/no-selection behaviour.
 Safety bounds are stated in Section~\ref{sec:limitations}.

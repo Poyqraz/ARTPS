@@ -1,16 +1,16 @@
 \section{Introduction}
 Planetary rover missions operate under tight energy limits, constrained communications bandwidth,
 and delayed ground feedback~\citep{estlin2012,francis2017aegis}.
-Not every acquired image carries equal scientific value for follow-up imaging or downlink, so
-onboard systems must prioritize candidate targets rather than treating all detections as equally
-actionable.
+Acquired images vary in scientific value for follow-up imaging or downlink, so
+onboard systems must prioritize candidate targets according to operational actionability.
 
-Classical visual anomaly detection provides useful cues for unusual appearance, but alone it
-does not define an operational target-selection policy.
+Classical visual anomaly detection provides useful cues for unusual appearance; operational
+target selection additionally depends on localization, false-positive suppression, diversity,
+and ranking under rover constraints.
 Field imagery is rich in distractors: cast shadows, rover hardware, image borders, telemetry
 overlays, and textured terrain can inflate anomaly responses and produce false positives.
-Monocular depth estimators supply image-relative near/far structure rather than calibrated
-metric distance~\citep{ranftl2021dpt}, so depth must be treated as a relative ordering cue.
+Monocular depth estimators provide image-relative near/far structure for ordering and policy
+decisions~\citep{ranftl2021dpt}.
 Onboard autonomy further requires attention to computational cost, diversity among selected
 targets, and safety-aware fallbacks when evidence is insufficient.
 
@@ -23,8 +23,9 @@ otherwise be discarded by diversity heuristics.
 
 \newpage
 \vspace*{5pt}
-The architecture is designed as a safety-aware, flight-readiness-oriented software path: it
-is not flight-qualified hardware and does not assert universal safety guarantees.
+The present study evaluates ARTPS as a safety-aware, flight-readiness-oriented software
+architecture within a defined operational envelope.
+Flight qualification and mission certification require independent mission-specific V\&V.
 
 The contributions of this work are as follows:
 \begingroup
