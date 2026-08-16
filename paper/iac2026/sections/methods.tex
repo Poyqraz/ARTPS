@@ -85,10 +85,17 @@ Fig.~\ref{fig:qualitative}(c) shows this image-relative near/far field.
 
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
-The ARTPS specification defines an entropy-weighted fusion rule: for normalized cue maps
-\(A_i'\), Shannon entropy \(H_i=-\sum_k p_{ik}\log(p_{ik}+\varepsilon)\) yields
-\(\tilde w_i=1/(H_i+\varepsilon)\) and \(w_i=\tilde w_i/\sum_j\tilde w_j\), so
-\(A_{\mathrm{comb}}=\sum_i w_i A_i'\).
+The ARTPS specification defines an entropy-weighted fusion rule for normalized cue maps
+\(A_i'\). With Shannon entropy over \(\{p_{ik}\}\) and a small stabilization constant
+\(\varepsilon>0\),
+\[
+\begin{aligned}
+H_i&=-\sum_k p_{ik}\log(p_{ik}+\varepsilon),\\
+\tilde w_i&=1/(H_i+\varepsilon),\qquad
+w_i=\tilde w_i/\sum_j\tilde w_j,\\
+A_{\mathrm{comb}}&=\sum_i w_i A_i'.
+\end{aligned}
+\]
 Low-entropy (peaked) maps receive higher weight.
 Those normalized entropy weights sum to one.
 For the human-reviewed validation, Layer~B uses the \emph{fixed-coefficient} linear mix
@@ -109,8 +116,9 @@ P_{\mathrm{mix}}=0.55\,P+0.45\,(1-P),
 \[
 A_{\mathrm{pre}}
 =
-\mathrm{clip}\!\bigl(A_{\mathrm{raw}}\,[0.5+0.5\,P_{\mathrm{mix}}],\,0,1\bigr).
+\mathrm{clip}\!\bigl(A_{\mathrm{raw}}\odot(0.5+0.5\,P_{\mathrm{mix}}),\,0,1\bigr).
 \]
+All map operations are element-wise.
 The values \(0.50/0.30/0.20/0.08/0.12\) are \emph{fixed fusion coefficients}: they are
 implementation weights followed by proximity modulation and clipping; unit-sum normalization
 is therefore unnecessary.
@@ -200,9 +208,12 @@ residual distractor risk.
 \subsection{Candidate and image-level score}
 After localization and validity gates, each remaining candidate \(r\) receives a score
 from pooled map responses and a classifier-derived known-value scalar.
-Let \(F_r\) be the pooled combined-map response, \(D_r\) the pooled relative-depth value,
-\(Q_r\) the proposal confidence, and \(K\) the image-global known-value scalar
-(\(\arg\max\) class index divided by four when the classifier is enabled).
+Let \(F_r\) be the pooled combined-map response,
+\(D_r\) the pooled relative-depth value (image-relative; higher~$=$~farther),
+\(Q_r\) the proposal confidence,
+\(P^{\mathrm{PaDiM}}_r\) and \(P^{\mathrm{PC}}_r\) the pooled PaDiM and PatchCore responses,
+and \(K\) the normalized predicted-class index
+(\(\arg\max\) class index~/~4 when the classifier is enabled; not a class probability).
 $K$ is an image-global known-value scalar used exclusively as a candidate-scoring feature;
 its semantics exclude per-box and lithological interpretation.
 The ARTPS scoring function supports optional PaDiM and PatchCore responses.
@@ -221,6 +232,7 @@ A_r=\mathrm{clip}\bigl(&0.50\,F_r+0.20\,P^{\mathrm{PaDiM}}_r+0.15\,P^{\mathrm{PC
 \[
 S_r=\mathrm{clip}\bigl(A_r\,(0.70+0.30\,V_r),0,1\bigr).
 \]
+Let \(R_{\mathrm{valid}}\) be the candidate set remaining after validity gates.
 The image score is
 \[
 S_{\mathrm{image}}=\max_{r\in R_{\mathrm{valid}}} S_r,
@@ -252,8 +264,9 @@ For operational ranking, ARTPS computes a curiosity score as a non-negative weig
 combination of available region cues (known-value / classifier term, reconstruction or
 anomaly response, optional combined-map, depth variance, and roughness),
 \[
-C(r)=\sum_i w_i S_i(r),\qquad w_i\ge 0.
+C(r)=\mathrm{clip}_{[0,1]}\!\Bigl(\frac{\sum_i w_i \hat S_i(r)}{\sum_i w_i}\Bigr),
 \]
+where \(\hat S_i(r)\) are normalized component scores, \(w_i\ge 0\), and \(\sum_i w_i>0\).
 Default deployed weights emphasize known-value and anomaly terms.
 \(C(r)\) is reserved for Layer~C operational ranking.
 
