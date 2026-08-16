@@ -134,6 +134,15 @@ downstream ranking.
 Accordingly, the human-reviewed metrics characterize Layer~B image-level scoring, while
 Layer~C processes valid candidates for operational ranking.
 
+Fig.~\ref{fig:cue-decomp} shows how that fixed-coefficient mix is assembled on the same non-test image
+as Fig.~\ref{fig:qualitative}.
+Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
+Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
+image-relative discontinuity cue used for fusion.
+Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
+gradient magnitude).
+\Needspace{2\baselineskip}
+Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.80\textwidth]{figures/fig_cue_decomposition_artps.png}
@@ -150,15 +159,6 @@ Quantitative performance is reported separately in
 Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
 \label{fig:cue-decomp}
 \end{figure*}
-
-Fig.~\ref{fig:cue-decomp} shows how that fixed-coefficient mix is assembled on the same non-test image
-as Fig.~\ref{fig:qualitative}.
-Panel~(a) is the per-channel reconstruction residual after inference percentile normalization.
-Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth field): an
-image-relative discontinuity cue used for fusion.
-Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
-gradient magnitude).
-Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
 \Needspace{4\baselineskip}
 The classifier / known-value term is enabled in the implemented Layer~B configuration for
 candidate scoring and curiosity; it enters candidate scoring and remains outside the fused map.
