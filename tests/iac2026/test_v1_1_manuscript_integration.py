@@ -12,7 +12,7 @@ REPO = Path(__file__).resolve().parents[2]
 FREEZE = REPO / "reproduction/iac2026/test_freeze/FINAL_TEST_SCOPE.yaml"
 RESULTS = REPO / "paper/iac2026/sections/results.tex"
 MAIN = REPO / "paper/iac2026/main.tex"
-DECLARATION = REPO / "paper/iac2026/sections/declaration.tex"
+ACKNOWLEDGEMENTS = REPO / "paper/iac2026/sections/acknowledgements.tex"
 LEDGER = REPO / "paper/iac2026/CLAIM_EVIDENCE_LEDGER.md"
 DISCUSSION = REPO / "paper/iac2026/sections/discussion.tex"
 LIMITATIONS = REPO / "paper/iac2026/sections/limitations.tex"
@@ -64,8 +64,11 @@ def test_iac2026_template_conformance_formatting():
     freeze = yaml.safe_load(FREEZE.read_text(encoding="utf-8"))
     assert freeze["test_opened"] is False
     assert freeze["final_test_authorized"] is False
-    decl = DECLARATION.read_text(encoding="utf-8").lower()
-    assert "language verification" in decl
+    assert r"\input{sections/declaration}" not in main
+    assert "Declaration of Generative AI Use" not in main
+    assert not (REPO / "paper/iac2026/sections/declaration.tex").is_file()
+    assert r"\input{sections/acknowledgements}" in main
+    assert ACKNOWLEDGEMENTS.is_file()
     for token in ("0.894", "0.847", "0.823", "0.856", "28.1"):
         assert token in main
 
@@ -74,9 +77,6 @@ def test_iac2026_template_conformance_formatting():
         assert r"Fig.~\ref" in blob
 
     assert r"\RequirePackage{needspace}" in sty
-    decl_src = DECLARATION.read_text(encoding="utf-8")
-    assert r"\Needspace{8\baselineskip}" in decl_src
-    assert decl_src.find(r"\Needspace") < decl_src.find(r"\section*{Declaration")
     freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
     assert "balanced_float_flow_complete: true" in freeze_md
     assert "heading_first_indent_complete: true" in freeze_md
@@ -167,15 +167,18 @@ def test_v1_1_audit_artifacts_keep_degenerate_f1():
     assert "0/8/0/46" in blob
 
 
-def test_declaration_and_funding_absent():
-    decl = DECLARATION.read_text(encoding="utf-8")
-    assert "language verification" in decl.lower()
+def test_ai_declaration_absent_and_funding_absent():
+    main = MAIN.read_text(encoding="utf-8")
+    assert r"\input{sections/declaration}" not in main
+    assert "Declaration of Generative AI Use" not in main
+    assert "Generative AI tools were used solely" not in main
+    assert not (REPO / "paper/iac2026/sections/declaration.tex").is_file()
     blob = "\n".join(
         p.read_text(encoding="utf-8").lower()
         for p in (
             RESULTS,
             MAIN,
-            DECLARATION,
+            ACKNOWLEDGEMENTS,
             REPO / "paper/iac2026/sections/experiments.tex",
             REPO / "paper/iac2026/sections/discussion.tex",
             REPO / "paper/iac2026/sections/limitations.tex",
@@ -184,6 +187,8 @@ def test_declaration_and_funding_absent():
     )
     for banned in ("grant number", "sponsored by", "funding agency", "this work was funded"):
         assert banned not in blob
+    assert "declaration of generative ai use" not in blob
+    assert "generative ai tools were used solely" not in blob
 
 
 def test_ledger_v1_pending_v11_measured_validation_only():
