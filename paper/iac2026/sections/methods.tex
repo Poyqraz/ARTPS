@@ -6,15 +6,13 @@ Quantitative performance claims appear in Section~\ref{sec:results}.
 \centering
 \input{figures/artps_pipeline}
 \caption{ARTPS architecture.
-Layer~A generates optional enhancement, reconstruction, relative-depth, and texture cues.
-The classifier contributes a known-value scalar directly to candidate scoring.
-Layer~B is the image-level scoring path: cue normalization, fusion,
-proximity modulation, map-level suppression, localization, candidate scoring with
-validity gates, and aggregation of remaining valid candidates.
-Entropy-weighted fusion is the specified adaptive fusion mode (dashed).
-The human-reviewed validation uses the fixed-coefficient image-level scoring configuration.
-Layer~B terminates at the image-level score, while Layer~C consumes valid candidates for
-curiosity-, diversity-, and buffer-based operational ranking.}
+Layer~A generates reconstruction, relative-depth, and texture cues, with optional
+enhancement and classifier branches; the classifier feeds candidate scoring directly.
+Layer~B performs cue normalization, fusion, proximity modulation, suppression,
+localization, candidate scoring, validity filtering, and image-level aggregation.
+Entropy-weighted fusion is the specified adaptive mode, while the human-reviewed
+validation uses the fixed-coefficient configuration.
+Layer~C performs curiosity-, diversity-, and Priority Buffer-based operational ranking.}
 \label{fig:pipeline}
 \end{figure*}
 
@@ -68,16 +66,12 @@ feeds the depth-edge cue used in fixed-coefficient multi-cue fusion.
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.80\textwidth]{figures/fig_qualitative_artps.png}
-\caption{Qualitative ARTPS processing example from a non-test Mars scene
-selected before inference using predefined scene-composition criteria.
-Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
-depth, and the candidate-support overlay produced by the ARTPS image-level scoring path.
-Corner brackets denote the approximate candidate ROI.
-Where proposal support geometry is available, the translucent footprint visualizes candidate
-proposal-support geometry at image-region level.
-The depth visualization is relative and non-metric.
-The example provides qualitative process visualization; quantitative evaluation is reported
-separately in Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
+\caption{Qualitative ARTPS processing example from a preselected non-test Mars scene.
+Panels show the RGB input, post-suppression combined anomaly map, monocular
+image-relative depth, and candidate-support overlay after Layer~B validity filtering.
+Corner brackets indicate approximate candidate ROIs; translucent regions indicate
+proposal support where available.
+Depth is relative and non-metric.}
 \label{fig:qualitative}
 \end{figure*}
 
@@ -148,17 +142,13 @@ Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.80\textwidth]{figures/fig_cue_decomposition_artps.png}
-\caption{Cue decomposition of the fixed-coefficient multi-cue score on the same non-test image as
-Fig.~\ref{fig:qualitative}.
-Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
-pre-suppression fused map after proximity mixing.
-The four displayed panels emphasize the dominant reconstruction, relative-depth-edge, texture,
-and fused responses; depth-Laplacian and fine-detail terms also contribute to the fusion.
-Independent min-max display scaling assigns each panel its own visualization range;
-cross-panel color intensity therefore serves qualitative inspection.
-The depth-derived cue is image-relative and non-metric.
-Quantitative performance is reported separately in
-Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
+\caption{Cue decomposition of the fixed-coefficient multi-cue score for the non-test scene
+in Fig.~\ref{fig:qualitative}.
+Panels show the reconstruction residual, relative-depth edge, texture/local-contrast cue,
+and pre-suppression fused map after proximity modulation; depth-Laplacian and fine-detail
+terms also contribute to the fusion.
+Each panel uses independent min-max display scaling; cross-panel color intensity therefore
+serves qualitative cue inspection.}
 \label{fig:cue-decomp}
 \end{figure*}
 \Needspace{4\baselineskip}
