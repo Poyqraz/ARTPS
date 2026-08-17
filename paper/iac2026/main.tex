@@ -46,6 +46,17 @@ pipeline sustains 28.1~FPS at $256{\times}256$ on a development workstation.
 \input{sections/acknowledgements}
 
 \bibliographystyle{unsrtnat}
+% twocolumn: \newpage is a column break; start [12] at the top of the right column.
+\makeatletter
+\let\ARTPSoldbibitem\bibitem
+\def\bibitem{\@ifnextchar[\ARTPSbibopt\ARTPSbibplain}
+\def\ARTPSbibopt[#1]#2{%
+  \def\ARTPSthis{#2}%
+  \def\ARTPStarget{bell2021mastcamz}%
+  \ifx\ARTPSthis\ARTPStarget\newpage\fi
+  \ARTPSoldbibitem[#1]{#2}}
+\def\ARTPSbibplain#1{\ARTPSoldbibitem{#1}}
+\makeatother
 \bibliography{references}
 
 \end{document}
