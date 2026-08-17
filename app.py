@@ -663,7 +663,8 @@ def apply_operational_target_policy(
         z = np.asarray(det.get("latent_z", np.zeros((1024,), dtype=np.float32)), dtype=np.float32).reshape(-1)
         sim_max = 0.0
         if hist:
-            sim_max = max(_cosine_sim(z, h) for h in hist)
+            # Layer C penalty: clip raw cosine [-1,1] so s(r) in [0,1] and S' <= S.
+            sim_max = max(0.0, max(_cosine_sim(z, h) for h in hist))
         policy = raw * (1.0 - float(sim_lambda) * float(sim_max))
         policy = float(max(0.0, policy))
         det["score_raw"] = raw

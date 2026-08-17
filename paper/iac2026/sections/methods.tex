@@ -87,7 +87,8 @@ Fig.~\ref{fig:qualitative}(c) shows this image-relative near/far field.
 Cue reliability can vary across illumination and terrain.
 The ARTPS specification defines an entropy-weighted fusion rule for normalized cue maps
 \(A_i'\). With Shannon entropy over \(\{p_{ik}\}\) and a small stabilization constant
-\(\varepsilon>0\),
+\(\varepsilon>0\), where \(i\) indexes those cue maps and \(k\) is the summation index in
+the Shannon entropy of cue \(i\),
 \[
 \begin{aligned}
 H_i&=-\sum_k p_{ik}\log(p_{ik}+\varepsilon),\\
@@ -268,17 +269,18 @@ anomaly response, optional combined-map, depth variance, and roughness),
 C(r)=\mathrm{clip}_{[0,1]}\!\Bigl(\frac{\sum_i w_i \hat S_i(r)}{\sum_i w_i}\Bigr),
 \]
 where \(\hat S_i(r)\) are normalized component scores, \(w_i\ge 0\), and \(\sum_i w_i>0\).
-Default deployed weights emphasize known-value and anomaly terms.
+Default implementation weights emphasize known-value and anomaly terms.
 \(C(r)\) is reserved for Layer~C operational ranking.
 
 \subsection{Feature-space diversity}
 To avoid redundant near-duplicates in the priority list, ARTPS applies a soft similarity
 penalty in feature space to the fused candidate score \(S_r\).
-If \(s(r)\) is the maximum cosine similarity to already selected items and
-\(\lambda\in[0,1]\),
+If \(s(r)\) is the nonnegative-clipped maximum cosine similarity to already selected
+items, \(s(r)\in[0,1]\), and \(\lambda\in[0,1]\),
 \[
 S'_r=S_r\,(1-\lambda s(r)).
 \]
+This clip keeps \(S'_r\le S_r\) for \(S_r\ge 0\).
 Diversity improves coverage of distinct visual modes under limited downlink slots.
 Diversity acts after Layer~B image scoring.
 
