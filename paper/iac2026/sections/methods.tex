@@ -6,15 +6,13 @@ Quantitative performance claims appear in Section~\ref{sec:results}.
 \centering
 \input{figures/artps_pipeline}
 \caption{ARTPS architecture.
-Layer~A generates optional enhancement, reconstruction, relative-depth, and texture cues.
-The classifier contributes a known-value scalar directly to candidate scoring.
-Layer~B is the image-level scoring path: cue normalization, fusion,
-proximity modulation, map-level suppression, localization, candidate scoring with
-validity gates, and aggregation of remaining valid candidates.
-Entropy-weighted fusion is the specified adaptive fusion mode (dashed).
-The human-reviewed validation uses the fixed-coefficient image-level scoring configuration.
-Layer~B terminates at the image-level score, while Layer~C consumes valid candidates for
-curiosity-, diversity-, and buffer-based operational ranking.}
+Layer~A generates reconstruction, relative-depth, and texture cues, with optional
+enhancement and classifier branches; the classifier feeds candidate scoring directly.
+Layer~B performs cue normalization, fusion, proximity modulation, suppression,
+localization, candidate scoring, validity filtering, and image-level aggregation.
+Entropy-weighted fusion is the specified adaptive mode, while the human-reviewed
+validation uses the fixed-coefficient configuration.
+Layer~C performs curiosity-, diversity-, and Priority Buffer-based operational ranking.}
 \label{fig:pipeline}
 \end{figure*}
 
@@ -68,16 +66,12 @@ feeds the depth-edge cue used in fixed-coefficient multi-cue fusion.
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.80\textwidth]{figures/fig_qualitative_artps.png}
-\caption{Qualitative ARTPS processing example from a non-test Mars scene
-selected before inference using predefined scene-composition criteria.
-Panels show the RGB input, the post-suppression combined anomaly map, monocular image-relative
-depth, and the candidate-support overlay produced by the ARTPS image-level scoring path.
-Corner brackets denote the approximate candidate ROI.
-Where proposal support geometry is available, the translucent footprint visualizes candidate
-proposal-support geometry at image-region level.
-The depth visualization is relative and non-metric.
-The example provides qualitative process visualization; quantitative evaluation is reported
-separately in Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
+\caption{Qualitative ARTPS processing example from a preselected non-test Mars scene.
+Panels show the RGB input, post-suppression combined anomaly map, monocular
+image-relative depth, and candidate-support overlay after Layer~B validity filtering.
+Corner brackets indicate approximate candidate ROIs; translucent regions indicate
+proposal support where available.
+Depth is relative and non-metric.}
 \label{fig:qualitative}
 \end{figure*}
 
@@ -85,10 +79,18 @@ Fig.~\ref{fig:qualitative}(c) shows this image-relative near/far field.
 
 \subsection{Entropy-weighted dynamic fusion}
 Cue reliability can vary across illumination and terrain.
-The ARTPS specification defines an entropy-weighted fusion rule: for normalized cue maps
-\(A_i'\), Shannon entropy \(H_i=-\sum_k p_{ik}\log(p_{ik}+\varepsilon)\) yields
-\(\tilde w_i=1/(H_i+\varepsilon)\) and \(w_i=\tilde w_i/\sum_j\tilde w_j\), so
-\(A_{\mathrm{comb}}=\sum_i w_i A_i'\).
+The ARTPS specification defines an entropy-weighted fusion rule for normalized cue maps
+\(A_i'\). With Shannon entropy over \(\{p_{ik}\}\) and a small stabilization constant
+\(\varepsilon>0\), where \(i\) indexes those cue maps and \(k\) is the summation index in
+the Shannon entropy of cue \(i\),
+\[
+\begin{aligned}
+H_i&=-\sum_k p_{ik}\log(p_{ik}+\varepsilon),\\
+\tilde w_i&=1/(H_i+\varepsilon),\qquad
+w_i=\tilde w_i/\sum_j\tilde w_j,\\
+A_{\mathrm{comb}}&=\sum_i w_i A_i'.
+\end{aligned}
+\]
 Low-entropy (peaked) maps receive higher weight.
 Those normalized entropy weights sum to one.
 For the human-reviewed validation, Layer~B uses the \emph{fixed-coefficient} linear mix
@@ -109,8 +111,9 @@ P_{\mathrm{mix}}=0.55\,P+0.45\,(1-P),
 \[
 A_{\mathrm{pre}}
 =
-\mathrm{clip}\!\bigl(A_{\mathrm{raw}}\,[0.5+0.5\,P_{\mathrm{mix}}],\,0,1\bigr).
+\mathrm{clip}\!\bigl(A_{\mathrm{raw}}\odot(0.5+0.5\,P_{\mathrm{mix}}),\,0,1\bigr).
 \]
+All map operations are element-wise.
 The values \(0.50/0.30/0.20/0.08/0.12\) are \emph{fixed fusion coefficients}: they are
 implementation weights followed by proximity modulation and clipping; unit-sum normalization
 is therefore unnecessary.
@@ -120,28 +123,12 @@ The proximity multiplier lies in a narrow band near \(0.75\), so far-field respo
 reduced but nonzero weight.
 That fixed-coefficient mix is the Layer~B path used in the human-reviewed validation
 (Fig.~\ref{fig:pipeline}).
+% Keep the Layer~B/C sentence contiguous below any pending figure* (avoids Fig.~2 split).
+\Needspace{5\baselineskip}
 Layer~B produces the image-level score; Layer~C operates on the surviving candidate set for
 downstream ranking.
-\Needspace{3\baselineskip}
 Accordingly, the human-reviewed metrics characterize Layer~B image-level scoring, while
 Layer~C processes valid candidates for operational ranking.
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=0.80\textwidth]{figures/fig_cue_decomposition_artps.png}
-\caption{Cue decomposition of the fixed-coefficient multi-cue score on the same non-test image as
-Fig.~\ref{fig:qualitative}.
-Panels show reconstruction residual, relative-depth edge, texture / local contrast, and the
-pre-suppression fused map after proximity mixing.
-The four displayed panels emphasize the dominant reconstruction, relative-depth-edge, texture,
-and fused responses; depth-Laplacian and fine-detail terms also contribute to the fusion.
-Independent min-max display scaling assigns each panel its own visualization range;
-cross-panel color intensity therefore serves qualitative inspection.
-The depth-derived cue is image-relative and non-metric.
-Quantitative performance is reported separately in
-Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.}
-\label{fig:cue-decomp}
-\end{figure*}
 
 Fig.~\ref{fig:cue-decomp} shows how that fixed-coefficient mix is assembled on the same non-test image
 as Fig.~\ref{fig:qualitative}.
@@ -150,7 +137,20 @@ Panel~(b) is the relative-depth edge (Sobel magnitude of the monocular depth fie
 image-relative discontinuity cue used for fusion.
 Panel~(c) is the texture / local-contrast term (shadow-aware darkening mixed with image
 gradient magnitude).
+\Needspace{2\baselineskip}
 Panel~(d) is the pre-suppression fused map \(A_{\mathrm{pre}}\).
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.80\textwidth]{figures/fig_cue_decomposition_artps.png}
+\caption{Cue decomposition of the fixed-coefficient multi-cue score for the non-test scene
+in Fig.~\ref{fig:qualitative}.
+Panels show the reconstruction residual, relative-depth edge, texture/local-contrast cue,
+and pre-suppression fused map after proximity modulation; depth-Laplacian and fine-detail
+terms also contribute to the fusion.
+Each panel uses independent min-max display scaling; cross-panel color intensity therefore
+serves qualitative cue inspection.}
+\label{fig:cue-decomp}
+\end{figure*}
 \Needspace{4\baselineskip}
 The classifier / known-value term is enabled in the implemented Layer~B configuration for
 candidate scoring and curiosity; it enters candidate scoring and remains outside the fused map.
@@ -200,9 +200,12 @@ residual distractor risk.
 \subsection{Candidate and image-level score}
 After localization and validity gates, each remaining candidate \(r\) receives a score
 from pooled map responses and a classifier-derived known-value scalar.
-Let \(F_r\) be the pooled combined-map response, \(D_r\) the pooled relative-depth value,
-\(Q_r\) the proposal confidence, and \(K\) the image-global known-value scalar
-(\(\arg\max\) class index divided by four when the classifier is enabled).
+Let \(F_r\) be the pooled combined-map response,
+\(D_r\) the pooled relative-depth value (image-relative; higher~$=$~farther),
+\(Q_r\) the proposal confidence,
+\(P^{\mathrm{PaDiM}}_r\) and \(P^{\mathrm{PC}}_r\) the pooled PaDiM and PatchCore responses,
+and \(K\) the normalized predicted-class index
+(\(\arg\max\) class index~/~4 when the classifier is enabled; not a class probability).
 $K$ is an image-global known-value scalar used exclusively as a candidate-scoring feature;
 its semantics exclude per-box and lithological interpretation.
 The ARTPS scoring function supports optional PaDiM and PatchCore responses.
@@ -221,6 +224,7 @@ A_r=\mathrm{clip}\bigl(&0.50\,F_r+0.20\,P^{\mathrm{PaDiM}}_r+0.15\,P^{\mathrm{PC
 \[
 S_r=\mathrm{clip}\bigl(A_r\,(0.70+0.30\,V_r),0,1\bigr).
 \]
+Let \(R_{\mathrm{valid}}\) be the candidate set remaining after validity gates.
 The image score is
 \[
 S_{\mathrm{image}}=\max_{r\in R_{\mathrm{valid}}} S_r,
@@ -245,6 +249,7 @@ stack for onboard downlink.
 The sequence is: a surviving candidate receives a curiosity score; a soft similarity penalty
 then reduces its priority among already selected items; the Priority Buffer retains a
 high-anomaly candidate that lost that diversity contest for later reconsideration.
+\Needspace{3\baselineskip}
 Image-level scoring ends before the Layer~C operational-ranking sequence.
 
 \subsection{Curiosity score}
@@ -252,19 +257,21 @@ For operational ranking, ARTPS computes a curiosity score as a non-negative weig
 combination of available region cues (known-value / classifier term, reconstruction or
 anomaly response, optional combined-map, depth variance, and roughness),
 \[
-C(r)=\sum_i w_i S_i(r),\qquad w_i\ge 0.
+C(r)=\mathrm{clip}_{[0,1]}\!\Bigl(\frac{\sum_i w_i \hat S_i(r)}{\sum_i w_i}\Bigr),
 \]
-Default deployed weights emphasize known-value and anomaly terms.
+where \(\hat S_i(r)\) are normalized component scores, \(w_i\ge 0\), and \(\sum_i w_i>0\).
+Default implementation weights emphasize known-value and anomaly terms.
 \(C(r)\) is reserved for Layer~C operational ranking.
 
 \subsection{Feature-space diversity}
 To avoid redundant near-duplicates in the priority list, ARTPS applies a soft similarity
 penalty in feature space to the fused candidate score \(S_r\).
-If \(s(r)\) is the maximum cosine similarity to already selected items and
-\(\lambda\in[0,1]\),
+If \(s(r)\) is the nonnegative-clipped maximum cosine similarity to already selected
+items, \(s(r)\in[0,1]\), and \(\lambda\in[0,1]\),
 \[
 S'_r=S_r\,(1-\lambda s(r)).
 \]
+This clip keeps \(S'_r\le S_r\) for \(S_r\ge 0\).
 Diversity improves coverage of distinct visual modes under limited downlink slots.
 Diversity acts after Layer~B image scoring.
 

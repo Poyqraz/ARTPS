@@ -12,7 +12,7 @@ REPO = Path(__file__).resolve().parents[2]
 FREEZE = REPO / "reproduction/iac2026/test_freeze/FINAL_TEST_SCOPE.yaml"
 RESULTS = REPO / "paper/iac2026/sections/results.tex"
 MAIN = REPO / "paper/iac2026/main.tex"
-DECLARATION = REPO / "paper/iac2026/sections/declaration.tex"
+ACKNOWLEDGEMENTS = REPO / "paper/iac2026/sections/acknowledgements.tex"
 LEDGER = REPO / "paper/iac2026/CLAIM_EVIDENCE_LEDGER.md"
 DISCUSSION = REPO / "paper/iac2026/sections/discussion.tex"
 LIMITATIONS = REPO / "paper/iac2026/sections/limitations.tex"
@@ -64,8 +64,11 @@ def test_iac2026_template_conformance_formatting():
     freeze = yaml.safe_load(FREEZE.read_text(encoding="utf-8"))
     assert freeze["test_opened"] is False
     assert freeze["final_test_authorized"] is False
-    decl = DECLARATION.read_text(encoding="utf-8").lower()
-    assert "language verification" in decl
+    assert r"\input{sections/declaration}" not in main
+    assert "Declaration of Generative AI Use" not in main
+    assert not (REPO / "paper/iac2026/sections/declaration.tex").is_file()
+    assert r"\input{sections/acknowledgements}" in main
+    assert ACKNOWLEDGEMENTS.is_file()
     for token in ("0.894", "0.847", "0.823", "0.856", "28.1"):
         assert token in main
 
@@ -74,9 +77,6 @@ def test_iac2026_template_conformance_formatting():
         assert r"Fig.~\ref" in blob
 
     assert r"\RequirePackage{needspace}" in sty
-    decl_src = DECLARATION.read_text(encoding="utf-8")
-    assert r"\Needspace{8\baselineskip}" in decl_src
-    assert decl_src.find(r"\Needspace") < decl_src.find(r"\section*{Declaration")
     freeze_md = (REPO / "paper/iac2026/SUBMISSION_FREEZE.md").read_text(encoding="utf-8")
     assert "balanced_float_flow_complete: true" in freeze_md
     assert "heading_first_indent_complete: true" in freeze_md
@@ -167,15 +167,18 @@ def test_v1_1_audit_artifacts_keep_degenerate_f1():
     assert "0/8/0/46" in blob
 
 
-def test_declaration_and_funding_absent():
-    decl = DECLARATION.read_text(encoding="utf-8")
-    assert "language verification" in decl.lower()
+def test_ai_declaration_absent_and_funding_absent():
+    main = MAIN.read_text(encoding="utf-8")
+    assert r"\input{sections/declaration}" not in main
+    assert "Declaration of Generative AI Use" not in main
+    assert "Generative AI tools were used solely" not in main
+    assert not (REPO / "paper/iac2026/sections/declaration.tex").is_file()
     blob = "\n".join(
         p.read_text(encoding="utf-8").lower()
         for p in (
             RESULTS,
             MAIN,
-            DECLARATION,
+            ACKNOWLEDGEMENTS,
             REPO / "paper/iac2026/sections/experiments.tex",
             REPO / "paper/iac2026/sections/discussion.tex",
             REPO / "paper/iac2026/sections/limitations.tex",
@@ -184,6 +187,8 @@ def test_declaration_and_funding_absent():
     )
     for banned in ("grant number", "sponsored by", "funding agency", "this work was funded"):
         assert banned not in blob
+    assert "declaration of generative ai use" not in blob
+    assert "generative ai tools were used solely" not in blob
 
 
 def test_ledger_v1_pending_v11_measured_validation_only():
@@ -270,7 +275,7 @@ def test_camera_ready_figure_and_bibliography():
     assert "figures/fig_qualitative_artps.png" in methods
     assert "qualitative" in methods.lower()
     assert "non-metric" in methods.lower() or "relative and non-metric" in methods.lower()
-    assert "quantitative evaluation is reported" in methods.lower()
+    assert "preselected non-test mars scene" in methods.lower()
     assert (REPO / "paper/iac2026/figures/fig_qualitative_artps.png").is_file()
     meta = json.loads(
         (REPO / "paper/iac2026/figures/fig_qualitative_artps.meta.json").read_text(encoding="utf-8")
@@ -289,9 +294,9 @@ def test_camera_ready_figure_and_bibliography():
     assert r"\begin{tikzpicture}" in fig
     assert r"\RequirePackage{tikz}" in sty or r"\usepackage{tikz}" in sty
     cap = methods.lower()
-    assert "image-level scoring path" in cap
+    assert "image-level aggregation" in cap
     assert "entropy" in cap
-    assert "layer~b terminates" in cap or "layer~c consumes" in cap
+    assert "priority buffer-based operational ranking" in cap
     fig_l = fig.lower()
     assert "fixed-weight" in fig_l or "fixed-coefficient" in fig_l or "fixed-coeff" in fig_l
     assert "entropy-weighted" in fig_l
@@ -340,8 +345,8 @@ def test_cue_decomposition_figure_and_caption():
     cap = methods[methods.find(r"\label{fig:cue-decomp}") - 800 : methods.find(r"\label{fig:cue-decomp}")]
     cap_l = cap.lower()
     assert "qualitative" in methods.lower() or "illustrative" in cap_l
-    assert "non-metric" in cap_l
-    assert "quantitative performance is reported separately" in cap_l
+    assert "independent min-max" in cap_l
+    assert "qualitative cue inspection" in cap_l
     assert cue_meta["sample_id"] == fig2_meta["sample_id"]
     assert cue_meta["file_sha256"] == fig2_meta["file_sha256"]
     assert cue_meta["test_used"] is False
@@ -360,7 +365,7 @@ def test_cue_decomposition_figure_and_caption():
     assert "post-suppression" in fig2_cap.lower()
     assert "candidate-support overlay" in fig2_cap.lower()
     assert "corner brackets" in fig2_cap.lower()
-    assert "proposal-support geometry" in fig2_cap.lower() or "image-region level" in fig2_cap.lower()
+    assert "proposal support where available" in fig2_cap.lower()
 
 
 def test_scientific_definition_pass_language():
@@ -440,7 +445,7 @@ def test_close_far_qualitative_figure():
     assert "post-suppression" in cap_l
     assert "candidate-support overlay" in cap_l
     assert "corner brackets" in cap_l
-    assert "proposal-support geometry" in cap_l or "image-region level" in cap_l
+    assert "proposal support where available" in cap_l
     for banned in (
         "demonstrates superior",
         "proves robustness",
@@ -531,8 +536,8 @@ def test_candidate_support_overlay_invariance_and_language():
         "object silhouette",
     ):
         assert banned not in blob
-    assert "translucent footprint" in methods
-    assert "translucent footprint" in results
+    assert "translucent regions" in methods
+    assert "translucent regions" in results
     assert "support footprint" in disc or "translucent support footprint" in disc
     assert "deterministically selected" not in methods
 
@@ -564,7 +569,7 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     )
 
     assert "entropy-weighted" in methods_l
-    assert "specified adaptive fusion mode" in methods_l
+    assert "specified adaptive mode" in methods_l
     assert "fixed fusion coefficients" in methods_l
     assert "the human-reviewed validation uses the fixed-coefficient" in body_l
     for banned in (
@@ -604,7 +609,7 @@ def test_primary_evaluation_completeness_and_fusion_scope():
     fig2 = _visible_tex(methods)
     fig2_cap = fig2[fig2.find(r"\label{fig:qualitative}") - 1200 : fig2.find(r"\label{fig:qualitative}")]
     fig2_flat = " ".join(fig2_cap.split())
-    assert "from a non-test Mars scene selected before inference" in fig2_flat
+    assert "from a preselected non-test Mars scene" in fig2_flat
     fig4_cap = results[results.find(r"\label{fig:close-far}") - 1200 : results.find(r"\label{fig:close-far}")]
     fig4_flat = " ".join(fig4_cap.split())
     assert "apparent-scale context" in fig4_flat.lower()

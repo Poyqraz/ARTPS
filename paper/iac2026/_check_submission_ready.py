@@ -14,7 +14,7 @@ REQUIRED_SECTIONS = (
     "results.tex",
     "discussion.tex",
     "conclusion.tex",
-    "declaration.tex",
+    "acknowledgements.tex",
 )
 
 REQUIRED_NUMBERS = ("0.894", "0.847", "0.823", "0.856", "28.1")
@@ -121,10 +121,9 @@ def main() -> int:
 
     main_path = root / "main.tex"
     refs = root / "references.bib"
-    decl = root / "sections" / "declaration.tex"
     sty = root / "iac2026.sty"
 
-    for path in (main_path, refs, decl, sty):
+    for path in (main_path, refs, sty):
         if not path.is_file():
             errors.append(f"missing required file: {path.relative_to(root)}")
 
@@ -143,6 +142,11 @@ def main() -> int:
     source_paths = [main_path, sty] + [
         root / "sections" / n for n in REQUIRED_SECTIONS
     ]
+    # Also include other inputted body sections that are not in REQUIRED_SECTIONS.
+    for extra in ("related_work.tex", "limitations.tex"):
+        p = root / "sections" / extra
+        if p.is_file():
+            source_paths.append(p)
     pack_text = "\n".join(
         _strip_tex_comments(p.read_text(encoding="utf-8")) for p in source_paths
     )
@@ -182,18 +186,22 @@ def main() -> int:
     if not any("proxy-related" in e for e in errors):
         ok.append("abstract_has_no_proxy_ablation")
 
-    decl_text = decl.read_text(encoding="utf-8")
-    decl_l = re.sub(r"\s+", " ", decl_text.lower())
-    for needle in ("language verification", "grammar", "readability"):
-        if needle not in decl_l:
-            errors.append(f"declaration.tex missing required boundary phrase: {needle}")
-    if "produced and verified by the author" not in decl_l:
-        errors.append("declaration.tex missing author-produced/verified wording")
+    if r"\input{sections/declaration}" in main_clean:
+        errors.append("main.tex still inputs sections/declaration")
+    if "Declaration of Generative AI Use" in pack_text:
+        errors.append("reviewer-visible AI declaration heading found in manuscript sources")
+    if "Generative AI tools were used solely" in pack_text:
+        errors.append("reviewer-visible AI declaration body found in manuscript sources")
     for pat in FORBIDDEN_AI_IMPLICATIONS:
-        if pat.search(decl_text):
-            errors.append(f"declaration implies AI-generated science: /{pat.pattern}/")
-    if not any("declaration" in e for e in errors):
-        ok.append("declaration_language_only_ok")
+        if pat.search(pack_text):
+            errors.append(f"manuscript implies AI-generated science: /{pat.pattern}/")
+    if not any(
+        e.startswith("main.tex still inputs")
+        or e.startswith("reviewer-visible AI")
+        or e.startswith("manuscript implies AI")
+        for e in errors
+    ):
+        ok.append("ai_declaration_absent_ok")
 
     if refs.is_file():
         ok.append("references.bib_present")

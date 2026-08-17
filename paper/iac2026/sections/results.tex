@@ -66,20 +66,17 @@ post-suppression combined anomaly map, relative depth, and candidate-support ove
 ARTPS image-level scoring path.
 Fig.~\ref{fig:cue-decomp} is a diagnostic decomposition of the existing Layer~B fusion into
 reconstruction, relative-depth-edge, and texture cues plus the pre-suppression fused map.
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=0.96\textwidth]{figures/fig_close_far_qualitative_artps.png}
-\caption{Close- and distant-scene non-test examples illustrate apparent-scale context;
-quantitative performance is reported in
-Tables~\ref{tab:accepted-abstract}--\ref{tab:indep-v11}.
-Each row shows the RGB input, post-suppression combined map, and candidate-support
-overlay.
-Corner brackets indicate the approximate candidate ROI; where proposal geometry is
-available, the translucent footprint visualizes candidate proposal-support geometry at
-image-region level.}
-\label{fig:close-far}
-\end{figure*}
+\Needspace{4\baselineskip}
 In addition to that single-scene example and cue decomposition, Fig.~\ref{fig:close-far}
 shows one close-range and one distant-scene illustration from preselected non-test scenes,
 to show how the ARTPS pipeline behaves under different apparent object-scale
 contexts.
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_close_far_qualitative_artps.png}
+\caption{Close- and distant-scene non-test examples illustrating apparent-scale context.
+Each row shows the RGB input, post-suppression combined map, and candidate-support overlay.
+Corner brackets indicate approximate candidate ROIs; translucent regions indicate
+proposal support where available.}
+\label{fig:close-far}
+\end{figure*}
